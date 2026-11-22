@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n cars_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+        <div>
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
+        </div>
+        <form method="get" class="flex flex-wrap gap-3 text-sm">
+            <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Make or model' %}" class="bg-[#141414] border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-400">
+            <select name="source" onchange="this.form.submit()" class="bg-[#141414] border border-neutral-800 px-3 py-2">
+                <option value="">{% trans 'All sellers' %}</option>
+                <option value="user" {% if source == 'user' %}selected{% endif %}>{% trans 'Private listings' %}</option>
+                <option value="hollmann" {% if source == 'hollmann' %}selected{% endif %}>hollmann.international</option>
+            </select>
+            <select name="sort" onchange="this.form.submit()" class="bg-[#141414] border border-neutral-800 px-3 py-2">
+                <option value="name-ascending" {% if sort == 'name-ascending' %}selected{% endif %}>↑ {% trans 'Name' %}</option>
+                <option value="name-descending" {% if sort == 'name-descending' %}selected{% endif %}>↓ {% trans 'Name' %}</option>
+                <option value="date-ascending" {% if sort == 'date-ascending' %}selected{% endif %}>↑ {% trans 'Date' %}</option>
+                <option value="date-descending" {% if sort == 'date-descending' %}selected{% endif %}>↓ {% trans 'Date' %}</option>
+                <option value="price-ascending" {% if sort == 'price-ascending' %}selected{% endif %}>↑ {% trans 'Price' %}</option>
+                <option value="price-descending" {% if sort == 'price-descending' %}selected{% endif %}>↓ {% trans 'Price' %}</option>
+            </select>
+            <noscript><button class="btn btn-outline !py-2">{% trans 'Apply' %}</button></noscript>
+        </form>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-10 text-xs uppercase tracking-widest">
+        <a href="{% url 'cars:list' %}" class="px-3 py-2 border {% if not category and not make and not is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'All' %}</a>
+        <a href="{% url 'cars:new' %}" class="px-3 py-2 border {% if is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'New Offers' %}</a>
+        {% for c in nav_categories %}
+        <a href="{{ c.get_absolute_url }}" class="px-3 py-2 border {% if category == c %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{{ c.name }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for car in page %}{% include "includes/car_card.html" %}{% empty %}
+        <p class="text-neutral-500 col-span-full py-20 text-center">{% trans 'No vehicles found.' %}</p>
+        {% endfor %}
+    </div>
+
+    {% if page.has_other_pages %}
+    <nav class="flex items-center justify-center gap-2 mt-16 text-sm">
+        {% if page.has_previous %}<a href="{% url_with page=page.previous_page_number %}" class="btn btn-outline !py-2">←</a>{% endif %}
+        <span class="px-4 text-neutral-400">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a href="{% url_with page=page.next_page_number %}" class="btn btn-outline !py-2">→</a>{% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

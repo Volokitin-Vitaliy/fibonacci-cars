@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load i18n cars_tags %}
+{% block title %}{{ car.make.name }} {{ car.model }}{% endblock %}
+{% block meta_description %}{{ car.make.name }} {{ car.model }} — {{ car.currency_symbol }}{{ car.price|money }}{% endblock %}
+{% block content %}
+
+{# Gallery strip, as on hollmann.international: horizontal photos with previous/next and fullscreen #}
+<section class="relative border-b border-neutral-900 bg-[#080808]">
+    {% if photos %}
+    <div id="strip" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth" style="scrollbar-width:none">
+        {% for p in photos %}
+        <button type="button" class="snap-start shrink-0 w-full sm:w-1/2 lg:w-1/3 aspect-[4/3] bg-black" data-index="{{ forloop.counter0 }}">
+            <img src="{{ p.image.url }}" alt="{{ car }} — {{ forloop.counter }}" class="w-full h-full object-cover" {% if forloop.counter > 3 %}loading="lazy"{% endif %}>
+        </button>
+        {% endfor %}
+    </div>
+    {% if photos|length > 1 %}
+    <button type="button" id="strip-prev" class="absolute left-0 top-0 bottom-0 w-14 text-3xl bg-gradient-to-r from-black/70 to-transparent hover:from-black" aria-label="{% trans 'Previous' %}">❮</button>
+    <button type="button" id="strip-next" class="absolute right-0 top-0 bottom-0 w-14 text-3xl bg-gradient-to-l from-black/70 to-transparent hover:from-black" aria-label="{% trans 'Next' %}">❯</button>
+    {% endif %}
+    {% else %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-72 sm:h-96 flex flex-col items-center justify-center text-center">
+        <div class="text-3xl sm:text-5xl font-bold tracking-widest uppercase text-neutral-700">{{ car.make.name }}</div>
+        {% if car.is_imported and car.source_url %}
+        <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-outline mt-8">{% trans 'View photos on hollmann.international' %} ↗</a>
+        {% else %}
+        <div class="text-neutral-600 mt-4">{% trans 'No photos yet' %}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+{% if photos %}
+<div id="fullscreen" class="fixed inset-0 z-50 bg-black hidden">
+    <img id="fullscreen-img" src="" alt="" class="w-full h-full object-contain">
+    <button type="button" id="fs-prev" class="absolute left-0 top-0 bottom-0 w-16 text-4xl" aria-label="{% trans 'Previous' %}">❮</button>
+    <button type="button" id="fs-next" class="absolute right-0 top-0 bottom-0 w-16 text-4xl" aria-label="{% trans 'Next' %}">❯</button>
+    <button type="button" id="fs-close" class="absolute top-4 right-6 text-4xl" aria-label="{% trans 'Close' %}">×</button>
+    <div id="fs-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-neutral-400"></div>
+</div>
+{% endif %}
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {% if is_owner and not car.is_listing_active %}
+    <div class="border border-amber-800 text-amber-300 px-4 py-3 text-sm mb-8 flex flex-wrap items-center justify-between gap-4">
+        <span>{% trans 'This listing is inactive and only visible to you.' %}</span>
+        <form method="post" action="{% url 'cars:activate' car.pk %}">{% csrf_token %}<button class="btn btn-primary !py-2">{% trans 'Activate' %}</button></form>
+    </div>
+    {% endif %}
+
+    {# Title and prices #}
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-10 border-b border-neutral-900">
+        <div>
+            <a href="{{ car.make.get_absolute_url }}" class="text-sm uppercase tracking-[0.3em] text-neutral-500 hover:text-white">{{ car.make.name }}</a>
+            <h1 class="text-3xl sm:text-4xl font-bold mt-2">{{ car.model }}</h1>
+            <div class="flex flex-wrap gap-2 mt-4">
+                {% for c in car.categories.all %}<a href="{{ c.get_absolute_url }}" class="text-xs uppercase tracking-widest border border-neutral-800 px-2 py-1 text-neutral-400 hover:text-white">{{ c.name }}</a>{% endfor %}
+            </div>
+        </div>
+        <div class="lg:text-right">
+            {% if car.price_net %}
+            <div class="text-2xl sm:text-3xl font-semibold">{% trans 'Gross' %}: {{ car.currency_symbol }}{{ car.price|money }}</div>
+            <div class="text-neutral-400 mt-1">{% trans 'Net (Export)' %}: {{ car.currency_symbol }}{{ car.price_net|money }}</div>
+            {% else %}
+            <div class="text-3xl font-semibold">{{ car.currency_symbol }}{{ car.price|money }}</div>
+            <div class="text-neutral-500 text-sm mt-1">{{ car.currency }}</div>
+            {% endif %}
+            <div class="mt-5 lg:w-72 lg:ml-auto">{% include "includes/favorite_button.html" %}</div>
+        </div>
+    </div>
+
+    {# Details table and description #}
+    <div class="grid lg:grid-cols-2 gap-12 py-12">
+        <div>
+            <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Details' %}</h2>
+            <table class="w-full text-sm">
+                <tbody>
+                {% if car.external_id %}<tr class="border-b border-neutral-900"><td class="py-3 pr-6 text-neutral-400 w-1/2">{% trans 'Offer Number' %}</td><td class="py-3">{{ car.external_id }}</td></tr>{% endif %}
+                {% for label, value in car.spec_rows %}
+                    {% if label != 'Offer Number' %}
+                    <tr class="border-b border-neutral-900">
+                        <td class="py-3 pr-6 text-neutral-400 w-1/2">{{ label|spec }}</td>
+                        <td class="py-3">{{ value|spec }}</td>
+                    </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr><td class="py-3 text-neutral-500">{% trans 'No details provided.' %}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if car.is_imported %}<p class="text-xs text-neutral-600 mt-4">{% trans 'Consumption and emission values as stated by the seller.' %}</p>{% endif %}
+        </div>
+        <div>
+            <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Description' %}</h2>
+            {% if car.description %}
+                <div class="text-neutral-300 leading-relaxed whitespace-pre-line">{{ car.description }}</div>
+            {% elif car.is_imported %}
+                <p class="text-neutral-400 leading-relaxed">{% trans 'The full description, equipment list and photos of this vehicle are available on the seller’s website.' %}</p>
+                <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-outline mt-6">{% trans 'Open the original offer' %} ↗</a>
+            {% else %}
+                <p class="text-neutral-500">—</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Contacts #}
+    <div class="border-t border-neutral-900 pt-12">
+        <h2 class="text-xl font-semibold">{% trans 'Interested in this vehicle?' %}</h2>
+        {% if car.is_imported %}
+            <p class="text-neutral-400 mt-2">{% trans 'This vehicle is offered by Hollmann International. Contact the dealer through the original offer.' %}</p>
+            <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-primary mt-6">{% trans 'Contact the dealer' %} ↗</a>
+        {% else %}
+            <p class="text-neutral-400 mt-2">{% trans 'Contact the seller directly:' %}</p>
+            <div class="mt-6 grid sm:grid-cols-3 gap-4 max-w-3xl">
+                <div class="border border-neutral-800 p-5">
+                    <div class="text-xs uppercase tracking-widest text-neutral-500">{% trans 'Contact person' %}</div>
+                    <div class="mt-2 font-semibold">{{ car.contact_name }}</div>
+                </div>
+                <a href="tel:{{ car.contact_phone|cut:' ' }}" class="border border-neutral-800 hover:border-neutral-400 p-5 block">
+                    <div class="text-xs uppercase tracking-widest text-neutral-500">{% trans 'Phone' %}</div>
+                    <div class="mt-2 font-semibold">{{ car.contact_phone }}</div>
+                </a>
+                <a href="https://wa.me/{{ car.contact_phone|cut:' '|cut:'+'|cut:'-'|cut:'('|cut:')' }}" target="_blank" rel="noopener" class="border border-neutral-800 hover:border-neutral-400 p-5 block">
+                    <div class="text-xs uppercase tracking-widest text-neutral-500">WhatsApp</div>
+                    <div class="mt-2 font-semibold">{{ car.contact_phone }}</div>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if related %}
+    <div class="border-t border-neutral-900 mt-16 pt-12">
+        <h2 class="text-xl font-semibold mb-8">{% blocktrans with make=car.make.name %}More from {{ make }}{% endblocktrans %}</h2>
+        <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {% for car in related %}{% include "includes/car_card.html" %}{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if photos %}
+<script>
+(function () {
+    const strip = document.getElementById('strip');
+    const step = () => strip.querySelector('[data-index]').offsetWidth;
+    const prev = document.getElementById('strip-prev'), next = document.getElementById('strip-next');
+    if (prev) prev.onclick = () => strip.scrollBy({left: -step()});
+    if (next) next.onclick = () => strip.scrollBy({left: step()});
+
+    const images = [{% for p in photos %}"{{ p.image.url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    const fs = document.getElementById('fullscreen'), img = document.getElementById('fullscreen-img');
+    const counter = document.getElementById('fs-counter');
+    let current = 0;
+    const show = i => { current = (i + images.length) % images.length; img.src = images[current]; counter.textContent = (current + 1) + ' / ' + images.length; };
+    strip.querySelectorAll('[data-index]').forEach(b => b.onclick = () => { show(+b.dataset.index); fs.classList.remove('hidden'); });
+    document.getElementById('fs-prev').onclick = () => show(current - 1);
+    document.getElementById('fs-next').onclick = () => show(current + 1);
+    document.getElementById('fs-close').onclick = () => fs.classList.add('hidden');
+    document.addEventListener('keydown', e => {
+        if (fs.classList.contains('hidden')) return;
+        if (e.key === 'Escape') fs.classList.add('hidden');
+        if (e.key === 'ArrowLeft') show(current - 1);
+        if (e.key === 'ArrowRight') show(current + 1);
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,151 @@
+{% load i18n static %}{% get_current_language as LANG %}<!DOCTYPE html>
+<html lang="{{ LANG }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
+    <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root { color-scheme: dark; }
+        body { font-family: 'Inter', sans-serif; background: #0b0b0b; color: #f5f5f5; }
+
+        /* Form controls */
+        .form-field label { display: block; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #a3a3a3; margin-bottom: .4rem; }
+        .form-field input[type=text], .form-field input[type=email], .form-field input[type=password],
+        .form-field input[type=number], .form-field input[type=tel], .form-field select, .form-field textarea {
+            width: 100%; background: #141414; border: 1px solid #333; color: #f5f5f5;
+            padding: .7rem .85rem; font-size: .95rem; outline: none; transition: border-color .2s;
+        }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: #f5f5f5; }
+        .form-field input[type=file] { color: #a3a3a3; font-size: .9rem; }
+        .form-field .errorlist { color: #f87171; font-size: .8rem; margin-top: .35rem; }
+        .form-field .help { color: #737373; font-size: .8rem; margin-top: .35rem; }
+        .form-field ul.radio, .form-field div.radio { display: flex; gap: 1.5rem; }
+        .form-field input[type=radio] { accent-color: #f5f5f5; margin-right: .4rem; }
+        .form-field .radio-row { display: flex; gap: 1.5rem; padding-top: .4rem; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.5rem; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; transition: background .2s, color .2s, border-color .2s; }
+        .btn-primary { background: #f5f5f5; color: #0b0b0b; }
+        .btn-primary:hover { background: #d4d4d4; }
+        .btn-outline { border: 1px solid #404040; color: #f5f5f5; }
+        .btn-outline:hover { border-color: #f5f5f5; }
+        .btn-danger { border: 1px solid #7f1d1d; color: #fca5a5; }
+        .btn-danger:hover { background: #7f1d1d; color: #fff; }
+
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; left: 0; bottom: -4px; width: 0; height: 1px; background: #f5f5f5; transition: width .25s; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        .dropdown { display: none; }
+        .has-dropdown:hover .dropdown, .has-dropdown:focus-within .dropdown { display: block; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="sticky top-0 z-40 bg-[#0b0b0b]/95 backdrop-blur border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+        <a href="{% url 'cars:home' %}" class="text-xl font-bold tracking-[0.3em]">FIBONACCI</a>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
+            <div class="has-dropdown relative">
+                <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new category make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
+                <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
+                    <div class="w-[42rem] bg-[#111] border border-neutral-800 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
+                        <div>
+                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Collections' %}</div>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
+                                <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
+                                {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}" class="hover:text-neutral-400">{{ c.name }}</a></li>{% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-span-2">
+                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Manufacturers' %}</div>
+                            <ul class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm max-h-80 overflow-y-auto">
+                                {% for m in nav_makes %}<li><a href="{{ m.get_absolute_url }}" class="hover:text-neutral-400">{{ m.name }} <span class="text-neutral-600">{{ m.n }}</span></a></li>{% empty %}<li class="text-neutral-500">—</li>{% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'cars:new' %}" class="nav-link">{% trans 'New Offers' %}</a>
+            <a href="{% url 'cars:add' %}" class="nav-link">{% trans 'Sell your car' %}</a>
+        </nav>
+
+        <div class="flex items-center gap-5 text-sm uppercase tracking-wider">
+            <form action="{% url 'set_language' %}" method="post" class="flex items-center border border-neutral-800 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                {% get_available_languages as LANGUAGES %}
+                {% for code, name in LANGUAGES %}
+                <button type="submit" name="language" value="{{ code }}" class="px-2 py-1 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
+                {% endfor %}
+            </form>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span>{{ favorite_ids|length }}</span></a>
+                <a href="{% url 'cars:my_cars' %}" class="nav-link">{% trans 'Cabinet' %}</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="nav-link">{% trans 'Log in' %}</a>
+            {% endif %}
+            <button type="button" class="md:hidden text-xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
+        </div>
+    </div>
+    <div id="mobile-nav" class="hidden md:hidden border-t border-neutral-900 px-4 py-4 space-y-3 text-sm uppercase tracking-wider">
+        <a href="{% url 'cars:list' %}" class="block">{% trans 'All Vehicles' %}</a>
+        <a href="{% url 'cars:new' %}" class="block">{% trans 'New Offers' %}</a>
+        {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}" class="block">{{ c.name }}</a>{% endfor %}
+        <a href="{% url 'cars:add' %}" class="block">{% trans 'Sell your car' %}</a>
+        {% if user.is_authenticated %}<a href="{% url 'cars:favorites' %}" class="block">{% trans 'Favorites' %} ({{ favorite_ids|length }})</a>{% endif %}
+    </div>
+</header>
+
+{% if messages %}
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-2">
+    {% for message in messages %}
+    <div class="border px-4 py-3 text-sm {% if message.tags == 'error' %}border-red-900 text-red-300{% else %}border-neutral-700 text-neutral-200{% endif %}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main class="flex-1">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="border-t border-neutral-900 mt-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 sm:grid-cols-3 text-sm">
+        <div>
+            <div class="text-lg font-bold tracking-[0.3em] mb-3">FIBONACCI</div>
+            <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
+        </div>
+        <div>
+            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Vehicles' %}</div>
+            <ul class="space-y-2">
+                <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
+                <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
+                {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}" class="hover:text-neutral-400">{{ c.name }}</a></li>{% endfor %}
+            </ul>
+        </div>
+        <div>
+            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Account' %}</div>
+            <ul class="space-y-2">
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'cars:my_cars' %}" class="hover:text-neutral-400">{% trans 'My listings' %}</a></li>
+                <li><a href="{% url 'cars:favorites' %}" class="hover:text-neutral-400">{% trans 'Favorites' %}</a></li>
+                <li><a href="{% url 'users:account' %}" class="hover:text-neutral-400">{% trans 'Account details' %}</a></li>
+                {% else %}
+                <li><a href="{% url 'users:login' %}" class="hover:text-neutral-400">{% trans 'Log in' %}</a></li>
+                <li><a href="{% url 'users:register' %}" class="hover:text-neutral-400">{% trans 'Create an account' %}</a></li>
+                {% endif %}
+                <li><a href="{% url 'cars:add' %}" class="hover:text-neutral-400">{% trans 'Sell your car' %}</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-xs text-neutral-600">
+        © {% now "Y" %} FIBONACCI · {% trans 'Some offers are listed from hollmann.international and link to the original offer.' %}
+    </div>
+</footer>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

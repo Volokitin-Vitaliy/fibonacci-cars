@@ -4,17 +4,14 @@ from .models import CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'country')
+    list_display = ('email', 'last_name', 'first_name', 'phone', 'country')
     list_filter = ('country',)
-    search_fields = ('email', 'first_name', 'last_name', 'company',
-                     'city', 'country')
+    search_fields = ('email', 'first_name', 'last_name', 'phone')
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal Info', {
-            'fields': ('first_name', 'last_name', 'company', 'address1',
-                       'address2', 'city', 'country', 'province', 'postal_code',
-                       'phone')
+            'fields': ('last_name', 'first_name', 'middle_name', 'phone', 'country')
         }),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser',

@@ -1,118 +1,44 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.http import HttpResponse
-from django.template.response import TemplateResponse
-from .forms import CustomUserCreationForm, CustomUserLoginForm, \
-    CustomUserUpdateForm
-from .models import CustomUser
 from django.contrib import messages
-from main.models import Product
-from orders.models import Order
-from main.models import Category
+from django.contrib.auth import login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
+from django.shortcuts import redirect, render
+from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 
-
-def render_page(request, template, context):
-    """Render a partial for HTMX requests, or the full page shell for
-    direct visits (refresh, bookmarks, redirects from login_required)."""
-    if request.headers.get('HX-Request'):
-        return TemplateResponse(request, template, context)
-    context = {**context, 'content_template': template,
-               'categories': Category.objects.all()}
-    return TemplateResponse(request, 'main/base.html', context)
+from .forms import AccountForm, LoginForm, RegistrationForm
 
 
 def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('main:index')
-    else:
-        form = CustomUserCreationForm()
-    return render_page(request, 'users/register.html', {'form': form})
+    if request.user.is_authenticated:
+        return redirect('cars:my_cars')
+    form = RegistrationForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        user = form.save()
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        messages.success(request, _('Welcome! Your account has been created.'))
+        return redirect('cars:my_cars')
+    return render(request, 'users/register.html', {'form': form})
 
 
-def login_view(request):
-    if request.method == 'POST':
-        form = CustomUserLoginForm(request=request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('main:index')
-    else:
-        form = CustomUserLoginForm()
-    return render_page(request, 'users/login.html', {'form': form})
-    
-
-@login_required(login_url='/users/login')
-def profile_view(request):
-    if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            if request.headers.get("HX-Request"):
-                return HttpResponse(headers={'HX-Redirect': reverse('users:profile')})
-            return redirect('users:profile')
-    else:
-        form = CustomUserUpdateForm(instance=request.user)
-
-    recommended_products = Product.objects.all().order_by('id')[:3]
-
-    return render_page(request, 'users/profile.html', {
-        'form': form,
-        'user': request.user,
-        'recommended_products': recommended_products
-    })
+class EmailLoginView(LoginView):
+    template_name = 'users/login.html'
+    authentication_form = LoginForm
+    redirect_authenticated_user = True
 
 
-@login_required(login_url='/users/login')
-def account_details(request):
-    user = CustomUser.objects.get(id=request.user.id)
-    return TemplateResponse(request, 'users/partials/account_details.html', {'user': user})
+@require_POST
+def logout(request):
+    auth_logout(request)
+    return redirect('cars:home')
 
-
-@login_required(login_url='/users/login')
-def edit_account_details(request):
-    form = CustomUserUpdateForm(instance=request.user)
-    return TemplateResponse(request, 'users/partials/edit_account_details.html',
-                            {'user': request.user, 'form': form})
-
-
-@login_required(login_url='/users/login')
-def update_account_details(request):
-    if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.clean()
-            user.save()
-            updated_user = CustomUser.objects.get(id=user.id)
-            request.user = updated_user
-            if request.headers.get('HX-Request'):
-                return TemplateResponse(request, 'users/partials/account_details.html', {'user': updated_user})
-            return TemplateResponse(request, 'users/partials/account_details.html', {'user': updated_user})
-        else:
-            return TemplateResponse(request, 'users/partials/edit_account_details.html', {'user': request.user, 'form': form})
-    if request.headers.get('HX-Request'):
-        return HttpResponse(headers={'HX-Redirect': reverse('user:profile')})
-    return redirect('users:profile')
-
-
-def logout_view(request):
-    logout(request)
-    if request.headers.get('HX-Request'):
-        return HttpResponse(headers={'HX-Redirect': reverse('main:index')})
-    return redirect('main:index')
 
 @login_required
-def order_history(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return TemplateResponse(request, 'users/partials/order_history.html', {'orders': orders})
-
-@login_required
-def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return TemplateResponse(request, 'users/partials/order_detail.html', {'order': order})
+def account(request):
+    form = AccountForm(request.POST or None, instance=request.user)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, _('Your details have been saved.'))
+        return redirect('users:account')
+    return render(request, 'users/account.html', {'form': form, 'section': 'account'})

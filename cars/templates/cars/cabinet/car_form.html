@@ -1,0 +1,70 @@
+{% extends "cars/cabinet/base.html" %}
+{% load i18n %}
+{% block title %}{% if car %}{% trans 'Edit listing' %}{% else %}{% trans 'Add a vehicle' %}{% endif %}{% endblock %}
+{% block cabinet %}
+<h2 class="text-xl font-semibold mb-2">{% if car %}{% trans 'Edit listing' %}{% else %}{% trans 'Add a vehicle' %}{% endif %}</h2>
+{% if not car %}<p class="text-sm text-neutral-400 mb-8">{% blocktrans with days=duration %}Your listing will be published right away for {{ days }} days.{% endblocktrans %}</p>{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="space-y-10 max-w-3xl">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="border border-red-900 text-red-300 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+
+    <fieldset class="space-y-5">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Vehicle' %}</legend>
+        <div class="grid sm:grid-cols-2 gap-5">
+            {% include "includes/field.html" with field=form.make %}
+            {% include "includes/field.html" with field=form.category %}
+        </div>
+        {% include "includes/field.html" with field=form.model %}
+        {% include "includes/field.html" with field=form.description %}
+    </fieldset>
+
+    <fieldset class="space-y-5">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Characteristics' %}</legend>
+        <div class="grid sm:grid-cols-3 gap-5">
+            {% include "includes/field.html" with field=form.year %}
+            {% include "includes/field.html" with field=form.mileage_km %}
+            {% include "includes/field.html" with field=form.power_hp %}
+            {% include "includes/field.html" with field=form.fuel %}
+            {% include "includes/field.html" with field=form.transmission %}
+            {% include "includes/field.html" with field=form.color %}
+        </div>
+    </fieldset>
+
+    <fieldset class="space-y-5">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Price' %}</legend>
+        <div class="grid sm:grid-cols-2 gap-5">
+            {% include "includes/field.html" with field=form.price %}
+            {% include "includes/field.html" with field=form.currency %}
+        </div>
+    </fieldset>
+
+    <fieldset class="space-y-5">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Photos' %}</legend>
+        {% if photos %}
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {% for p in photos %}
+            <label class="relative block cursor-pointer">
+                <img src="{{ p.image.url }}" alt="" class="aspect-[4/3] w-full object-cover">
+                <span class="absolute inset-x-0 bottom-0 bg-black/70 text-xs px-2 py-1 flex items-center gap-1"><input type="checkbox" name="remove_photo" value="{{ p.pk }}"> {% trans 'Remove' %}</span>
+            </label>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% include "includes/field.html" with field=form.photos %}
+    </fieldset>
+
+    <fieldset class="space-y-5">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Contact' %}</legend>
+        <div class="grid sm:grid-cols-2 gap-5">
+            {% include "includes/field.html" with field=form.contact_name %}
+            {% include "includes/field.html" with field=form.contact_phone %}
+        </div>
+    </fieldset>
+
+    <div class="flex gap-3">
+        <button type="submit" class="btn btn-primary">{% if car %}{% trans 'Save changes' %}{% else %}{% trans 'Publish listing' %}{% endif %}</button>
+        <a href="{% url 'cars:my_cars' %}" class="btn btn-outline">{% trans 'Cancel' %}</a>
+    </div>
+</form>
+{% endblock %}

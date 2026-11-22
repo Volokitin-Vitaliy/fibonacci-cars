@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Exclusive vehicles' %}{% endblock %}
+{% block content %}
+<section class="border-b border-neutral-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+        <div class="text-xs uppercase tracking-[0.4em] text-neutral-500 mb-6">{% blocktrans count n=total %}{{ n }} vehicle available{% plural %}{{ n }} vehicles available{% endblocktrans %}</div>
+        <h1 class="text-4xl sm:text-6xl font-bold tracking-tight max-w-3xl leading-[1.05]">{% trans 'Exclusive vehicles. Worldwide.' %}</h1>
+        <p class="text-neutral-400 mt-6 max-w-xl text-lg">{% trans 'Customized, armoured, classic and electric cars from dealers and private sellers.' %}</p>
+        <div class="mt-10 flex flex-wrap gap-4">
+            <a href="{% url 'cars:list' %}" class="btn btn-primary">{% trans 'View all vehicles' %}</a>
+            <a href="{% url 'cars:add' %}" class="btn btn-outline">{% trans 'Sell your car' %}</a>
+        </div>
+        <form action="{% url 'cars:list' %}" method="get" class="mt-12 max-w-xl flex border border-neutral-800 focus-within:border-neutral-400">
+            <input type="search" name="q" placeholder="{% trans 'Search by make or model' %}" class="flex-1 bg-transparent px-4 py-3 outline-none">
+            <button class="px-5 text-sm uppercase tracking-widest text-neutral-300 hover:text-white">{% trans 'Search' %}</button>
+        </form>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+    <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-6">{% trans 'Collections' %}</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <a href="{% url 'cars:new' %}" class="border border-neutral-800 hover:border-neutral-400 transition-colors p-6 h-32 flex items-end text-lg font-semibold">{% trans 'New Offers' %}</a>
+        {% for c in nav_categories %}
+        <a href="{{ c.get_absolute_url }}" class="border border-neutral-800 hover:border-neutral-400 transition-colors p-6 h-32 flex items-end text-lg font-semibold">{{ c.name }}</a>
+        {% endfor %}
+    </div>
+</section>
+
+{% if new_offers %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <div class="flex items-end justify-between mb-8">
+        <h2 class="text-2xl font-bold">{% trans 'New Offers' %}</h2>
+        <a href="{% url 'cars:new' %}" class="text-sm uppercase tracking-widest text-neutral-400 hover:text-white">{% trans 'View all' %} →</a>
+    </div>
+    <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+        {% for car in new_offers %}{% include "includes/car_card.html" %}{% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <div class="flex items-end justify-between mb-8">
+        <h2 class="text-2xl font-bold">{% trans 'Latest vehicles' %}</h2>
+        <a href="{% url 'cars:list' %}" class="text-sm uppercase tracking-widest text-neutral-400 hover:text-white">{% trans 'View all' %} →</a>
+    </div>
+    <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+        {% for car in latest %}{% include "includes/car_card.html" %}{% empty %}<p class="text-neutral-500">{% trans 'No vehicles yet.' %}</p>{% endfor %}
+    </div>
+</section>
+
+{% if nav_makes %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-6">{% trans 'Manufacturers' %}</h2>
+    <div class="flex flex-wrap gap-3">
+        {% for m in nav_makes %}<a href="{{ m.get_absolute_url }}" class="border border-neutral-800 hover:border-neutral-400 px-4 py-2 text-sm">{{ m.name }} <span class="text-neutral-600">{{ m.n }}</span></a>{% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,708 @@
+# Russian translations for FIBONACCI.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the FIBONACCI project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: FIBONACCI VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-22 10:57+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || "
+"n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+msgid "Cabinet"
+msgstr "Кабинет"
+
+msgid "My listings"
+msgstr "Мои объявления"
+
+msgid "Add a vehicle"
+msgstr "Добавить автомобиль"
+
+msgid "Favorites"
+msgstr "Избранное"
+
+msgid "Account details"
+msgstr "Данные аккаунта"
+
+msgid "Log out"
+msgstr "Выйти"
+
+msgid "Edit listing"
+msgstr "Редактировать объявление"
+
+msgid "Vehicle"
+msgstr "Автомобиль"
+
+msgid "Characteristics"
+msgstr "Характеристики"
+
+msgid "Price"
+msgstr "Цена"
+
+msgid "Photos"
+msgstr "Фотографии"
+
+msgid "Remove"
+msgstr "Удалить"
+
+msgid "Contact"
+msgstr "Контакты"
+
+msgid "Save changes"
+msgstr "Сохранить изменения"
+
+msgid "Publish listing"
+msgstr "Опубликовать объявление"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+#, python-format
+msgid "Your listing will be published right away for %(days)s days."
+msgstr "Объявление будет опубликовано сразу на %(days)s дней."
+
+msgid "You have not saved any vehicles yet. Tap ♡ on a vehicle to save it here."
+msgstr "Вы пока ничего не добавили в избранное. Нажмите ♡ на автомобиле, чтобы сохранить его здесь."
+
+msgid "Browse vehicles"
+msgstr "Смотреть автомобили"
+
+msgid "Listings are free for now."
+msgstr "Пока размещение бесплатное."
+
+msgid "Active"
+msgstr "Активно"
+
+msgid "Inactive"
+msgstr "Неактивно"
+
+msgid "Deactivate"
+msgstr "Деактивировать"
+
+msgid "Edit"
+msgstr "Изменить"
+
+msgid "Delete this listing?"
+msgstr "Удалить это объявление?"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "You have no listings yet."
+msgstr "У вас пока нет объявлений."
+
+msgid "Add your first vehicle"
+msgstr "Добавить первый автомобиль"
+
+#, python-format
+msgid ""
+"Each listing is published for %(duration)s days. When the period ends, the listing is deactivated"
+" and hidden until you activate it again."
+msgstr ""
+"Каждое объявление публикуется на %(duration)s дней. Когда срок заканчивается, объявление "
+"деактивируется и скрывается, пока вы снова его не активируете."
+
+#, python-format
+msgid "Activation costs €%(listing_price)s per month."
+msgstr "Активация стоит €%(listing_price)s в месяц."
+
+#, python-format
+msgid "Active until %(date)s (%(days)s day left)"
+msgid_plural "Active until %(date)s (%(days)s days left)"
+msgstr[0] "Активно до %(date)s (остался %(days)s день)"
+msgstr[1] "Активно до %(date)s (осталось %(days)s дня)"
+msgstr[2] "Активно до %(date)s (осталось %(days)s дней)"
+
+#, python-format
+msgid "Expired or deactivated on %(date)s"
+msgstr "Срок истёк или отключено %(date)s"
+
+#, python-format
+msgid "%(n)s like"
+msgid_plural "%(n)s likes"
+msgstr[0] "%(n)s в избранном"
+msgstr[1] "%(n)s в избранном"
+msgstr[2] "%(n)s в избранном"
+
+#, python-format
+msgid "Activate for €%(listing_price)s"
+msgstr "Активировать за €%(listing_price)s"
+
+#, python-format
+msgid "Activate for %(duration)s days"
+msgstr "Активировать на %(duration)s дней"
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Вперёд"
+
+msgid "View photos on hollmann.international"
+msgstr "Смотреть фото на hollmann.international"
+
+msgid "No photos yet"
+msgstr "Фотографий пока нет"
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "This listing is inactive and only visible to you."
+msgstr "Объявление неактивно и видно только вам."
+
+msgid "Activate"
+msgstr "Активировать"
+
+msgid "Gross"
+msgstr "Брутто"
+
+msgid "Net (Export)"
+msgstr "Нетто (экспорт)"
+
+msgid "Details"
+msgstr "Характеристики"
+
+msgid "Offer Number"
+msgstr "Номер предложения"
+
+msgid "No details provided."
+msgstr "Характеристики не указаны."
+
+msgid "Consumption and emission values as stated by the seller."
+msgstr "Значения расхода и выбросов указаны продавцом."
+
+msgid "Description"
+msgstr "Описание"
+
+msgid ""
+"The full description, equipment list and photos of this vehicle are available on the seller’s "
+"website."
+msgstr "Полное описание, комплектация и фотографии этого автомобиля доступны на сайте продавца."
+
+msgid "Open the original offer"
+msgstr "Открыть оригинальное предложение"
+
+msgid "Interested in this vehicle?"
+msgstr "Заинтересовал автомобиль?"
+
+msgid "This vehicle is offered by Hollmann International. Contact the dealer through the original offer."
+msgstr ""
+"Этот автомобиль предлагает Hollmann International. Свяжитесь с дилером через оригинальное "
+"предложение."
+
+msgid "Contact the dealer"
+msgstr "Связаться с дилером"
+
+msgid "Contact the seller directly:"
+msgstr "Свяжитесь с продавцом напрямую:"
+
+msgid "Contact person"
+msgstr "Контактное лицо"
+
+msgid "Phone"
+msgstr "Телефон"
+
+#, python-format
+msgid "More from %(make)s"
+msgstr "Ещё %(make)s"
+
+msgid "Exclusive vehicles"
+msgstr "Эксклюзивные автомобили"
+
+msgid "Exclusive vehicles. Worldwide."
+msgstr "Эксклюзивные автомобили. По всему миру."
+
+msgid "Customized, armoured, classic and electric cars from dealers and private sellers."
+msgstr "Тюнинг, бронированные, классические и электромобили от дилеров и частных продавцов."
+
+msgid "View all vehicles"
+msgstr "Все автомобили"
+
+msgid "Sell your car"
+msgstr "Продать автомобиль"
+
+msgid "Search by make or model"
+msgstr "Поиск по марке или модели"
+
+msgid "Search"
+msgstr "Найти"
+
+msgid "Collections"
+msgstr "Коллекции"
+
+msgid "New Offers"
+msgstr "Новые предложения"
+
+msgid "View all"
+msgstr "Смотреть все"
+
+msgid "Latest vehicles"
+msgstr "Последние поступления"
+
+msgid "No vehicles yet."
+msgstr "Автомобилей пока нет."
+
+msgid "Manufacturers"
+msgstr "Марки"
+
+#, python-format
+msgid "%(n)s vehicle available"
+msgid_plural "%(n)s vehicles available"
+msgstr[0] "%(n)s автомобиль в наличии"
+msgstr[1] "%(n)s автомобиля в наличии"
+msgstr[2] "%(n)s автомобилей в наличии"
+
+msgid "Make or model"
+msgstr "Марка или модель"
+
+msgid "All sellers"
+msgstr "Все продавцы"
+
+msgid "Private listings"
+msgstr "Частные объявления"
+
+msgid "Name"
+msgstr "Название"
+
+msgid "Date"
+msgstr "Дата"
+
+msgid "Apply"
+msgstr "Применить"
+
+msgid "All"
+msgstr "Все"
+
+msgid "No vehicles found."
+msgstr "Ничего не найдено."
+
+#, python-format
+msgid "%(n)s vehicle"
+msgid_plural "%(n)s vehicles"
+msgstr[0] "%(n)s автомобиль"
+msgstr[1] "%(n)s автомобиля"
+msgstr[2] "%(n)s автомобилей"
+
+msgid "Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles."
+msgstr "Эксклюзивные автомобили на продажу: тюнинг, бронированные, олдтаймеры и электромобили."
+
+msgid "Vehicles"
+msgstr "Автомобили"
+
+msgid "All Vehicles"
+msgstr "Все автомобили"
+
+msgid "Log in"
+msgstr "Войти"
+
+msgid "Menu"
+msgstr "Меню"
+
+msgid "Exclusive vehicles from trusted dealers and private sellers."
+msgstr "Эксклюзивные автомобили от проверенных дилеров и частных продавцов."
+
+msgid "Account"
+msgstr "Аккаунт"
+
+msgid "Create an account"
+msgstr "Зарегистрироваться"
+
+msgid "Some offers are listed from hollmann.international and link to the original offer."
+msgstr "Часть предложений взята с hollmann.international и ведёт на оригинальное предложение."
+
+msgid "Photos on hollmann.international"
+msgstr "Фото на hollmann.international"
+
+msgid "hp"
+msgstr "л.с."
+
+msgid "Remove from favorites"
+msgstr "Убрать из избранного"
+
+msgid "In favorites"
+msgstr "В избранном"
+
+msgid "Add to favorites"
+msgstr "В избранное"
+
+msgid "Log in to save favorites"
+msgstr "Войдите, чтобы сохранять избранное"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Manage your listings and favorites."
+msgstr "Управляйте объявлениями и избранным."
+
+msgid "Incorrect email or password."
+msgstr "Неверный email или пароль."
+
+msgid "No account yet?"
+msgstr "Ещё нет аккаунта?"
+
+msgid "Sell your vehicle and save the ones you like."
+msgstr "Продавайте свой автомобиль и сохраняйте понравившиеся."
+
+msgid "Already registered?"
+msgstr "Уже зарегистрированы?"
+
+msgid "Enter a valid phone number, for example +49 151 1234567."
+msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
+
+msgid "Category"
+msgstr "Категория"
+
+msgid "Choose a category"
+msgstr "Выберите категорию"
+
+#, python-format
+msgid "Up to %(n)s images."
+msgstr "До %(n)s изображений."
+
+msgid "Contact phone"
+msgstr "Контактный телефон"
+
+msgid "Choose a make"
+msgstr "Выберите марку"
+
+msgid "Make"
+msgstr "Марка"
+
+msgid "Model / title"
+msgstr "Модель / название"
+
+msgid "Enter a year between 1900 and next year."
+msgstr "Укажите год от 1900 до следующего года."
+
+msgid "The price must be greater than zero."
+msgstr "Цена должна быть больше нуля."
+
+#, python-format
+msgid "A listing can have at most %(n)s photos."
+msgstr "В объявлении может быть не больше %(n)s фотографий."
+
+msgid "name (English)"
+msgstr "название (английский)"
+
+msgid "name (Russian)"
+msgstr "название (русский)"
+
+msgid "category"
+msgstr "категория"
+
+msgid "categories"
+msgstr "категории"
+
+msgid "name"
+msgstr "название"
+
+msgid "make"
+msgstr "марка"
+
+msgid "makes"
+msgstr "марки"
+
+msgid "User listing"
+msgstr "Объявление пользователя"
+
+msgid "Petrol"
+msgstr "Бензин"
+
+msgid "Diesel"
+msgstr "Дизель"
+
+msgid "Hybrid"
+msgstr "Гибрид"
+
+msgid "Electric"
+msgstr "Электро"
+
+msgid "Other"
+msgstr "Другое"
+
+msgid "Automatic"
+msgstr "Автомат"
+
+msgid "Manual"
+msgstr "Механика"
+
+msgid "model / title"
+msgstr "модель / название"
+
+msgid "description"
+msgstr "описание"
+
+msgid "year"
+msgstr "год"
+
+msgid "mileage, km"
+msgstr "пробег, км"
+
+msgid "fuel"
+msgstr "топливо"
+
+msgid "transmission"
+msgstr "коробка передач"
+
+msgid "power, hp"
+msgstr "мощность, л.с."
+
+msgid "color"
+msgstr "цвет"
+
+msgid "price"
+msgstr "цена"
+
+msgid "currency"
+msgstr "валюта"
+
+msgid "contact person"
+msgstr "контактное лицо"
+
+msgid "contact phone"
+msgstr "контактный телефон"
+
+msgid "vehicle"
+msgstr "автомобиль"
+
+msgid "vehicles"
+msgstr "автомобили"
+
+msgid "Year"
+msgstr "Год"
+
+msgid "Mileage"
+msgstr "Пробег"
+
+msgid "Fuel"
+msgstr "Топливо"
+
+msgid "Transmission"
+msgstr "Коробка передач"
+
+msgid "Power"
+msgstr "Мощность"
+
+msgid "Color"
+msgstr "Цвет"
+
+msgid "Upholstery"
+msgstr "Салон"
+
+msgid "Seats"
+msgstr "Мест"
+
+msgid "Drive"
+msgstr "Двигатель"
+
+msgid "Capacity"
+msgstr "Объём двигателя"
+
+msgid "Power (kW)"
+msgstr "Мощность (кВт)"
+
+msgid "Power (PS)"
+msgstr "Мощность (л.с.)"
+
+msgid "Emission Standard"
+msgstr "Экологический класс"
+
+msgid "Energy Consumption (combined)"
+msgstr "Расход энергии (смешанный)"
+
+msgid "Fuel Consumption (combined)"
+msgstr "Расход топлива (смешанный)"
+
+msgid "Fuel Consumption (City)"
+msgstr "Расход топлива (город)"
+
+msgid "Fuel Consumption (Suburban)"
+msgstr "Расход топлива (пригород)"
+
+msgid "Fuel Consumption (Rural)"
+msgstr "Расход топлива (загород)"
+
+msgid "Fuel Consumption (Highway)"
+msgstr "Расход топлива (трасса)"
+
+msgid "CO₂ Emissions (combined)"
+msgstr "Выбросы CO₂ (смешанный)"
+
+msgid "CO₂ Class based on CO₂ Emissions (combined)"
+msgstr "Класс CO₂ по выбросам (смешанный)"
+
+msgid "German Vehicle Tax (yearly)"
+msgstr "Транспортный налог в Германии (в год)"
+
+msgid "First Registration"
+msgstr "Первая регистрация"
+
+msgid "Electric Range"
+msgstr "Запас хода на электротяге"
+
+msgid "Battery Capacity"
+msgstr "Ёмкость батареи"
+
+msgid "Combustion Engine (Petrol)"
+msgstr "ДВС (бензин)"
+
+msgid "Combustion Engine (Diesel)"
+msgstr "ДВС (дизель)"
+
+msgid "Hybrid (Petrol/Electric)"
+msgstr "Гибрид (бензин/электро)"
+
+msgid "Hybrid (Diesel/Electric)"
+msgstr "Гибрид (дизель/электро)"
+
+msgid "Plug-in Hybrid"
+msgstr "Подключаемый гибрид"
+
+msgid "Previous Owners"
+msgstr "Предыдущих владельцев"
+
+msgid "Electric Range (EAER)"
+msgstr "Запас хода на электротяге (EAER)"
+
+msgid "Electric Range (max.)"
+msgstr "Запас хода на электротяге (макс.)"
+
+msgid "Electricity Consumption (combined)"
+msgstr "Расход электроэнергии (смешанный)"
+
+msgid "Electricity Consumption (City)"
+msgstr "Расход электроэнергии (город)"
+
+msgid "Electricity Consumption (Suburban)"
+msgstr "Расход электроэнергии (пригород)"
+
+msgid "Electricity Consumption (Rural)"
+msgstr "Расход электроэнергии (загород)"
+
+msgid "Electricity Consumption (Highway)"
+msgstr "Расход электроэнергии (трасса)"
+
+msgid "Electricity Consumption (weighted, combined)"
+msgstr "Расход электроэнергии (взвешенный, смешанный)"
+
+msgid "Fuel Consumption (weighted, combined)"
+msgstr "Расход топлива (взвешенный, смешанный)"
+
+msgid "Fuel Consumption with a Discharged Battery (combined)"
+msgstr "Расход топлива при разряженной батарее (смешанный)"
+
+msgid "Fuel Consumption with a Discharged Battery (City)"
+msgstr "Расход топлива при разряженной батарее (город)"
+
+msgid "Fuel Consumption with a Discharged Battery (Suburban)"
+msgstr "Расход топлива при разряженной батарее (пригород)"
+
+msgid "Fuel Consumption with a Discharged Battery (Rural)"
+msgstr "Расход топлива при разряженной батарее (загород)"
+
+msgid "Fuel Consumption with a Discharged Battery (Highway)"
+msgstr "Расход топлива при разряженной батарее (трасса)"
+
+msgid "CO₂ Emissions (weighted, combined)"
+msgstr "Выбросы CO₂ (взвешенные, смешанный)"
+
+msgid "CO₂ Class based on CO₂ Emissions (weighted, combined)"
+msgstr "Класс CO₂ по выбросам (взвешенные, смешанный)"
+
+msgid "CO₂ Emissions with a Discharged Battery"
+msgstr "Выбросы CO₂ при разряженной батарее"
+
+msgid "CO₂ Class based on CO₂ Emissions with a Discharged Battery"
+msgstr "Класс CO₂ при разряженной батарее"
+
+msgid "Electric Motor (Electricity)"
+msgstr "Электродвигатель"
+
+msgid "Plugin Hybrid (Petrol/Electricity)"
+msgstr "Подключаемый гибрид (бензин/электро)"
+
+#, python-format
+msgid "Your listing is published for %(days)s days."
+msgstr "Ваше объявление опубликовано на %(days)s дней."
+
+msgid "Listing updated."
+msgstr "Объявление обновлено."
+
+msgid "Listing deleted."
+msgstr "Объявление удалено."
+
+msgid "This listing is already active."
+msgstr "Это объявление уже активно."
+
+msgid "Online payment is not available yet."
+msgstr "Онлайн-оплата пока недоступна."
+
+#, python-format
+msgid "Listing activated for %(days)s days."
+msgstr "Объявление активировано на %(days)s дней."
+
+msgid "Listing deactivated."
+msgstr "Объявление деактивировано."
+
+msgid "English"
+msgstr "Английский"
+
+msgid "Russian"
+msgstr "Русский"
+
+msgid "First name"
+msgstr "Имя"
+
+msgid "Last name"
+msgstr "Фамилия"
+
+msgid "Middle name"
+msgstr "Отчество"
+
+msgid "Country"
+msgstr "Страна"
+
+msgid "This phone number is already registered."
+msgstr "Этот номер телефона уже зарегистрирован."
+
+msgid "Email"
+msgstr "Email"
+
+msgid "This email is already in use."
+msgstr "Этот email уже используется."
+
+msgid "email"
+msgstr "email"
+
+msgid "first name"
+msgstr "имя"
+
+msgid "last name"
+msgstr "фамилия"
+
+msgid "middle name"
+msgstr "отчество"
+
+msgid "country"
+msgstr "страна"
+
+msgid "phone"
+msgstr "телефон"
+
+msgid "Welcome! Your account has been created."
+msgstr "Добро пожаловать! Аккаунт создан."
+
+msgid "Your details have been saved."
+msgstr "Данные сохранены."
+

@@ -1,83 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Log in' %}{% endblock %}
 {% block content %}
-<style>
-    .dotted-input {
-        border: none;
-        border-bottom: 2px dotted #404040;
-        background: transparent;
-        outline: none;
-        transition: border-color 0.3s ease;
-    }
-    .dotted-input:focus {
-        border-bottom-color: #d4d4d4;
-    }
-    .dotted-input::placeholder {
-        color: #a3a3a3;
-        font-weight: 500;
-    }
-</style>
-
-<div class="min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold text-gray-900 mb-8 text-center tracking-wide">
-            LOG IN
-        </h1>
-        
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="text-red-500 text-sm text-center">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        
-        <form id="loginForm" method="post" class="space-y-6" 
-              hx-post="{% url 'users:login' %}" 
-              hx-target="#main-content">
-            {% csrf_token %}
-            
-            <div>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="text-red-500 text-xs mt-1">{{ form.username.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div>
-                {{ form.password }}
-                {% if form.password.errors %}
-                    <div class="text-red-500 text-xs mt-1">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4 pt-4">
-                <button 
-                    type="submit"
-                    class="bg-black hover:bg-gray-500 text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
-                >
-                    LOG IN
-                </button>
-                <a 
-                    href="{% url 'users:register' %}"
-                    hx-get="{% url 'users:register' %}"
-                    hx-target="#main-content"
-                    hx-push-url="true"
-                    class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide text-center"
-                >
-                    CREATE AN ACCOUNT
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.querySelectorAll('.dotted-input').forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-    });
-</script>
+<section class="max-w-md mx-auto px-4 py-20">
+    <h1 class="text-3xl font-bold mb-2">{% trans 'Log in' %}</h1>
+    <p class="text-neutral-400 mb-10">{% trans 'Manage your listings and favorites.' %}</p>
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if form.non_field_errors %}<div class="border border-red-900 text-red-300 px-4 py-3 text-sm">{% trans 'Incorrect email or password.' %}</div>{% endif %}
+        {% include "includes/field.html" with field=form.username %}
+        {% include "includes/field.html" with field=form.password %}
+        <button type="submit" class="btn btn-primary w-full">{% trans 'Log in' %}</button>
+    </form>
+    <p class="text-sm text-neutral-400 mt-8 text-center">{% trans 'No account yet?' %} <a href="{% url 'users:register' %}" class="text-white underline">{% trans 'Create an account' %}</a></p>
+</section>
 {% endblock %}

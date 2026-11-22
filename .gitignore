@@ -10,4 +10,4 @@ security.log
 
 db.sqlite3
 media/
-debug.log
+debug.logstatic/
