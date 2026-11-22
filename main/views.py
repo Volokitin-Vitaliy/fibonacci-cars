@@ -21,6 +21,7 @@ class IndexView(TemplateView):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/home_content.html', context)
+        context['content_template'] = 'main/home_content.html'
         return TemplateResponse(request, self.template_name, context)
     
 
@@ -29,8 +30,8 @@ class CatalogView(TemplateView):
 
     FILTER_MAPPING = {
         'color': lambda queryset, value: queryset.filter(color__iexact=value),
-        'min_price': lambda queryset, value: queryset.filter(price_gte=value),
-        'max_price': lambda queryset, value: queryset.filter(price_lte=value),
+        'min_price': lambda queryset, value: queryset.filter(price__gte=value),
+        'max_price': lambda queryset, value: queryset.filter(price__lte=value),
         'size': lambda queryset, value: queryset.filter(product_sizes__size__name=value),
     }
 
@@ -89,6 +90,7 @@ class CatalogView(TemplateView):
                 return TemplateResponse(request, 'main/search_button.html', {})
             template = 'main/filter_modal.html' if request.GET.get('show_filters') == 'true' else 'main/catalog.html'
             return TemplateResponse(request, template, context)
+        context['content_template'] = 'main/catalog.html'
         return TemplateResponse(request, self.template, context)
     
 
@@ -115,4 +117,5 @@ class ProductDetailView(DetailView):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/product_detail.html', context)
+        context['content_template'] = 'main/product_detail.html'
         return TemplateResponse(request, self.template_name, context)

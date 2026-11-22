@@ -233,6 +233,9 @@
     <!-- Main Content -->
     <div id="main-content">
         {% block content %}
+        {% if content_template %}
+        {% include content_template %}
+        {% else %}
         <!-- Default home content -->
         <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center py-20">
@@ -255,6 +258,7 @@
                 </div>
             </div>
         </main>
+        {% endif %}
         {% endblock %}
     </div>
 
