@@ -28,7 +28,7 @@ class CheckoutView(CartMixin, View):
             logger.warning("Cart is empty, redirecting to cart page")
             if request.headers.get('HX-Request'):
                 return TemplateResponse(request, 'orders/empty_cart.html', {'message': 'Your cart is empty'})
-            return redirect('cart:cart_modal')
+            return redirect('main:index')
 
         total_price = cart.subtotal
         logger.debug(f"Total price: {total_price}")
@@ -54,7 +54,7 @@ class CheckoutView(CartMixin, View):
             logger.warning("Cart is empty, redirecting to cart page")
             if request.headers.get('HX-Request'):
                 return TemplateResponse(request, 'orders/empty_cart.html', {'message': 'Your cart is empty'})
-            return redirect('cart:cart_modal')
+            return redirect('main:index')
 
         if not payment_provider or payment_provider not in ['stripe', 'heleket']:
             logger.error(f"Invalid or missing payment provider: {payment_provider}")

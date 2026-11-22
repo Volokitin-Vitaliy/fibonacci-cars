@@ -10,6 +10,17 @@ from .models import CustomUser
 from django.contrib import messages
 from main.models import Product
 from orders.models import Order
+from main.models import Category
+
+
+def render_page(request, template, context):
+    """Render a partial for HTMX requests, or the full page shell for
+    direct visits (refresh, bookmarks, redirects from login_required)."""
+    if request.headers.get('HX-Request'):
+        return TemplateResponse(request, template, context)
+    context = {**context, 'content_template': template,
+               'categories': Category.objects.all()}
+    return TemplateResponse(request, 'main/base.html', context)
 
 
 def register(request):
@@ -21,7 +32,7 @@ def register(request):
             return redirect('main:index')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'users/register.html', {'form': form})
+    return render_page(request, 'users/register.html', {'form': form})
 
 
 def login_view(request):
@@ -33,7 +44,7 @@ def login_view(request):
             return redirect('main:index')
     else:
         form = CustomUserLoginForm()
-    return render(request, 'users/login.html', {'form': form})
+    return render_page(request, 'users/login.html', {'form': form})
     
 
 @login_required(login_url='/users/login')
@@ -50,7 +61,7 @@ def profile_view(request):
 
     recommended_products = Product.objects.all().order_by('id')[:3]
 
-    return TemplateResponse(request, 'users/profile.html', {
+    return render_page(request, 'users/profile.html', {
         'form': form,
         'user': request.user,
         'recommended_products': recommended_products
