@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 10:57+0000\n"
+"POT-Creation-Date: 2026-11-22 11:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -41,6 +41,9 @@ msgstr "Выйти"
 msgid "Edit listing"
 msgstr "Редактировать объявление"
 
+msgid "After saving, the listing is sent for review again and is hidden until it is approved."
+msgstr "После сохранения объявление снова уйдёт на модерацию и будет скрыто до одобрения."
+
 msgid "Vehicle"
 msgstr "Автомобиль"
 
@@ -69,6 +72,10 @@ msgid "Cancel"
 msgstr "Отмена"
 
 #, python-format
+msgid "After a moderator approves your listing, it will be published for %(days)s days."
+msgstr "После одобрения модератором объявление будет опубликовано на %(days)s дней."
+
+#, python-format
 msgid "Your listing will be published right away for %(days)s days."
 msgstr "Объявление будет опубликовано сразу на %(days)s дней."
 
@@ -78,14 +85,35 @@ msgstr "Вы пока ничего не добавили в избранное. 
 msgid "Browse vehicles"
 msgstr "Смотреть автомобили"
 
+msgid "New and edited listings are published after a moderator approves them."
+msgstr "Новые и изменённые объявления публикуются после проверки модератором."
+
 msgid "Listings are free for now."
 msgstr "Пока размещение бесплатное."
+
+msgid "Pending review"
+msgstr "На модерации"
+
+msgid "Rejected"
+msgstr "Отклонено"
 
 msgid "Active"
 msgstr "Активно"
 
 msgid "Inactive"
 msgstr "Неактивно"
+
+msgid "The listing is being reviewed by a moderator. We will email you once it is approved."
+msgstr "Объявление проверяет модератор. Мы напишем вам на почту, когда оно будет одобрено."
+
+msgid "The listing was not approved."
+msgstr "Объявление не прошло модерацию."
+
+msgid "Reason:"
+msgstr "Причина:"
+
+msgid "Edit it to submit it again."
+msgstr "Измените его, чтобы отправить повторно."
 
 msgid "Deactivate"
 msgstr "Деактивировать"
@@ -157,6 +185,9 @@ msgstr "Фотографий пока нет"
 
 msgid "Close"
 msgstr "Закрыть"
+
+msgid "This listing is waiting for moderator approval and is only visible to you."
+msgstr "Объявление ждёт проверки модератором и видно только вам."
 
 msgid "This listing is inactive and only visible to you."
 msgstr "Объявление неактивно и видно только вам."
@@ -281,6 +312,12 @@ msgstr "Дата"
 msgid "Apply"
 msgstr "Применить"
 
+msgid "Filters"
+msgstr "Фильтры"
+
+msgid "Reset filters"
+msgstr "Сбросить фильтры"
+
 msgid "All"
 msgstr "Все"
 
@@ -357,6 +394,69 @@ msgstr "Продавайте свой автомобиль и сохраняйт
 msgid "Already registered?"
 msgstr "Уже зарегистрированы?"
 
+msgid "Activate it in your cabinet to publish it:"
+msgstr "Активируйте его в кабинете, чтобы опубликовать:"
+
+#, python-format
+msgid "Hello %(name)s,"
+msgstr "Здравствуйте, %(name)s!"
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved."
+msgstr "Ваше объявление «%(car)s» одобрено."
+
+#, python-format
+msgid "It is now visible on the site until %(date)s."
+msgstr "Теперь оно опубликовано на сайте до %(date)s."
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved"
+msgstr "Объявление «%(car)s» одобрено"
+
+msgid "After that it will be hidden from the site until you activate it again in your cabinet:"
+msgstr "После этого оно будет скрыто с сайта, пока вы снова не активируете его в кабинете:"
+
+msgid "Your listing:"
+msgstr "Ваше объявление:"
+
+#, python-format
+msgid "Your listing \"%(car)s\" on FIBONACCI will be deactivated on %(date)s."
+msgstr "Ваше объявление «%(car)s» на FIBONACCI будет деактивировано %(date)s."
+
+#, python-format
+msgid "Your listing \"%(car)s\" expires soon"
+msgstr "Срок объявления «%(car)s» скоро закончится"
+
+msgid "You can edit the listing and submit it again in your cabinet:"
+msgstr "Вы можете исправить объявление и отправить его повторно в кабинете:"
+
+#, python-format
+msgid "Unfortunately, your listing \"%(car)s\" was not approved."
+msgstr "К сожалению, ваше объявление «%(car)s» не прошло модерацию."
+
+#, python-format
+msgid "Your listing \"%(car)s\" was not approved"
+msgstr "Объявление «%(car)s» не прошло модерацию"
+
+msgid "moderation"
+msgstr "модерация"
+
+msgid "Approve selected listings"
+msgstr "Одобрить выбранные объявления"
+
+#, python-format
+msgid "Approved: %(n)s"
+msgstr "Одобрено: %(n)s"
+
+msgid "Reject selected listings"
+msgstr "Отклонить выбранные объявления"
+
+#, python-format
+msgid "Rejected: %(n)s. To give a reason, open the listing and fill in \"rejection reason\"."
+msgstr ""
+"Отклонено: %(n)s. Чтобы указать причину, откройте объявление и заполните поле «причина "
+"отклонения»."
+
 msgid "Enter a valid phone number, for example +49 151 1234567."
 msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
 
@@ -392,6 +492,21 @@ msgstr "Цена должна быть больше нуля."
 msgid "A listing can have at most %(n)s photos."
 msgstr "В объявлении может быть не больше %(n)s фотографий."
 
+msgid "Price from, €"
+msgstr "Цена от, €"
+
+msgid "Price to, €"
+msgstr "Цена до, €"
+
+msgid "Year from"
+msgstr "Год от"
+
+msgid "Year to"
+msgstr "Год до"
+
+msgid "Mileage up to, km"
+msgstr "Пробег до, км"
+
 msgid "name (English)"
 msgstr "название (английский)"
 
@@ -415,6 +530,9 @@ msgstr "марки"
 
 msgid "User listing"
 msgstr "Объявление пользователя"
+
+msgid "Approved"
+msgstr "Одобрено"
 
 msgid "Petrol"
 msgstr "Бензин"
@@ -473,6 +591,9 @@ msgstr "контактное лицо"
 msgid "contact phone"
 msgstr "контактный телефон"
 
+msgid "rejection reason"
+msgstr "причина отклонения"
+
 msgid "vehicle"
 msgstr "автомобиль"
 
@@ -496,6 +617,15 @@ msgstr "Мощность"
 
 msgid "Color"
 msgstr "Цвет"
+
+msgid "Pending"
+msgstr "Ожидает"
+
+msgid "Paid"
+msgstr "Оплачено"
+
+msgid "Failed"
+msgstr "Ошибка"
 
 msgid "Upholstery"
 msgstr "Салон"
@@ -632,9 +762,18 @@ msgstr "Электродвигатель"
 msgid "Plugin Hybrid (Petrol/Electricity)"
 msgstr "Подключаемый гибрид (бензин/электро)"
 
+msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
+msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
+
+msgid "Your listing is saved. Activate it to publish it."
+msgstr "Объявление сохранено. Активируйте его, чтобы опубликовать."
+
 #, python-format
 msgid "Your listing is published for %(days)s days."
 msgstr "Ваше объявление опубликовано на %(days)s дней."
+
+msgid "Listing updated and sent for review."
+msgstr "Объявление обновлено и отправлено на модерацию."
 
 msgid "Listing updated."
 msgstr "Объявление обновлено."
@@ -645,8 +784,14 @@ msgstr "Объявление удалено."
 msgid "This listing is already active."
 msgstr "Это объявление уже активно."
 
+msgid "The listing can be activated after it has been approved."
+msgstr "Объявление можно активировать после одобрения модератором."
+
 msgid "Online payment is not available yet."
 msgstr "Онлайн-оплата пока недоступна."
+
+msgid "The payment could not be started. Please try again later."
+msgstr "Не удалось начать оплату. Попробуйте позже."
 
 #, python-format
 msgid "Listing activated for %(days)s days."
@@ -654,6 +799,13 @@ msgstr "Объявление активировано на %(days)s дней."
 
 msgid "Listing deactivated."
 msgstr "Объявление деактивировано."
+
+#, python-format
+msgid "Payment received. Your listing is active for %(days)s days."
+msgstr "Оплата получена. Объявление активно на %(days)s дней."
+
+msgid "We are waiting for the payment confirmation. Your listing will be activated in a moment."
+msgstr "Ждём подтверждения оплаты. Объявление будет активировано через несколько секунд."
 
 msgid "English"
 msgstr "Английский"
@@ -699,6 +851,9 @@ msgstr "страна"
 
 msgid "phone"
 msgstr "телефон"
+
+msgid "language"
+msgstr "язык"
 
 msgid "Welcome! Your account has been created."
 msgstr "Добро пожаловать! Аккаунт создан."

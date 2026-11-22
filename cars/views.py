@@ -3,22 +3,25 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .forms import CarForm
-from .models import Car, CarPhoto, Category, Favorite, Make
+from . import payments, services
+from .forms import CarFilterForm, CarForm
+from .models import Car, CarPhoto, Category, Favorite, Make, Payment
 
 SORTS = {
     'date-descending': ('-created_at',),
     'date-ascending': ('created_at',),
     'name-ascending': ('make__name', 'model'),
     'name-descending': ('-make__name', '-model'),
-    'price-ascending': ('price',),
-    'price-descending': ('-price',),
+    'price-ascending': ('price_eur',),
+    'price-descending': ('-price_eur',),
 }
 PER_PAGE = 24
 
@@ -67,6 +70,8 @@ def car_list(request, category_slug=None, make_slug=None, new=False):
     source = request.GET.get('source')
     if source in Car.Source.values:
         cars = cars.filter(source=source)
+    filters = CarFilterForm(request.GET or None)
+    cars = filters.apply(cars)
 
     sort = request.GET.get('sort', 'date-descending')
     if sort not in SORTS:
@@ -77,7 +82,7 @@ def car_list(request, category_slug=None, make_slug=None, new=False):
     return render(request, 'cars/list.html', {
         'page': page, 'title': title, 'sort': sort, 'sorts': SORTS,
         'category': category, 'make': make, 'is_new': new, 'query': query,
-        'source': source,
+        'source': source, 'filters': filters,
     })
 
 
@@ -118,6 +123,7 @@ def my_cars(request):
         'payment_required': settings.LISTING_PAYMENT_REQUIRED,
         'listing_price': settings.LISTING_PRICE_EUR,
         'duration': settings.LISTING_DURATION_DAYS,
+        'moderation': settings.LISTING_MODERATION,
     })
 
 
@@ -140,12 +146,19 @@ def car_create(request):
         form.instance.source = Car.Source.USER
         form.instance.status = Car.Status.INACTIVE
         car = form.save()
-        car.activate()
-        messages.success(request, _('Your listing is published for %(days)s days.')
-                         % {'days': settings.LISTING_DURATION_DAYS})
+        if services.submit_for_review(car):
+            messages.success(request, _('Thank you! Your listing has been sent for review. We will email you once it is approved.'))  # noqa: E501
+        elif settings.LISTING_PAYMENT_REQUIRED:
+            messages.success(request, _('Your listing is saved. Activate it to publish it.'))
+            return redirect('cars:my_cars')
+        else:
+            car.activate()
+            messages.success(request, _('Your listing is published for %(days)s days.')
+                             % {'days': settings.LISTING_DURATION_DAYS})
         return redirect(car)
     return render(request, 'cars/cabinet/car_form.html', {
-        'form': form, 'section': 'add', 'duration': settings.LISTING_DURATION_DAYS})
+        'form': form, 'section': 'add', 'duration': settings.LISTING_DURATION_DAYS,
+        'moderation': settings.LISTING_MODERATION})
 
 
 def _own_car(request, pk):
@@ -161,7 +174,10 @@ def car_edit(request, pk):
         remove = request.POST.getlist('remove_photo')
         if remove:
             car.photos.filter(pk__in=remove).delete()
-        messages.success(request, _('Listing updated.'))
+        if services.submit_for_review(car):
+            messages.success(request, _('Listing updated and sent for review.'))
+        else:
+            messages.success(request, _('Listing updated.'))
         return redirect('cars:my_cars')
     return render(request, 'cars/cabinet/car_form.html', {
         'form': form, 'car': car, 'photos': car.photos.all(), 'section': 'cars',
@@ -182,9 +198,20 @@ def car_activate(request, pk):
     car = _own_car(request, pk)
     if car.is_listing_active:
         messages.info(request, _('This listing is already active.'))
+    elif not car.is_approved:
+        messages.error(request, _('The listing can be activated after it has been approved.'))
     elif settings.LISTING_PAYMENT_REQUIRED:
-        # Paid activation (5 EUR / month) will hook in here.
-        messages.error(request, _('Online payment is not available yet.'))
+        try:
+            url = payments.create_checkout(
+                car, request.user,
+                success_url=request.build_absolute_uri(reverse('cars:payment_success')),
+                cancel_url=request.build_absolute_uri(reverse('cars:my_cars')))
+        except payments.PaymentsNotConfigured:
+            messages.error(request, _('Online payment is not available yet.'))
+        except Exception:
+            messages.error(request, _('The payment could not be started. Please try again later.'))
+        else:
+            return redirect(url)
     else:
         car.activate()
         messages.success(request, _('Listing activated for %(days)s days.')
@@ -199,3 +226,56 @@ def car_deactivate(request, pk):
     car.deactivate()
     messages.success(request, _('Listing deactivated.'))
     return redirect('cars:my_cars')
+
+
+@login_required
+def payment_success(request):
+    """Stripe redirects here after checkout. The webhook activates the
+    listing; checking the session here makes it immediate."""
+    session_id = request.GET.get('session_id', '')
+    payment = Payment.objects.filter(stripe_session_id=session_id, user=request.user).first()
+    if payment is None:
+        return redirect('cars:my_cars')
+    if payment.status != Payment.Status.PAID:
+        try:
+            payments.fulfill(payments.retrieve_session(session_id))
+        except Exception:
+            pass
+        payment.refresh_from_db()
+    if payment.status == Payment.Status.PAID:
+        messages.success(request, _('Payment received. Your listing is active for %(days)s days.')
+                         % {'days': settings.LISTING_DURATION_DAYS})
+    else:
+        messages.info(request, _('We are waiting for the payment confirmation. Your listing will be activated in a moment.'))  # noqa: E501
+    return redirect('cars:my_cars')
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    try:
+        event = payments.parse_webhook(request.body, request.headers.get('Stripe-Signature', ''))
+    except payments.PaymentsNotConfigured:
+        return HttpResponse(status=503)
+    except Exception:
+        return HttpResponseBadRequest()
+    if event['type'] in ('checkout.session.completed', 'checkout.session.async_payment_succeeded'):
+        payments.fulfill(event['data']['object'])
+    elif event['type'] in ('checkout.session.expired', 'checkout.session.async_payment_failed'):
+        Payment.objects.filter(stripe_session_id=event['data']['object']['id'],
+                               status=Payment.Status.PENDING).update(status=Payment.Status.FAILED)
+    return HttpResponse(status=200)
+
+
+def robots_txt(request):
+    lines = [
+        'User-agent: *',
+        'Disallow: /admin/',
+        'Disallow: /choose-language/',
+        'Disallow: /en/cabinet/',
+        'Disallow: /ru/cabinet/',
+        'Disallow: /en/users/',
+        'Disallow: /ru/users/',
+        f'Sitemap: {request.build_absolute_uri("/sitemap.xml")}',
+    ]
+    return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')

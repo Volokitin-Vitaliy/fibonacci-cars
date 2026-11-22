@@ -11,11 +11,17 @@ Django marketplace for exclusive vehicles, in English and Russian.
   contacts are not copied.
 - **User accounts** (email, phone, country, full name) with a cabinet: add vehicles for
   sale, edit, deactivate/activate, delete, and a favorites list.
-- **Listings run for 30 days.** When the month is over the listing is hidden immediately
-  and stays inactive until the owner activates it again from the cabinet. Activation is
-  free for now; paid activation (5 EUR / month) is prepared but not implemented.
+- **Moderation:** new and edited listings wait for an admin to approve them (admin list
+  filter "moderation", actions "Approve/Reject selected"). Owners get an email either way.
+- **Listings run for 30 days** from approval. Three days before the end the owner gets an
+  email; when the month is over the listing is hidden immediately and stays inactive until
+  the owner activates it again from the cabinet.
+- **Paid activation via Stripe** (5 EUR per month), switched off by default.
+- **Filters** by price (EUR, USD converted), year and mileage.
 - **Language choice first:** on the first visit to any page the visitor chooses English or
   Russian, then the site continues to the requested page (`/en/...`, `/ru/...`).
+  Search engines skip the picker; pages have `hreflang` links, `/robots.txt` and
+  `/sitemap.xml` cover both languages.
 
 ## Local development
 
@@ -38,30 +44,67 @@ Without `POSTGRES_DB` in `.env` the project uses SQLite. Admin: http://localhost
 | --- | --- |
 | `python manage.py import_hollmann` | Updates vehicles from hollmann.international. Vehicles no longer listed there are hidden. Options: `--no-details` (listing pages only), `--delay 1.0`. |
 | `python manage.py expire_listings` | Marks listings whose month is over as inactive. Visibility does not depend on it: expired listings are hidden at once. |
-| `python manage.py run_scheduler` | Runs both commands every 24 hours in a loop (the `scheduler` service in docker-compose). |
+| `python manage.py send_expiry_reminders` | Emails owners whose listing expires within `LISTING_REMINDER_DAYS` (3). One email per listing period. |
+| `python manage.py run_scheduler` | Runs all three commands every 24 hours in a loop (the `scheduler` service in docker-compose). |
 
 Instead of the scheduler you can use cron:
 
 ```cron
-15 3 * * * cd /app && python manage.py expire_listings && python manage.py import_hollmann
+15 3 * * * cd /app && python manage.py expire_listings && python manage.py send_expiry_reminders && python manage.py import_hollmann
 ```
 
 Every import is recorded in the admin under **Import runs**, with errors if any.
 
-## Listing lifecycle and future payments
-
-Settings in `enf/settings.py` (override with environment variables):
+## Listings, moderation and payments
 
 ```ini
 LISTING_DURATION_DAYS=30
+LISTING_REMINDER_DAYS=3
+LISTING_MODERATION=True        # new/edited listings need approval
+LISTING_PAYMENT_REQUIRED=False # True = activation costs LISTING_PRICE_EUR via Stripe
 LISTING_PRICE_EUR=5.00
-LISTING_PAYMENT_REQUIRED=False
+USD_TO_EUR_RATE=0.92           # for filtering/sorting prices across currencies
 ```
 
-Each activation creates a `ListingPeriod` record (start, end, amount, method). To add paid
-activation, implement the payment in `cars.views.car_activate` (the
-`LISTING_PAYMENT_REQUIRED` branch) and call `car.activate(paid_amount=..., method='stripe')`
-after a successful payment.
+Lifecycle: created → **pending review** → approved (first month starts, or the owner pays
+first when payments are on) → reminder 3 days before the end → **inactive** → owner
+activates again (pays again when payments are on). Editing an approved listing sends it
+back to review; its remaining time is kept. Each period is stored as a `ListingPeriod`.
+
+### Turning on Stripe payments
+
+1. In the Stripe dashboard create a webhook endpoint
+   `https://<your-domain>/payments/stripe/webhook/` with the events
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.expired`, `checkout.session.async_payment_failed`.
+2. Put the keys in `.env` and switch payments on:
+
+```ini
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+LISTING_PAYMENT_REQUIRED=True
+```
+
+The owner presses "Activate for €5", pays on Stripe Checkout and the listing becomes active
+for 30 days. Payments are listed in the admin under **Payments**. For local testing use test
+keys and `stripe listen --forward-to localhost:8000/payments/stripe/webhook/`.
+
+## Email
+
+Without `EMAIL_HOST` emails are printed to the console. For real sending:
+
+```ini
+SITE_URL=https://domen.com          # used for links in emails
+DEFAULT_FROM_EMAIL=FIBONACCI <no-reply@domen.com>
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=...
+EMAIL_HOST_PASSWORD=...
+EMAIL_USE_TLS=True
+MODERATION_EMAILS=admin@domen.com    # told about listings waiting for review
+```
+
+Emails to owners are sent in the language they last used on the site.
 
 ## Translations
 

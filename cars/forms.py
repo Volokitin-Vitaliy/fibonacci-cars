@@ -91,3 +91,35 @@ class CarForm(forms.ModelForm):
             for i, image in enumerate(self.cleaned_data.get('photos') or []):
                 car.photos.create(image=image, position=start + i)
         return car
+
+
+class CarFilterForm(forms.Form):
+    """Catalog filters. Prices are compared in EUR (USD is converted)."""
+
+    price_min = forms.IntegerField(label=_('Price from, €'), required=False, min_value=0)
+    price_max = forms.IntegerField(label=_('Price to, €'), required=False, min_value=0)
+    year_min = forms.IntegerField(label=_('Year from'), required=False, min_value=1900, max_value=2100)
+    year_max = forms.IntegerField(label=_('Year to'), required=False, min_value=1900, max_value=2100)
+    mileage_max = forms.IntegerField(label=_('Mileage up to, km'), required=False, min_value=0)
+
+    def apply(self, cars):
+        if not self.is_valid():
+            return cars
+        data = self.cleaned_data
+        if data.get('price_min') is not None:
+            cars = cars.filter(price_eur__gte=data['price_min'])
+        if data.get('price_max') is not None:
+            cars = cars.filter(price_eur__lte=data['price_max'])
+        if data.get('year_min') is not None:
+            cars = cars.filter(year__gte=data['year_min'])
+        if data.get('year_max') is not None:
+            cars = cars.filter(year__lte=data['year_max'])
+        if data.get('mileage_max') is not None:
+            cars = cars.filter(mileage_km__lte=data['mileage_max'])
+        return cars
+
+    @property
+    def active_count(self):
+        if not self.is_valid():
+            return 0
+        return sum(1 for v in self.cleaned_data.values() if v is not None)

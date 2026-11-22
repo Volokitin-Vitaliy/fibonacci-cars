@@ -7,7 +7,7 @@
     <a href="{% url 'cars:add' %}" class="btn btn-primary">+ {% trans 'Add a vehicle' %}</a>
 </div>
 <p class="text-sm text-neutral-400 mb-8 max-w-2xl">
-    {% blocktrans %}Each listing is published for {{ duration }} days. When the period ends, the listing is deactivated and hidden until you activate it again.{% endblocktrans %}
+    {% if moderation %}{% trans 'New and edited listings are published after a moderator approves them.' %} {% endif %}{% blocktrans %}Each listing is published for {{ duration }} days. When the period ends, the listing is deactivated and hidden until you activate it again.{% endblocktrans %}
     {% if payment_required %}{% blocktrans %}Activation costs €{{ listing_price }} per month.{% endblocktrans %}{% else %}{% trans 'Listings are free for now.' %}{% endif %}
 </p>
 
@@ -24,12 +24,21 @@
                     <a href="{{ car.get_absolute_url }}" class="font-semibold text-lg hover:underline">{{ car.model }}</a>
                     <div class="mt-1">{{ car.currency_symbol }}{{ car.price|money }}</div>
                 </div>
-                {% if car.is_listing_active %}
+                {% if car.is_pending %}
+                <span class="text-xs uppercase tracking-widest border border-amber-800 text-amber-300 px-2 py-1">{% trans 'Pending review' %}</span>
+                {% elif car.is_rejected %}
+                <span class="text-xs uppercase tracking-widest border border-red-900 text-red-300 px-2 py-1">{% trans 'Rejected' %}</span>
+                {% elif car.is_listing_active %}
                 <span class="text-xs uppercase tracking-widest border border-emerald-800 text-emerald-400 px-2 py-1">{% trans 'Active' %}</span>
                 {% else %}
                 <span class="text-xs uppercase tracking-widest border border-neutral-700 text-neutral-400 px-2 py-1">{% trans 'Inactive' %}</span>
                 {% endif %}
             </div>
+            {% if car.is_pending %}
+            <div class="text-sm text-amber-300/90 mt-3">{% trans 'The listing is being reviewed by a moderator. We will email you once it is approved.' %}</div>
+            {% elif car.is_rejected %}
+            <div class="text-sm text-red-300 mt-3">{% trans 'The listing was not approved.' %}{% if car.rejection_reason %} {% trans 'Reason:' %} {{ car.rejection_reason }}{% endif %} {% trans 'Edit it to submit it again.' %}</div>
+            {% endif %}
             <div class="text-sm text-neutral-400 mt-3">
                 {% if car.is_listing_active %}
                     {% blocktrans with date=car.active_until|date:"d.m.Y" count days=car.days_left %}Active until {{ date }} ({{ days }} day left){% plural %}Active until {{ date }} ({{ days }} days left){% endblocktrans %}
@@ -38,14 +47,14 @@
                 {% endif %}
                 · {% blocktrans count n=car.favorited_by.count %}{{ n }} like{% plural %}{{ n }} likes{% endblocktrans %}
             </div>
-            <div class="flex flex-wrap gap-2 mt-4">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-4">
                 {% if car.is_listing_active %}
-                <form method="post" action="{% url 'cars:deactivate' car.pk %}">{% csrf_token %}<button class="btn btn-outline !py-2 !px-4">{% trans 'Deactivate' %}</button></form>
-                {% else %}
-                <form method="post" action="{% url 'cars:activate' car.pk %}">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4">{% if payment_required %}{% blocktrans %}Activate for €{{ listing_price }}{% endblocktrans %}{% else %}{% blocktrans %}Activate for {{ duration }} days{% endblocktrans %}{% endif %}</button></form>
+                <form method="post" action="{% url 'cars:deactivate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-outline !py-2 !px-4 w-full">{% trans 'Deactivate' %}</button></form>
+                {% elif car.is_approved %}
+                <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% if payment_required %}{% blocktrans %}Activate for €{{ listing_price }}{% endblocktrans %}{% else %}{% blocktrans %}Activate for {{ duration }} days{% endblocktrans %}{% endif %}</button></form>
                 {% endif %}
-                <a href="{% url 'cars:edit' car.pk %}" class="btn btn-outline !py-2 !px-4">{% trans 'Edit' %}</a>
-                <form method="post" action="{% url 'cars:delete' car.pk %}" onsubmit="return confirm('{% trans 'Delete this listing?' as q %}{{ q|escapejs }}')">{% csrf_token %}<button class="btn btn-danger !py-2 !px-4">{% trans 'Delete' %}</button></form>
+                <a href="{% url 'cars:edit' car.pk %}" class="btn btn-outline !py-2 !px-4 w-full sm:w-auto">{% trans 'Edit' %}</a>
+                <form method="post" action="{% url 'cars:delete' car.pk %}" onsubmit="return confirm('{% trans 'Delete this listing?' as q %}{{ q|escapejs }}')">{% csrf_token %}<button class="btn btn-danger !py-2 !px-4 w-full">{% trans 'Delete' %}</button></form>
             </div>
         </div>
     </div>

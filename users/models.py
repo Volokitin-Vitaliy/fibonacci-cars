@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.html import strip_tags
@@ -34,6 +35,9 @@ class CustomUser(AbstractUser):
     middle_name = models.CharField(_('middle name'), max_length=50, blank=True)
     country = CountryField(_('country'), blank=True)
     phone = models.CharField(_('phone'), max_length=30, unique=True, null=True, blank=True)
+    # Language of the site the user last used; emails are sent in it.
+    language = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES,
+                                default='en')
 
     username = None
 

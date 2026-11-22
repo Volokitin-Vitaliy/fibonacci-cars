@@ -78,3 +78,15 @@ def url_with(context, **kwargs):
         else:
             query[key] = value
     return '?' + query.urlencode() if query else '?'
+
+
+@register.inclusion_tag('includes/hreflang.html', takes_context=True)
+def hreflang(context):
+    """<link rel="alternate" hreflang> for every language of the current page."""
+    from django.conf import settings
+    from django.urls import translate_url
+
+    request = context['request']
+    url = request.build_absolute_uri(request.path)
+    links = [(code, translate_url(url, code)) for code, _name in settings.LANGUAGES]
+    return {'links': links, 'canonical': url, 'default': translate_url(url, settings.LANGUAGE_CODE)}

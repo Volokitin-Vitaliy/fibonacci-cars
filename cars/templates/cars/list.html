@@ -8,14 +8,15 @@
             <h1 class="text-3xl font-bold">{{ title }}</h1>
             <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
         </div>
-        <form method="get" class="flex flex-wrap gap-3 text-sm">
-            <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Make or model' %}" class="bg-[#141414] border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-400">
-            <select name="source" onchange="this.form.submit()" class="bg-[#141414] border border-neutral-800 px-3 py-2">
+        <form method="get" id="sort-form" class="flex flex-wrap gap-3 text-sm w-full lg:w-auto">
+            {% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' and key != 'source' and key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+            <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Make or model' %}" class="w-full sm:w-auto sm:flex-1 min-w-0 lg:flex-none lg:w-56 bg-[#141414] border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-400">
+            <select name="source" onchange="this.form.submit()" class="flex-1 basis-0 sm:basis-auto sm:flex-none min-w-0 bg-[#141414] border border-neutral-800 px-3 py-2">
                 <option value="">{% trans 'All sellers' %}</option>
                 <option value="user" {% if source == 'user' %}selected{% endif %}>{% trans 'Private listings' %}</option>
                 <option value="hollmann" {% if source == 'hollmann' %}selected{% endif %}>hollmann.international</option>
             </select>
-            <select name="sort" onchange="this.form.submit()" class="bg-[#141414] border border-neutral-800 px-3 py-2">
+            <select name="sort" onchange="this.form.submit()" class="flex-1 basis-0 sm:basis-auto sm:flex-none min-w-0 bg-[#141414] border border-neutral-800 px-3 py-2">
                 <option value="name-ascending" {% if sort == 'name-ascending' %}selected{% endif %}>↑ {% trans 'Name' %}</option>
                 <option value="name-descending" {% if sort == 'name-descending' %}selected{% endif %}>↓ {% trans 'Name' %}</option>
                 <option value="date-ascending" {% if sort == 'date-ascending' %}selected{% endif %}>↑ {% trans 'Date' %}</option>
@@ -27,11 +28,32 @@
         </form>
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-10 text-xs uppercase tracking-widest">
-        <a href="{% url 'cars:list' %}" class="px-3 py-2 border {% if not category and not make and not is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'All' %}</a>
-        <a href="{% url 'cars:new' %}" class="px-3 py-2 border {% if is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'New Offers' %}</a>
+
+    {# Filters: always open on desktop, collapsible on phones #}
+    <div class="mb-10">
+        <input type="checkbox" id="filters-toggle" class="peer hidden" {% if filters.active_count %}checked{% endif %}>
+        <label for="filters-toggle" class="lg:hidden btn btn-outline w-full cursor-pointer">{% trans 'Filters' %}{% if filters.active_count %} ({{ filters.active_count }}){% endif %}</label>
+        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 lg:mt-0 grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+            {% if source %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
+            <input type="hidden" name="sort" value="{{ sort }}">
+            {% for field in filters %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <input type="number" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" min="0" inputmode="numeric">
+            </div>
+            {% endfor %}
+            <div class="col-span-2 lg:col-span-1 flex gap-2">
+                <button type="submit" class="btn btn-primary flex-1 !px-3">{% trans 'Apply' %}</button>
+                {% if filters.active_count %}<a href="{{ request.path }}{% if query %}?q={{ query|urlencode }}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
+            </div>
+        </form>
+    </div>
+    <div class="flex gap-2 mb-10 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap text-xs uppercase tracking-widest">
+        <a href="{% url 'cars:list' %}" class="shrink-0 px-3 py-2 border {% if not category and not make and not is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'All' %}</a>
+        <a href="{% url 'cars:new' %}" class="shrink-0 px-3 py-2 border {% if is_new %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{% trans 'New Offers' %}</a>
         {% for c in nav_categories %}
-        <a href="{{ c.get_absolute_url }}" class="px-3 py-2 border {% if category == c %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{{ c.name }}</a>
+        <a href="{{ c.get_absolute_url }}" class="shrink-0 px-3 py-2 border {% if category == c %}border-neutral-200 text-white{% else %}border-neutral-800 text-neutral-400 hover:text-white{% endif %}">{{ c.name }}</a>
         {% endfor %}
     </div>
 

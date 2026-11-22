@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sitemaps',
 
     'django_countries',
 
@@ -158,6 +159,28 @@ LISTING_PRICE_EUR = os.getenv('LISTING_PRICE_EUR', '5.00')
 # not implemented yet, so this stays False and activation is free.
 LISTING_PAYMENT_REQUIRED = env_bool('LISTING_PAYMENT_REQUIRED', False)
 LISTING_MAX_PHOTOS = 10
+# New and edited user listings wait for an admin to approve them.
+LISTING_MODERATION = env_bool('LISTING_MODERATION', True)
+# Owners get an email this many days before their listing expires.
+LISTING_REMINDER_DAYS = int(os.getenv('LISTING_REMINDER_DAYS', 3))
+# Used to compare and filter prices given in USD and EUR.
+USD_TO_EUR_RATE = float(os.getenv('USD_TO_EUR_RATE', 0.92))
+
+
+# Email. Without EMAIL_HOST, emails are printed to the console.
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000').rstrip('/')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'FIBONACCI <no-reply@localhost>')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+if EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+    EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Who is told about listings waiting for review (comma-separated emails).
+MODERATION_EMAILS = [e.strip() for e in os.getenv('MODERATION_EMAILS', '').split(',') if e.strip()]
 
 
 # Daily import from hollmann.international (see cars/importers/hollmann.py).

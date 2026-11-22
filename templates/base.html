@@ -1,15 +1,19 @@
-{% load i18n static %}{% get_current_language as LANG %}<!DOCTYPE html>
+{% load i18n static cars_tags %}{% get_current_language as LANG %}<!DOCTYPE html>
 <html lang="{{ LANG }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
     <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
+    {% hreflang %}
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root { color-scheme: dark; }
         body { font-family: 'Inter', sans-serif; background: #0b0b0b; color: #f5f5f5; }
+        h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
+        fieldset { min-width: 0; }
+        .form-field input[type=file] { max-width: 100%; }
 
         /* Form controls */
         .form-field label { display: block; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #a3a3a3; margin-bottom: .4rem; }
@@ -45,10 +49,10 @@
 </head>
 <body class="min-h-screen flex flex-col">
 <header class="sticky top-0 z-40 bg-[#0b0b0b]/95 backdrop-blur border-b border-neutral-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-        <a href="{% url 'cars:home' %}" class="text-xl font-bold tracking-[0.3em]">FIBONACCI</a>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
+        <a href="{% url 'cars:home' %}" class="text-lg sm:text-xl font-bold tracking-[0.2em] sm:tracking-[0.3em] shrink-0">FIBONACCI</a>
 
-        <nav class="hidden md:flex items-center gap-8 text-sm tracking-wider uppercase">
+        <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
             <div class="has-dropdown relative">
                 <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new category make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
                 <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
@@ -74,30 +78,37 @@
             <a href="{% url 'cars:add' %}" class="nav-link">{% trans 'Sell your car' %}</a>
         </nav>
 
-        <div class="flex items-center gap-5 text-sm uppercase tracking-wider">
+        <div class="flex items-center gap-3 sm:gap-5 text-sm uppercase tracking-wider">
             <form action="{% url 'set_language' %}" method="post" class="flex items-center border border-neutral-800 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 {% get_available_languages as LANGUAGES %}
                 {% for code, name in LANGUAGES %}
-                <button type="submit" name="language" value="{{ code }}" class="px-2 py-1 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
+                <button type="submit" name="language" value="{{ code }}" class="px-2.5 h-8 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
                 {% endfor %}
             </form>
             {% if user.is_authenticated %}
                 <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span>{{ favorite_ids|length }}</span></a>
-                <a href="{% url 'cars:my_cars' %}" class="nav-link">{% trans 'Cabinet' %}</a>
+                <a href="{% url 'cars:my_cars' %}" class="nav-link hidden sm:inline">{% trans 'Cabinet' %}</a>
             {% else %}
-                <a href="{% url 'users:login' %}" class="nav-link">{% trans 'Log in' %}</a>
+                <a href="{% url 'users:login' %}" class="nav-link hidden sm:inline">{% trans 'Log in' %}</a>
             {% endif %}
-            <button type="button" class="md:hidden text-xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
+            <button type="button" class="lg:hidden w-10 h-10 -mr-2 flex items-center justify-center text-2xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
         </div>
     </div>
-    <div id="mobile-nav" class="hidden md:hidden border-t border-neutral-900 px-4 py-4 space-y-3 text-sm uppercase tracking-wider">
-        <a href="{% url 'cars:list' %}" class="block">{% trans 'All Vehicles' %}</a>
-        <a href="{% url 'cars:new' %}" class="block">{% trans 'New Offers' %}</a>
-        {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}" class="block">{{ c.name }}</a>{% endfor %}
-        <a href="{% url 'cars:add' %}" class="block">{% trans 'Sell your car' %}</a>
-        {% if user.is_authenticated %}<a href="{% url 'cars:favorites' %}" class="block">{% trans 'Favorites' %} ({{ favorite_ids|length }})</a>{% endif %}
+    <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 py-2 text-sm uppercase tracking-wider divide-y divide-neutral-900 max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <a href="{% url 'cars:list' %}" class="block py-3">{% trans 'All Vehicles' %}</a>
+        <a href="{% url 'cars:new' %}" class="block py-3">{% trans 'New Offers' %}</a>
+        {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}" class="block py-3">{{ c.name }}</a>{% endfor %}
+        <a href="{% url 'cars:add' %}" class="block py-3">{% trans 'Sell your car' %}</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'cars:my_cars' %}" class="block py-3">{% trans 'Cabinet' %}</a>
+        <a href="{% url 'cars:favorites' %}" class="block py-3">{% trans 'Favorites' %} ({{ favorite_ids|length }})</a>
+        <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="py-3 uppercase tracking-wider text-neutral-400">{% trans 'Log out' %}</button></form>
+        {% else %}
+        <a href="{% url 'users:login' %}" class="block py-3">{% trans 'Log in' %}</a>
+        <a href="{% url 'users:register' %}" class="block py-3">{% trans 'Create an account' %}</a>
+        {% endif %}
     </div>
 </header>
 

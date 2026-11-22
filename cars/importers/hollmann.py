@@ -130,6 +130,9 @@ def specs_to_fields(specs):
         if key in drive:
             fields['fuel'] = key
             break
+    registration = re.search(r'(19|20)\d{2}', data.get('First Registration', ''))
+    if registration:
+        fields['year'] = int(registration.group(0))
     if data.get('Color'):
         fields['color'] = re.sub(r'\s+\S*\d\S*$', '', data['Color'])
     return fields

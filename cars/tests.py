@@ -5,6 +5,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -12,8 +13,9 @@ from PIL import Image
 
 from cars.importers.hollmann import (HollmannImporter, parse_detail, parse_offers,
                                      parse_price, specs_to_fields)
-from cars.models import Car, Category, Favorite, ListingPeriod, Make
-from cars.services import expire_listings
+from cars.models import Car, Category, Favorite, ListingPeriod, Make, Payment
+from cars import payments, services
+from cars.services import expire_listings, send_expiry_reminders
 from users.models import CustomUser
 
 LANG = {settings.LANGUAGE_COOKIE_NAME: 'en'}
@@ -196,7 +198,14 @@ class ListingLifecycleTests(TestCase):
         self.assertRedirects(response, car.get_absolute_url())
         self.assertEqual(car.owner, self.user)
         self.assertEqual(car.currency, 'USD')
+        self.assertEqual(car.price_eur, Decimal('72680.00'))  # 79000 * 0.92
+        # Waits for moderation: not public, no month started yet.
+        self.assertTrue(car.is_pending)
+        self.assertFalse(Car.objects.visible().filter(pk=car.pk).exists())
+        services.approve(car)
+        car.refresh_from_db()
         self.assertTrue(car.is_listing_active)
+        self.assertEqual(car.days_left, 30)
         self.assertEqual(list(car.categories.all()), [category])
         self.assertEqual(car.photos.count(), 2)
         page = self.client.get(car.get_absolute_url())
@@ -285,3 +294,218 @@ class RegistrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('phone', response.context['form'].errors)
         self.assertIn('country', response.context['form'].errors)
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media', MODERATION_EMAILS=['mod@example.com'])
+class ModerationTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.user.language = 'ru'
+        self.user.save()
+        self.client.cookies.load(LANG)
+        self.client.force_login(self.user)
+
+    def create(self):
+        self.client.post(reverse('cars:add'), {
+            'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR',
+            'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+            'contact_phone': '+49 151 0000001',
+        })
+        return Car.objects.get(model='RS6')
+
+    def test_new_listing_notifies_moderators_and_waits(self):
+        car = self.create()
+        self.assertTrue(car.is_pending)
+        self.assertEqual(mail.outbox[-1].to, ['mod@example.com'])
+        # Owner cannot activate before approval.
+        self.client.post(reverse('cars:activate', args=[car.pk]))
+        car.refresh_from_db()
+        self.assertFalse(car.is_listing_active)
+
+    def test_approve_starts_month_and_emails_owner_in_their_language(self):
+        car = self.create()
+        CustomUser.objects.filter(pk=self.user.pk).update(language='ru')  # last used the Russian site
+        car.refresh_from_db()
+        services.approve(car)
+        car.refresh_from_db()
+        self.assertTrue(car.is_listing_active)
+        self.assertEqual(mail.outbox[-1].to, [self.user.email])
+        self.assertIn('одобрено', mail.outbox[-1].subject)
+
+    def test_reject_with_reason(self):
+        car = self.create()
+        CustomUser.objects.filter(pk=self.user.pk).update(language='ru')
+        car.refresh_from_db()
+        services.reject(car, 'Нет фотографий')
+        car.refresh_from_db()
+        self.assertTrue(car.is_rejected)
+        self.assertIn('Нет фотографий', mail.outbox[-1].body)
+        self.assertIn('не прошло', mail.outbox[-1].subject)
+        page = self.client.get(reverse('cars:my_cars'))
+        self.assertContains(page, 'Нет фотографий')
+
+    def test_editing_approved_listing_sends_it_back_to_review_keeping_its_period(self):
+        car = make_listing(self.user)
+        until = car.active_until
+        self.client.post(reverse('cars:edit', args=[car.pk]), {
+            'make': car.make.pk, 'model': 'M5 Competition', 'price': '95000', 'currency': 'EUR',
+            'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+            'contact_phone': '+49 151 0000001',
+        })
+        car.refresh_from_db()
+        self.assertTrue(car.is_pending)
+        self.assertFalse(Car.objects.visible().filter(pk=car.pk).exists())
+        services.approve(car)
+        car.refresh_from_db()
+        self.assertEqual(car.active_until, until)
+        self.assertTrue(Car.objects.visible().filter(pk=car.pk).exists())
+
+    def test_admin_approve_action(self):
+        car = self.create()
+        admin = CustomUser.objects.create_superuser('admin@example.com', 'A', 'B', 'pw-123456789')
+        self.client.force_login(admin)
+        self.client.post(reverse('admin:cars_car_changelist'), {
+            'action': 'approve_selected', '_selected_action': [car.pk]})
+        car.refresh_from_db()
+        self.assertTrue(car.is_approved)
+        self.assertTrue(car.is_listing_active)
+
+    @override_settings(LISTING_MODERATION=False)
+    def test_without_moderation_listing_goes_live(self):
+        car = self.create()
+        self.assertTrue(car.is_listing_active)
+
+
+class ReminderTests(TestCase):
+    def test_one_reminder_three_days_before_expiry(self):
+        user = make_user()
+        soon = make_listing(user)
+        later = make_listing(user)
+        Car.objects.filter(pk=soon.pk).update(active_until=timezone.now() + timedelta(days=2, hours=12))
+        self.assertEqual(send_expiry_reminders(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(str(soon), mail.outbox[0].subject)
+        self.assertEqual(send_expiry_reminders(), 0)  # only once per period
+        # Reactivating starts a new period with a new reminder.
+        soon.refresh_from_db()
+        soon.activate()
+        self.assertIsNone(Car.objects.get(pk=soon.pk).reminder_sent_at)
+        self.assertNotEqual(later.pk, soon.pk)
+
+
+class FilterTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+        owner = make_user()
+        self.cheap_old = make_listing(owner, year=2005, mileage_km=200000)
+        Car.objects.filter(pk=self.cheap_old.pk).update(price=Decimal('15000'), price_eur=Decimal('15000'))
+        self.usd = make_listing(owner, year=2022, mileage_km=10000)
+        self.usd.price, self.usd.currency, self.usd.model = Decimal('100000'), 'USD', 'USD car'
+        self.usd.save()
+
+    def ids(self, **params):
+        response = self.client.get(reverse('cars:list'), params)
+        return {c.pk for c in response.context['page']}
+
+    def test_filters(self):
+        self.assertEqual(self.ids(year_min=2010), {self.usd.pk})
+        self.assertEqual(self.ids(mileage_max=50000), {self.usd.pk})
+        self.assertEqual(self.ids(price_max=20000), {self.cheap_old.pk})
+        # $100,000 = €92,000 with the default rate
+        self.assertEqual(self.ids(price_min=91000, price_max=93000), {self.usd.pk})
+        self.assertEqual(self.ids(price_min='abc'), {self.usd.pk, self.cheap_old.pk})
+
+
+class FakeSessionObj(dict):
+    def __getattr__(self, key):
+        return self[key]
+
+
+@override_settings(LISTING_PAYMENT_REQUIRED=True, STRIPE_SECRET_KEY='sk_test_x',
+                   STRIPE_WEBHOOK_SECRET='whsec_x')
+class PaymentTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.cookies.load(LANG)
+        self.client.force_login(self.user)
+        self.car = make_listing(self.user)
+        self.car.deactivate()
+
+    @mock.patch('cars.payments.stripe.checkout.Session.create')
+    def test_activation_redirects_to_stripe_checkout(self, create):
+        create.return_value = FakeSessionObj(id='cs_test_1', url='https://checkout.stripe.com/c/cs_test_1')
+        response = self.client.post(reverse('cars:activate', args=[self.car.pk]))
+        self.assertRedirects(response, 'https://checkout.stripe.com/c/cs_test_1', fetch_redirect_response=False)
+        kwargs = create.call_args.kwargs
+        self.assertEqual(kwargs['line_items'][0]['price_data']['unit_amount'], 500)
+        self.assertEqual(kwargs['line_items'][0]['price_data']['currency'], 'eur')
+        self.assertEqual(kwargs['metadata']['car_id'], str(self.car.pk))
+        self.assertEqual(Payment.objects.get().status, Payment.Status.PENDING)
+        self.car.refresh_from_db()
+        self.assertFalse(self.car.is_listing_active)
+
+    def paid_session(self):
+        Payment.objects.create(car=self.car, user=self.user, amount=Decimal('5.00'),
+                               stripe_session_id='cs_test_2')
+        return {'id': 'cs_test_2', 'payment_status': 'paid'}
+
+    @mock.patch('cars.payments.stripe.Webhook.construct_event')
+    def test_webhook_activates_once(self, construct):
+        session = self.paid_session()
+        construct.return_value = {'type': 'checkout.session.completed', 'data': {'object': session}}
+        url = reverse('stripe_webhook')
+        self.assertEqual(self.client.post(url, b'{}', content_type='application/json',
+                                          HTTP_STRIPE_SIGNATURE='sig').status_code, 200)
+        self.client.post(url, b'{}', content_type='application/json', HTTP_STRIPE_SIGNATURE='sig')
+        self.car.refresh_from_db()
+        self.assertTrue(self.car.is_listing_active)
+        period = ListingPeriod.objects.filter(car=self.car).first()
+        self.assertEqual((period.amount, period.method), (Decimal('5.00'), 'stripe'))
+        self.assertEqual(ListingPeriod.objects.filter(car=self.car, method='stripe').count(), 1)
+
+    @mock.patch('cars.payments.stripe.Webhook.construct_event', side_effect=ValueError('bad sig'))
+    def test_webhook_rejects_bad_signature(self, construct):
+        response = self.client.post(reverse('stripe_webhook'), b'{}', content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    @mock.patch('cars.payments.stripe.checkout.Session.retrieve')
+    def test_success_page_activates_if_webhook_is_late(self, retrieve):
+        retrieve.return_value = self.paid_session()
+        self.client.get(reverse('cars:payment_success'), {'session_id': 'cs_test_2'})
+        self.car.refresh_from_db()
+        self.assertTrue(self.car.is_listing_active)
+
+    @override_settings(STRIPE_SECRET_KEY=None)
+    def test_without_keys_shows_error(self):
+        self.client.post(reverse('cars:activate', args=[self.car.pk]))
+        self.car.refresh_from_db()
+        self.assertFalse(self.car.is_listing_active)
+
+
+class SeoTests(TestCase):
+    def test_bots_skip_language_picker(self):
+        page = self.client.get('/ru/vehicles/', HTTP_USER_AGENT='Mozilla/5.0 (compatible; Googlebot/2.1)')
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, 'Все автомобили')
+        self.assertContains(page, 'hreflang="en" href="http://testserver/en/vehicles/"')
+
+    def test_people_still_get_the_picker(self):
+        page = self.client.get('/ru/vehicles/', HTTP_USER_AGENT='Mozilla/5.0 (iPhone) Safari')
+        self.assertEqual(page.status_code, 302)
+
+    def test_robots_and_sitemap(self):
+        make_listing(make_user())
+        robots = self.client.get('/robots.txt')
+        self.assertContains(robots, 'Sitemap: http://testserver/sitemap.xml')
+        self.assertContains(robots, 'Disallow: /en/cabinet/')
+        sitemap = self.client.get('/sitemap.xml')
+        self.assertContains(sitemap, '/ru/vehicle-collection/armoured/')
+        self.assertContains(sitemap, '/en/vehicles/')
+
+    def test_user_language_follows_the_site(self):
+        user = make_user()
+        self.client.force_login(user)
+        self.client.cookies.load({settings.LANGUAGE_COOKIE_NAME: 'ru'})
+        self.client.get('/ru/')
+        user.refresh_from_db()
+        self.assertEqual(user.language, 'ru')

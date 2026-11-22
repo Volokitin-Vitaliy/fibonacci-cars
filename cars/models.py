@@ -12,6 +12,14 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
 
 
+def to_eur(amount, currency):
+    if amount is None:
+        return None
+    if currency == 'USD':
+        return (Decimal(amount) * Decimal(str(settings.USD_TO_EUR_RATE))).quantize(Decimal('0.01'))
+    return amount
+
+
 class Category(models.Model):
     """A vehicle collection, mirroring hollmann.international's collections
     (Customized, Armoured, Oldtimer, Electric)."""
@@ -80,7 +88,8 @@ class CarQuerySet(models.QuerySet):
         now = timezone.now()
         return self.filter(
             Q(source=Car.Source.HOLLMANN, is_published=True)
-            | Q(source=Car.Source.USER, status=Car.Status.ACTIVE, active_until__gt=now)
+            | Q(source=Car.Source.USER, status=Car.Status.ACTIVE, active_until__gt=now,
+                moderation=Car.Moderation.APPROVED)
         )
 
     def new_offers(self):
@@ -99,6 +108,11 @@ class Car(models.Model):
     class Status(models.TextChoices):
         ACTIVE = 'active', _('Active')
         INACTIVE = 'inactive', _('Inactive')
+
+    class Moderation(models.TextChoices):
+        PENDING = 'pending', _('Pending review')
+        APPROVED = 'approved', _('Approved')
+        REJECTED = 'rejected', _('Rejected')
 
     class Currency(models.TextChoices):
         EUR = 'EUR', '€ EUR'
@@ -143,6 +157,9 @@ class Car(models.Model):
                                 default=Currency.EUR)
     # Net export price shown by hollmann.international next to the gross price.
     price_net = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    # Price converted to EUR, used for filtering and sorting across currencies.
+    price_eur = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,
+                                    db_index=True, editable=False)
 
     contact_name = models.CharField(_('contact person'), max_length=150, blank=True)
     contact_phone = models.CharField(_('contact phone'), max_length=30, blank=True)
@@ -151,6 +168,12 @@ class Car(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     activated_at = models.DateTimeField(null=True, blank=True)
     active_until = models.DateTimeField(null=True, blank=True)
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)
+
+    # Moderation of user listings.
+    moderation = models.CharField(_('moderation'), max_length=20, choices=Moderation.choices,
+                                  default=Moderation.APPROVED)
+    rejection_reason = models.TextField(_('rejection reason'), blank=True)
 
     # Import bookkeeping.
     external_id = models.CharField(max_length=50, blank=True)
@@ -179,8 +202,27 @@ class Car(models.Model):
     def __str__(self):
         return f'{self.make} {self.model}'
 
+    def save(self, *args, **kwargs):
+        self.price_eur = to_eur(self.price, self.currency)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and 'price' in update_fields:
+            kwargs['update_fields'] = set(update_fields) | {'price_eur'}
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse('cars:detail', args=[self.pk])
+
+    @property
+    def is_pending(self):
+        return self.moderation == self.Moderation.PENDING
+
+    @property
+    def is_rejected(self):
+        return self.moderation == self.Moderation.REJECTED
+
+    @property
+    def is_approved(self):
+        return self.moderation == self.Moderation.APPROVED
 
     @property
     def is_imported(self):
@@ -237,7 +279,9 @@ class Car(models.Model):
         self.status = self.Status.ACTIVE
         self.activated_at = now
         self.active_until = now + timedelta(days=days)
-        self.save(update_fields=['status', 'activated_at', 'active_until', 'updated_at'])
+        self.reminder_sent_at = None
+        self.save(update_fields=['status', 'activated_at', 'active_until', 'reminder_sent_at',
+                                 'updated_at'])
         ListingPeriod.objects.create(car=self, starts_at=now, ends_at=self.active_until,
                                      amount=paid_amount, method=method)
 
@@ -299,3 +343,25 @@ class ImportRun(models.Model):
 
     class Meta:
         ordering = ('-started_at',)
+
+
+class Payment(models.Model):
+    """A Stripe Checkout payment for one listing period."""
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', _('Pending')
+        PAID = 'paid', _('Paid')
+        FAILED = 'failed', _('Failed')
+
+    car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True, related_name='payments')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                             related_name='payments')
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    currency = models.CharField(max_length=3, default='EUR')
+    stripe_session_id = models.CharField(max_length=255, unique=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('-created_at',)

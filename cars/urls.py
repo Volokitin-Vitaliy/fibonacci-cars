@@ -20,4 +20,5 @@ urlpatterns = [
     path('cabinet/<int:pk>/delete/', views.car_delete, name='delete'),
     path('cabinet/<int:pk>/activate/', views.car_activate, name='activate'),
     path('cabinet/<int:pk>/deactivate/', views.car_deactivate, name='deactivate'),
+    path('cabinet/payment/success/', views.payment_success, name='payment_success'),
 ]

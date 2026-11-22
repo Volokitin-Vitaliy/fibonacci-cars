@@ -1,0 +1,1 @@
+{% load i18n %}{% blocktrans with car=car %}Your listing "{{ car }}" expires soon{% endblocktrans %}
