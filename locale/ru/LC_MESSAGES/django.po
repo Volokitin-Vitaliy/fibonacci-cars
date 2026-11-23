@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 11:07+0000\n"
+"POT-Creation-Date: 2026-11-23 13:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -254,29 +254,14 @@ msgstr "Эксклюзивные автомобили"
 msgid "Exclusive vehicles. Worldwide."
 msgstr "Эксклюзивные автомобили. По всему миру."
 
-msgid "Customized, armoured, classic and electric cars from dealers and private sellers."
-msgstr "Тюнинг, бронированные, классические и электромобили от дилеров и частных продавцов."
+msgid "Choose a car"
+msgstr "Выбрать авто"
 
-msgid "View all vehicles"
-msgstr "Все автомобили"
-
-msgid "Sell your car"
-msgstr "Продать автомобиль"
-
-msgid "Search by make or model"
-msgstr "Поиск по марке или модели"
-
-msgid "Search"
-msgstr "Найти"
-
-msgid "Collections"
-msgstr "Коллекции"
+msgid "Sell a car"
+msgstr "Продать авто"
 
 msgid "New Offers"
 msgstr "Новые предложения"
-
-msgid "View all"
-msgstr "Смотреть все"
 
 msgid "Latest vehicles"
 msgstr "Последние поступления"
@@ -284,18 +269,26 @@ msgstr "Последние поступления"
 msgid "No vehicles yet."
 msgstr "Автомобилей пока нет."
 
+msgid "View all"
+msgstr "Смотреть все"
+
+msgid "Category"
+msgstr "Категория"
+
+msgid "Find a make"
+msgstr "Найти марку"
+
+msgid "Collections"
+msgstr "Коллекции"
+
+msgid "All Vehicles"
+msgstr "Все автомобили"
+
 msgid "Manufacturers"
 msgstr "Марки"
 
-#, python-format
-msgid "%(n)s vehicle available"
-msgid_plural "%(n)s vehicles available"
-msgstr[0] "%(n)s автомобиль в наличии"
-msgstr[1] "%(n)s автомобиля в наличии"
-msgstr[2] "%(n)s автомобилей в наличии"
-
-msgid "Make or model"
-msgstr "Марка или модель"
+msgid "Nothing found"
+msgstr "Ничего не найдено"
 
 msgid "All sellers"
 msgstr "Все продавцы"
@@ -318,9 +311,6 @@ msgstr "Фильтры"
 msgid "Reset filters"
 msgstr "Сбросить фильтры"
 
-msgid "All"
-msgstr "Все"
-
 msgid "No vehicles found."
 msgstr "Ничего не найдено."
 
@@ -337,8 +327,8 @@ msgstr "Эксклюзивные автомобили на продажу: тю�
 msgid "Vehicles"
 msgstr "Автомобили"
 
-msgid "All Vehicles"
-msgstr "Все автомобили"
+msgid "Sell your car"
+msgstr "Продать автомобиль"
 
 msgid "Log in"
 msgstr "Войти"
@@ -346,14 +336,14 @@ msgstr "Войти"
 msgid "Menu"
 msgstr "Меню"
 
+msgid "Create an account"
+msgstr "Зарегистрироваться"
+
 msgid "Exclusive vehicles from trusted dealers and private sellers."
 msgstr "Эксклюзивные автомобили от проверенных дилеров и частных продавцов."
 
 msgid "Account"
 msgstr "Аккаунт"
-
-msgid "Create an account"
-msgstr "Зарегистрироваться"
 
 msgid "Some offers are listed from hollmann.international and link to the original offer."
 msgstr "Часть предложений взята с hollmann.international и ведёт на оригинальное предложение."
@@ -375,6 +365,15 @@ msgstr "В избранное"
 
 msgid "Log in to save favorites"
 msgstr "Войдите, чтобы сохранять избранное"
+
+msgid "Continue with Google"
+msgstr "Войти через Google"
+
+msgid "Continue with Apple"
+msgstr "Войти через Apple"
+
+msgid "or with email"
+msgstr "или по email"
 
 msgid "Save"
 msgstr "Сохранить"
@@ -460,9 +459,6 @@ msgstr ""
 msgid "Enter a valid phone number, for example +49 151 1234567."
 msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
 
-msgid "Category"
-msgstr "Категория"
-
 msgid "Choose a category"
 msgstr "Выберите категорию"
 
@@ -470,8 +466,11 @@ msgstr "Выберите категорию"
 msgid "Up to %(n)s images."
 msgstr "До %(n)s изображений."
 
-msgid "Contact phone"
-msgstr "Контактный телефон"
+msgid "Number with country code, e.g. +49 151 1234567"
+msgstr "Номер с кодом страны, например +7 999 123-45-67"
+
+msgid "@username or phone number"
+msgstr "@username или номер телефона"
 
 msgid "Choose a make"
 msgstr "Выберите марку"
@@ -484,6 +483,9 @@ msgstr "Модель / название"
 
 msgid "Enter a year between 1900 and next year."
 msgstr "Укажите год от 1900 до следующего года."
+
+msgid "Enter a Telegram username like @name or a phone number."
+msgstr "Укажите Telegram в виде @name или номер телефона."
 
 msgid "The price must be greater than zero."
 msgstr "Цена должна быть больше нуля."
@@ -590,6 +592,12 @@ msgstr "контактное лицо"
 
 msgid "contact phone"
 msgstr "контактный телефон"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Telegram"
+msgstr "Telegram"
 
 msgid "rejection reason"
 msgstr "причина отклонения"

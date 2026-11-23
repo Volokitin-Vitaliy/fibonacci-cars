@@ -1,4 +1,5 @@
 import math
+import re
 from datetime import timedelta
 from decimal import Decimal
 
@@ -163,6 +164,9 @@ class Car(models.Model):
 
     contact_name = models.CharField(_('contact person'), max_length=150, blank=True)
     contact_phone = models.CharField(_('contact phone'), max_length=30, blank=True)
+    contact_whatsapp = models.CharField(_('WhatsApp'), max_length=30, blank=True)
+    # Telegram username (without @) or phone number.
+    contact_telegram = models.CharField(_('Telegram'), max_length=40, blank=True)
 
     # User listing lifecycle.
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
@@ -240,6 +244,32 @@ class Car(models.Model):
             return 0
         seconds = (self.active_until - timezone.now()).total_seconds()
         return max(math.ceil(seconds / 86400), 0)
+
+    @property
+    def phone_url(self):
+        digits = re.sub(r'[^\d+]', '', self.contact_phone)
+        return f'tel:{digits}' if digits else ''
+
+    @property
+    def whatsapp_url(self):
+        digits = re.sub(r'\D', '', self.contact_whatsapp)
+        return f'https://wa.me/{digits}' if digits else ''
+
+    @property
+    def telegram_url(self):
+        value = self.contact_telegram.strip()
+        if not value:
+            return ''
+        if re.fullmatch(r'\+?[\d\s()\-]+', value):
+            return 'https://t.me/+' + re.sub(r'\D', '', value)
+        return 'https://t.me/' + value.lstrip('@')
+
+    @property
+    def telegram_display(self):
+        value = self.contact_telegram.strip()
+        if value and not re.fullmatch(r'\+?[\d\s()\-]+', value):
+            return '@' + value.lstrip('@')
+        return value
 
     @property
     def currency_symbol(self):

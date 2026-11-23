@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 from django import forms
@@ -36,14 +37,19 @@ class CarForm(forms.ModelForm):
     photos = MultipleImageField(
         label=_('Photos'), required=False,
         help_text=_('Up to %(n)s images.') % {'n': settings.LISTING_MAX_PHOTOS})
-    contact_phone = forms.CharField(label=_('Contact phone'), max_length=30,
+    contact_phone = forms.CharField(label=_('Phone'), max_length=30,
                                     validators=[phone_validator])
+    contact_whatsapp = forms.CharField(label='WhatsApp', max_length=30, required=False,
+                                       validators=[phone_validator],
+                                       help_text=_('Number with country code, e.g. +49 151 1234567'))
+    contact_telegram = forms.CharField(label='Telegram', max_length=60, required=False,
+                                       help_text=_('@username or phone number'))
 
     class Meta:
         model = Car
         fields = ('make', 'model', 'category', 'description', 'year', 'mileage_km',
                   'fuel', 'transmission', 'power_hp', 'color', 'price', 'currency',
-                  'contact_name', 'contact_phone')
+                  'contact_name', 'contact_phone', 'contact_whatsapp', 'contact_telegram')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
             'currency': forms.RadioSelect,
@@ -68,6 +74,18 @@ class CarForm(forms.ModelForm):
         if year and not 1900 <= year <= date.today().year + 1:
             raise forms.ValidationError(_('Enter a year between 1900 and next year.'))
         return year
+
+    def clean_contact_telegram(self):
+        value = self.cleaned_data.get('contact_telegram', '').strip()
+        if not value:
+            return ''
+        value = re.sub(r'^(https?://)?(www\.)?(t\.me|telegram\.me)/', '', value).strip('/')
+        if re.fullmatch(r'\+?[\d\s()\-]{6,25}', value):
+            return ' '.join(value.split())
+        username = value.lstrip('@')
+        if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]{4,31}', username):
+            raise forms.ValidationError(_('Enter a Telegram username like @name or a phone number.'))
+        return username
 
     def clean_price(self):
         price = self.cleaned_data.get('price')

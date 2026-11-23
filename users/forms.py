@@ -14,11 +14,19 @@ class ProfileFieldsMixin(forms.Form):
     first_name = forms.CharField(label=_('First name'), max_length=50)
     last_name = forms.CharField(label=_('Last name'), max_length=50)
     middle_name = forms.CharField(label=_('Middle name'), max_length=50, required=False)
-    phone = forms.CharField(label=_('Phone'), max_length=30, validators=[phone_validator])
     country = LazyTypedChoiceField(label=_('Country'), choices=[('', '—')] + list(countries))
+
+
+class AccountFieldsMixin(ProfileFieldsMixin):
+    phone = forms.CharField(label=_('Phone'), max_length=30, validators=[phone_validator],
+                            required=False)
+    country = LazyTypedChoiceField(label=_('Country'), choices=[('', '—')] + list(countries),
+                                   required=False)
 
     def clean_phone(self):
         phone = ' '.join(self.cleaned_data['phone'].split())
+        if not phone:
+            return None
         taken = User.objects.filter(phone=phone)
         if self.instance and self.instance.pk:
             taken = taken.exclude(pk=self.instance.pk)
@@ -32,9 +40,9 @@ class RegistrationForm(ProfileFieldsMixin, UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('last_name', 'first_name', 'middle_name', 'email', 'phone', 'country')
+        fields = ('last_name', 'first_name', 'middle_name', 'email', 'country')
 
-    field_order = ('last_name', 'first_name', 'middle_name', 'email', 'phone', 'country',
+    field_order = ('last_name', 'first_name', 'middle_name', 'email', 'country',
                    'password1', 'password2')
 
     def clean_email(self):
@@ -48,7 +56,7 @@ class LoginForm(AuthenticationForm):
     username = forms.EmailField(label=_('Email'), widget=forms.EmailInput(attrs={'autofocus': True}))
 
 
-class AccountForm(ProfileFieldsMixin, forms.ModelForm):
+class AccountForm(AccountFieldsMixin, forms.ModelForm):
     class Meta:
         model = User
         fields = ('last_name', 'first_name', 'middle_name', 'email', 'phone', 'country')

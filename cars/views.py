@@ -39,12 +39,9 @@ def choose_language(request):
 
 
 def home(request):
-    visible = with_cover(Car.objects.visible())
-    return render(request, 'cars/home.html', {
-        'new_offers': with_cover(Car.objects.new_offers()).order_by('-created_at')[:8],
-        'latest': visible.order_by('-created_at')[:8],
-        'total': Car.objects.visible().count(),
-    })
+    new_offers = list(with_cover(Car.objects.new_offers()).order_by('-created_at')[:8])
+    latest = [] if new_offers else with_cover(Car.objects.visible()).order_by('-created_at')[:8]
+    return render(request, 'cars/home.html', {'new_offers': new_offers, 'latest': latest})
 
 
 def car_list(request, category_slug=None, make_slug=None, new=False):
@@ -79,10 +76,14 @@ def car_list(request, category_slug=None, make_slug=None, new=False):
     cars = with_cover(cars.distinct()).order_by(*SORTS[sort], '-pk')
 
     page = Paginator(cars, PER_PAGE).get_page(request.GET.get('page'))
+    keep = request.GET.copy()
+    for key in ('page', 'q'):
+        keep.pop(key, None)
+    keep_qs = '?' + keep.urlencode() if keep else ''
     return render(request, 'cars/list.html', {
         'page': page, 'title': title, 'sort': sort, 'sorts': SORTS,
         'category': category, 'make': make, 'is_new': new, 'query': query,
-        'source': source, 'filters': filters,
+        'source': source, 'filters': filters, 'keep_qs': keep_qs,
     })
 
 
@@ -139,7 +140,9 @@ def favorites(request):
 
 @login_required
 def car_create(request):
-    initial = {'contact_name': request.user.full_name, 'contact_phone': request.user.phone}
+    phone = request.user.phone or ''
+    initial = {'contact_name': request.user.full_name, 'contact_phone': phone,
+               'contact_whatsapp': phone}
     form = CarForm(request.POST or None, request.FILES or None, initial=initial)
     if request.method == 'POST' and form.is_valid():
         form.instance.owner = request.user

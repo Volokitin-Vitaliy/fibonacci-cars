@@ -1,10 +1,12 @@
-{% load i18n %}<!DOCTYPE html>
+{% load i18n static %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIBONACCI · Choose language / Выберите язык</title>
     <meta name="robots" content="noindex">
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -14,7 +16,8 @@
 </head>
 <body class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md text-center">
-        <div class="text-3xl font-bold tracking-[0.4em] mb-12">FIBONACCI</div>
+        <img src="{% static 'img/logo-256.png' %}" alt="" width="128" height="128" class="mx-auto w-28 h-28 sm:w-32 sm:h-32 mb-6" style="mix-blend-mode:lighten">
+        <div class="text-2xl sm:text-3xl font-bold tracking-[0.4em] mb-12">FIBONACCI</div>
         <p class="text-neutral-400 mb-1">Please choose your language</p>
         <p class="text-neutral-400 mb-10">Пожалуйста, выберите язык</p>
         <form action="{% url 'set_language' %}" method="post" class="grid grid-cols-2 gap-4">

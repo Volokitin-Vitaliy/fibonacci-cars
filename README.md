@@ -9,8 +9,9 @@ Django marketplace for exclusive vehicles, in English and Russian.
 - **Daily import** from hollmann.international: make, model, prices, collections and the
   specification table, with a link to the original offer. Photos, descriptions and staff
   contacts are not copied.
-- **User accounts** (email, phone, country, full name) with a cabinet: add vehicles for
-  sale, edit, deactivate/activate, delete, and a favorites list.
+- **User accounts** (full name, email, country; or one click with Google / Apple) with a
+  cabinet: add vehicles for sale with phone, WhatsApp and Telegram contacts, edit,
+  deactivate/activate, delete, and a favorites list.
 - **Moderation:** new and edited listings wait for an admin to approve them (admin list
   filter "moderation", actions "Approve/Reject selected"). Owners get an email either way.
 - **Listings run for 30 days** from approval. Three days before the end the owner gets an
@@ -105,6 +106,34 @@ MODERATION_EMAILS=admin@domen.com    # told about listings waiting for review
 ```
 
 Emails to owners are sent in the language they last used on the site.
+
+## Sign in with Google and Apple
+
+The buttons appear on the login and sign-up pages as soon as the keys are in `.env`.
+Accounts with the same email are linked automatically.
+
+**Google** — [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+create an *OAuth client ID* of type *Web application* and add the redirect URI
+`https://<your-domain>/accounts/google/login/callback/`
+(for local testing also `http://127.0.0.1:8000/accounts/google/login/callback/`).
+
+```ini
+GOOGLE_CLIENT_ID=....apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+```
+
+**Apple** — needs a paid Apple Developer account. In *Certificates, Identifiers & Profiles*
+create an App ID with *Sign in with Apple*, a *Services ID* (this is the client id) with the
+domain and return URL `https://<your-domain>/accounts/apple/login/callback/`, and a *Key*
+with *Sign in with Apple* (download the `.p8` file). Apple does not allow `localhost`, so it
+only works on the real domain over HTTPS.
+
+```ini
+APPLE_SERVICE_ID=com.example.web
+APPLE_TEAM_ID=ABCDE12345
+APPLE_KEY_ID=XYZ987WVU6
+APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+```
 
 ## Translations
 

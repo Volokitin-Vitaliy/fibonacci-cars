@@ -5,6 +5,7 @@
 <section class="max-w-2xl mx-auto px-4 py-20">
     <h1 class="text-2xl sm:text-3xl font-bold mb-2">{% trans 'Create an account' %}</h1>
     <p class="text-neutral-400 mb-10">{% trans 'Sell your vehicle and save the ones you like.' %}</p>
+    {% url "cars:my_cars" as next_url %}{% include "includes/social_login.html" with next_url=next|default:next_url %}
     <form method="post" class="space-y-5">
         {% csrf_token %}
         <div class="grid sm:grid-cols-3 gap-5">
@@ -14,9 +15,8 @@
         </div>
         <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.email %}
-            {% include "includes/field.html" with field=form.phone %}
+            {% include "includes/field.html" with field=form.country %}
         </div>
-        {% include "includes/field.html" with field=form.country %}
         <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.password1 %}
             {% include "includes/field.html" with field=form.password2 %}

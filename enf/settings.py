@@ -50,6 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
 
     'django_countries',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.apple',
 
     'users',
     'cars',
@@ -65,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'enf.urls'
@@ -120,6 +126,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'cars:my_cars'
 LOGOUT_REDIRECT_URL = 'cars:home'
@@ -141,6 +151,7 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'assets']
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
@@ -190,3 +201,38 @@ HOLLMANN_REQUEST_DELAY = float(os.getenv('HOLLMANN_REQUEST_DELAY', 1.0))
 
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+
+# Sign in with Google / Apple (django-allauth). A button appears on the
+# login and sign-up pages once the provider's keys are set.
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_ADAPTER = 'users.adapters.AccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.SocialAccountAdapter'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_STORE_TOKENS = False
+
+SOCIALACCOUNT_PROVIDERS = {}
+if os.getenv('GOOGLE_CLIENT_ID') and os.getenv('GOOGLE_CLIENT_SECRET'):
+    SOCIALACCOUNT_PROVIDERS['google'] = {
+        'APP': {'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+                'secret': os.getenv('GOOGLE_CLIENT_SECRET')},
+        'SCOPE': ['profile', 'email'],
+        'EMAIL_AUTHENTICATION': True,
+    }
+if os.getenv('APPLE_SERVICE_ID') and os.getenv('APPLE_TEAM_ID') and os.getenv('APPLE_KEY_ID'):
+    SOCIALACCOUNT_PROVIDERS['apple'] = {
+        'APP': {
+            'client_id': os.getenv('APPLE_SERVICE_ID'),
+            'secret': os.getenv('APPLE_KEY_ID'),
+            'key': os.getenv('APPLE_TEAM_ID'),
+            # Contents of the .p8 key file; newlines may be written as \n in .env.
+            'settings': {'certificate_key': os.getenv('APPLE_PRIVATE_KEY', '').replace('\\n', '\n')},
+        },
+        'EMAIL_AUTHENTICATION': True,
+    }

@@ -278,22 +278,121 @@ class RegistrationTests(TestCase):
     def test_register_with_profile_fields(self):
         response = self.client.post(reverse('users:register'), {
             'last_name': 'Petrov', 'first_name': 'Ivan', 'middle_name': 'Sergeevich',
-            'email': 'Ivan@Example.com', 'phone': '+7 999 123-45-67', 'country': 'RU',
+            'email': 'Ivan@Example.com', 'country': 'RU',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
         })
         self.assertRedirects(response, reverse('cars:my_cars'))
         user = CustomUser.objects.get(email='ivan@example.com')
-        self.assertEqual((user.phone, user.country.code), ('+7 999 123-45-67', 'RU'))
+        self.assertEqual((user.phone, user.country.code), (None, 'RU'))
         self.assertEqual(user.full_name, 'Petrov Ivan Sergeevich')
 
-    def test_phone_and_country_required(self):
+    def test_phone_is_not_asked_at_signup(self):
+        page = self.client.get(reverse('users:register'))
+        self.assertNotIn('phone', page.context['form'].fields)
         response = self.client.post(reverse('users:register'), {
             'last_name': 'Petrov', 'first_name': 'Ivan', 'email': 'a@example.com',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
         })
         self.assertEqual(response.status_code, 200)
-        self.assertIn('phone', response.context['form'].errors)
         self.assertIn('country', response.context['form'].errors)
+
+    def test_no_social_buttons_without_keys(self):
+        page = self.client.get(reverse('users:login'))
+        self.assertNotContains(page, 'Continue with Google')
+
+    @override_settings(SOCIALACCOUNT_PROVIDERS={
+        'google': {'APP': {'client_id': 'gid', 'secret': 'gsecret'}},
+        'apple': {'APP': {'client_id': 'com.example.web', 'secret': 'KEYID', 'key': 'TEAMID',
+                          'settings': {'certificate_key': 'x'}}},
+    })
+    def test_social_buttons_with_keys(self):
+        page = self.client.get(reverse('users:register'))
+        self.assertContains(page, 'Continue with Google')
+        self.assertContains(page, 'Continue with Apple')
+        redirect = self.client.get('/accounts/google/login/?process=login')
+        self.assertEqual(redirect.status_code, 302)
+        self.assertTrue(redirect['Location'].startswith('https://accounts.google.com/'))
+        self.assertIn('client_id=gid', redirect['Location'])
+
+    def test_google_signup_creates_user_with_name(self):
+        from allauth.socialaccount.models import SocialAccount, SocialLogin
+        from django.test import RequestFactory
+        from users.adapters import SocialAccountAdapter
+        request = RequestFactory().get('/')
+        account = SocialAccount(provider='google', uid='1',
+                                extra_data={'given_name': 'Anna', 'family_name': 'Ivanova'})
+        login = SocialLogin(account=account, user=CustomUser())
+        user = SocialAccountAdapter().populate_user(request, login, {'email': 'Anna@Gmail.com'})
+        self.assertEqual((user.first_name, user.last_name, user.email),
+                         ('Anna', 'Ivanova', 'anna@gmail.com'))
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media')
+class ContactTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.cookies.load(LANG)
+        self.client.force_login(self.user)
+
+    def post(self, **contacts):
+        data = {'make': Make.get_by_name('Audi').pk, 'model': 'Q8', 'price': '1000', 'currency': 'EUR',
+                'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+                'contact_phone': '+49 151 0000001'}
+        data.update(contacts)
+        return self.client.post(reverse('cars:add'), data)
+
+    def test_separate_whatsapp_and_telegram(self):
+        self.post(contact_whatsapp='+49 151 999 88 77', contact_telegram='https://t.me/ivan_cars')
+        car = Car.objects.get(model='Q8')
+        self.assertEqual(car.contact_telegram, 'ivan_cars')
+        self.assertEqual(car.whatsapp_url, 'https://wa.me/491519998877')
+        self.assertEqual(car.telegram_url, 'https://t.me/ivan_cars')
+        services.approve(car)
+        page = self.client.get(car.get_absolute_url())
+        self.assertContains(page, 'href="tel:+491510000001"')
+        self.assertContains(page, 'https://wa.me/491519998877')
+        self.assertContains(page, '@ivan_cars')
+
+    def test_optional_messengers_hidden_when_empty(self):
+        self.post()
+        car = Car.objects.get(model='Q8')
+        services.approve(car)
+        page = self.client.get(car.get_absolute_url())
+        self.assertNotContains(page, 'wa.me')
+        self.assertNotContains(page, 't.me/')
+
+    def test_telegram_phone_and_validation(self):
+        self.post(contact_telegram='+7 999 123 45 67')
+        self.assertEqual(Car.objects.get(model='Q8').telegram_url, 'https://t.me/+79991234567')
+        response = self.post(contact_telegram='@a!')
+        self.assertIn('contact_telegram', response.context['form'].errors)
+
+
+class LayoutTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+
+    def test_home_has_two_actions_and_new_offers(self):
+        make_listing(make_user())
+        page = self.client.get(reverse('cars:home'))
+        self.assertContains(page, 'Choose a car')
+        self.assertContains(page, 'Sell a car')
+        self.assertContains(page, 'View all')
+        self.assertNotContains(page, 'p-6 h-32')  # collection tiles are gone from the home page
+        self.assertContains(page, 'img/logo-256.png')
+
+    def test_catalog_category_dropdown(self):
+        make_listing(make_user())
+        page = self.client.get(reverse('cars:list'), {'sort': 'price-ascending'})
+        self.assertContains(page, 'data-dropdown')
+        self.assertContains(page, '/en/vehicle-collection/armoured/?sort=price-ascending')
+        self.assertContains(page, '/en/manufacturer/bmw/?sort=price-ascending')
+
+    def test_favicon(self):
+        page = self.client.get(reverse('cars:home'))
+        self.assertContains(page, 'favicon.ico')
+        self.assertEqual(self.client.get('/favicon.ico').status_code, 301)
+
 
 
 @override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media', MODERATION_EMAILS=['mod@example.com'])

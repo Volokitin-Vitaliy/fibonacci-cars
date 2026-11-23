@@ -5,7 +5,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 
 EXEMPT_PREFIXES = ('/admin/', '/static/', '/media/', '/i18n/', '/choose-language/',
-                   '/payments/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
+                   '/payments/', '/accounts/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
 
 # Search engines and link previews must see the page itself, not the picker.
 BOT_RE = re.compile(

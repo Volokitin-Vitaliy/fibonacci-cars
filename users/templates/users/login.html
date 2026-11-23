@@ -5,6 +5,7 @@
 <section class="max-w-md mx-auto px-4 py-20">
     <h1 class="text-2xl sm:text-3xl font-bold mb-2">{% trans 'Log in' %}</h1>
     <p class="text-neutral-400 mb-10">{% trans 'Manage your listings and favorites.' %}</p>
+    {% url "cars:my_cars" as next_url %}{% include "includes/social_login.html" with next_url=next|default:next_url %}
     <form method="post" class="space-y-5">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">

@@ -6,6 +6,12 @@
     <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
     <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
     {% hreflang %}
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+    <meta name="theme-color" content="#0b0b0b">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -13,6 +19,8 @@
         body { font-family: 'Inter', sans-serif; background: #0b0b0b; color: #f5f5f5; }
         h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
         fieldset { min-width: 0; }
+        /* The logo has a black background: blend it into the dark page. */
+        .logo-mark { mix-blend-mode: lighten; }
         .form-field input[type=file] { max-width: 100%; }
 
         /* Form controls */
@@ -50,7 +58,10 @@
 <body class="min-h-screen flex flex-col">
 <header class="sticky top-0 z-40 bg-[#0b0b0b]/95 backdrop-blur border-b border-neutral-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
-        <a href="{% url 'cars:home' %}" class="text-lg sm:text-xl font-bold tracking-[0.2em] sm:tracking-[0.3em] shrink-0">FIBONACCI</a>
+        <a href="{% url 'cars:home' %}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
+            <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-9 h-9 sm:w-10 sm:h-10">
+            <span class="text-base sm:text-xl font-bold tracking-[0.2em] sm:tracking-[0.3em]">FIBONACCI</span>
+        </a>
 
         <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
             <div class="has-dropdown relative">
@@ -127,7 +138,10 @@
 <footer class="border-t border-neutral-900 mt-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 sm:grid-cols-3 text-sm">
         <div>
-            <div class="text-lg font-bold tracking-[0.3em] mb-3">FIBONACCI</div>
+            <div class="flex items-center gap-3 mb-3">
+                <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
+                <span class="text-lg font-bold tracking-[0.3em]">FIBONACCI</span>
+            </div>
             <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
         </div>
         <div>
