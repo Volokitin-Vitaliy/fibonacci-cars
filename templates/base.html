@@ -71,6 +71,19 @@
         .combo-list li.is-selected { background: #fff; color: #0a0a0a; }
         .combo-list li.combo-any { color: var(--muted); }
         .combo-list li[hidden] { display: none; }
+        .price-button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .5rem; text-align: left; background: rgba(255,255,255,.03); border: 1px solid var(--line-strong); color: var(--text); border-radius: 12px; padding: .75rem .9rem .75rem .9rem; font-size: .95rem; line-height: 1.5rem; transition: border-color .2s, box-shadow .2s; }
+        .price-button:hover { border-color: rgba(255,255,255,.28); }
+        .price-button[aria-expanded=true] { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,.18); }
+        .price-button.is-set { border-color: rgba(255,255,255,.55); }
+        .price-button .price-arrow { color: var(--muted); margin-right: .25rem; transition: transform .2s; }
+        .price-button[aria-expanded=true] .price-arrow { transform: rotate(180deg); color: #fff; }
+        .price-panel { position: absolute; z-index: 45; left: 0; top: calc(100% + .4rem); width: max(100%, 18rem); padding: 1rem; border-radius: 1.1rem; background: rgba(12,12,14,.98); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 20px 50px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+        .cur-option { flex: 1; cursor: pointer; margin: 0 !important; }
+        .cur-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .cur-option span { display: flex; align-items: center; justify-content: center; height: 2.75rem; border-radius: 999px; border: 1px solid var(--line-strong); font-size: .85rem; font-weight: 600; letter-spacing: .04em; color: #d4d4d4; text-transform: none; transition: background .15s, color .15s, border-color .15s; }
+        .cur-option:hover span { border-color: rgba(255,255,255,.4); color: #fff; }
+        .cur-option input:checked + span { background: #fff; color: #0a0a0a; border-color: #fff; }
+        .cur-option input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
         .chip-new { background: #fff; color: #0a0a0a; border: 1px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,.45); letter-spacing: .14em; }
         .chip-accent { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
         .chip-glass { background: rgba(0,0,0,.55); color: #e5e5e5; border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }

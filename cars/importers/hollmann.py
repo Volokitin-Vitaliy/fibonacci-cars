@@ -350,6 +350,7 @@ class HollmannImporter:
                     'price': offer['price'],
                     'price_net': offer['price_net'],
                     'currency': offer['currency'],
+                    'country': 'DE',  # Hollmann is in Germany
                     'source_url': offer['url'],
                     'is_published': True,
                     'is_new': ext_id in new_ids,

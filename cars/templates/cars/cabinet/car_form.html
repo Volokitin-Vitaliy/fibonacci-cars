@@ -17,7 +17,10 @@
             {% include "includes/field.html" with field=form.make %}
             {% include "includes/field.html" with field=form.fuel %}
         </div>
-        {% include "includes/field.html" with field=form.model %}
+        <div class="grid sm:grid-cols-2 gap-5">
+            {% include "includes/field.html" with field=form.model %}
+            {% include "includes/field.html" with field=form.country %}
+        </div>
         {% include "includes/field.html" with field=form.description %}
     </fieldset>
 

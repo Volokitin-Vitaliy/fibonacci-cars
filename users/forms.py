@@ -2,10 +2,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
-from django_countries.fields import LazyTypedChoiceField
-from django_countries import countries
 
-from cars.forms import phone_validator
+from cars.forms import country_choices, phone_validator
 
 User = get_user_model()
 
@@ -14,14 +12,13 @@ class ProfileFieldsMixin(forms.Form):
     first_name = forms.CharField(label=_('First name'), max_length=50)
     last_name = forms.CharField(label=_('Last name'), max_length=50)
     middle_name = forms.CharField(label=_('Middle name'), max_length=50, required=False)
-    country = LazyTypedChoiceField(label=_('Country'), choices=[('', '—')] + list(countries))
+    country = forms.ChoiceField(label=_('Country'), choices=country_choices)
 
 
 class AccountFieldsMixin(ProfileFieldsMixin):
     phone = forms.CharField(label=_('Phone'), max_length=30, validators=[phone_validator],
                             required=False)
-    country = LazyTypedChoiceField(label=_('Country'), choices=[('', '—')] + list(countries),
-                                   required=False)
+    country = forms.ChoiceField(label=_('Country'), choices=country_choices, required=False)
 
     def clean_phone(self):
         phone = ' '.join(self.cleaned_data['phone'].split())

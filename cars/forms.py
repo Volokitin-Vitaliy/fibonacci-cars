@@ -1,12 +1,22 @@
 import re
 from datetime import date
+from decimal import Decimal
 
 from django import forms
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
+from django_countries import countries
+
 from .models import Car, Make
+
+EXCLUDED_COUNTRIES = {'RU'}
+
+
+def country_choices():
+    """All countries in the visitor's language, without excluded ones (Russia)."""
+    return [('', '—')] + [(c.code, c.name) for c in countries if c.code not in EXCLUDED_COUNTRIES]
 
 phone_validator = RegexValidator(
     r'^\+?[\d\s()\-]{6,25}$',
@@ -45,10 +55,11 @@ class CarForm(forms.ModelForm):
                                        help_text=_('Number with country code, e.g. +49 151 1234567'))
     contact_telegram = forms.CharField(label='Telegram', max_length=60, required=False,
                                        help_text=_('@username or phone number'))
+    country = forms.ChoiceField(label=_('Country where the car is'), choices=country_choices)
 
     class Meta:
         model = Car
-        fields = ('make', 'model', 'fuel', 'description', 'year', 'mileage_km',
+        fields = ('make', 'model', 'fuel', 'country', 'description', 'year', 'mileage_km',
                   'transmission', 'power_hp', 'color', 'accident', 'price', 'currency',
                   'contact_name', 'contact_phone', 'contact_whatsapp', 'contact_telegram')
         widgets = {
@@ -122,61 +133,78 @@ class LooseIntegerField(forms.IntegerField):
         return super().to_python(value)
 
 
-def _presets(values, fmt='{:,}'):
-    return [(v, fmt.format(v).replace(',', '\u202f')) for v in values]
-
-
-PRICE_PRESETS = _presets([25_000, 50_000, 75_000, 100_000, 150_000, 200_000, 300_000,
-                          500_000, 750_000, 1_000_000, 2_000_000, 3_000_000])
-MILEAGE_PRESETS = _presets([1_000, 5_000, 10_000, 20_000, 30_000, 50_000, 75_000,
-                            100_000, 150_000, 200_000])
-
-
 def year_presets():
-    this_year = date.today().year
-    years = list(range(this_year, this_year - 11, -1)) + [2010, 2005, 2000, 1990, 1980, 1970]
-    return [(y, str(y)) for y in years]
+    """Every year from next year down to 1970."""
+    return [(y, str(y)) for y in range(date.today().year + 1, 1969, -1)]
 
 
 class CarFilterForm(forms.Form):
-    """Catalog filters. Prices are compared in EUR (USD is converted).
+    """Catalog filters. Prices are typed in EUR or USD and compared in EUR."""
 
-    Every field has suggested values (``presets``) shown in a dropdown; visitors can also
-    type their own number.
-    """
-
-    price_min = LooseIntegerField(label=_('Price from, €'), required=False, min_value=0)
-    price_max = LooseIntegerField(label=_('Price to, €'), required=False, min_value=0)
+    price_min = LooseIntegerField(label=_('From'), required=False, min_value=0)
+    price_max = LooseIntegerField(label=_('To'), required=False, min_value=0)
+    cur = forms.ChoiceField(choices=[('EUR', '€'), ('USD', '$')], required=False)
     year_min = LooseIntegerField(label=_('Year from'), required=False, min_value=1900, max_value=2100)
     year_max = LooseIntegerField(label=_('Year to'), required=False, min_value=1900, max_value=2100)
-    mileage_max = LooseIntegerField(label=_('Mileage up to, km'), required=False, min_value=0)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        years = year_presets()
-        presets = {'price_min': PRICE_PRESETS, 'price_max': PRICE_PRESETS,
-                   'year_min': years, 'year_max': years, 'mileage_max': MILEAGE_PRESETS}
-        for name, values in presets.items():
-            self.fields[name].presets = values
+        for name in ('year_min', 'year_max'):
+            self.fields[name].presets = year_presets()
+
+    @property
+    def currency(self):
+        value = self.data.get('cur') if self.is_bound else None
+        return value if value in ('EUR', 'USD') else 'EUR'
+
+    @property
+    def currency_symbol(self):
+        return '$' if self.currency == 'USD' else '€'
+
+    @property
+    def price_summary(self):
+        """Text on the closed price dropdown, e.g. "€50 000 – €200 000"."""
+        if not self.price_active:
+            return ''
+        sym = self.currency_symbol
+        fmt = lambda v: sym + f'{v:,}'.replace(',', '\u202f')  # noqa: E731
+        low, high = self.cleaned_data.get('price_min'), self.cleaned_data.get('price_max')
+        if low is not None and high is not None:
+            return f'{fmt(low)} – {fmt(high)}'
+        if low is not None:
+            return _('from %(price)s') % {'price': fmt(low)}
+        return _('up to %(price)s') % {'price': fmt(high)}
+
+    @property
+    def price_fields(self):
+        return [self['price_min'], self['price_max']]
+
+    @property
+    def year_fields(self):
+        return [self['year_min'], self['year_max']]
 
     def apply(self, cars):
         if not self.is_valid():
             return cars
         data = self.cleaned_data
+        rate = Decimal(str(settings.USD_TO_EUR_RATE)) if self.currency == 'USD' else Decimal(1)
         if data.get('price_min') is not None:
-            cars = cars.filter(price_eur__gte=data['price_min'])
+            cars = cars.filter(price_eur__gte=data['price_min'] * rate)
         if data.get('price_max') is not None:
-            cars = cars.filter(price_eur__lte=data['price_max'])
+            cars = cars.filter(price_eur__lte=data['price_max'] * rate)
         if data.get('year_min') is not None:
             cars = cars.filter(year__gte=data['year_min'])
         if data.get('year_max') is not None:
             cars = cars.filter(year__lte=data['year_max'])
-        if data.get('mileage_max') is not None:
-            cars = cars.filter(mileage_km__lte=data['mileage_max'])
         return cars
 
     @property
     def active_count(self):
         if not self.is_valid():
             return 0
-        return sum(1 for v in self.cleaned_data.values() if v is not None)
+        return sum(1 for k, v in self.cleaned_data.items() if k != 'cur' and v is not None)
+
+    @property
+    def price_active(self):
+        return self.is_valid() and any(self.cleaned_data.get(k) is not None
+                                       for k in ('price_min', 'price_max'))

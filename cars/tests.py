@@ -127,6 +127,7 @@ class ImporterTests(TestCase):
         self.assertEqual(t1.power_hp, 472)
         self.assertEqual(t1.fuel, 'petrol')
         self.assertTrue(Car.objects.get(external_id='T2').is_new)
+        self.assertEqual(t1.country.code, 'DE')
         self.assertTrue(Make.objects.filter(name='Brand New Make').exists())
 
         # Next day T2 is gone from the source site and T1's price changed.
@@ -256,7 +257,7 @@ class ListingLifecycleTests(TestCase):
             'make': Make.get_by_name('Tesla').pk, 'model': 'Model S Plaid',
             'description': 'Like new', 'year': 2023, 'mileage_km': 12000, 'fuel': 'electric',
             'transmission': 'automatic', 'power_hp': 1020, 'color': 'White', 'price': '79000',
-            'currency': 'USD', 'accident': 'False', 'contact_name': 'Ivan Petrov', 'contact_phone': '+49 151 0000001',
+            'currency': 'USD', 'accident': 'False', 'contact_name': 'Ivan Petrov', 'contact_phone': '+49 151 0000001', 'country': 'DE',
             'photos': [png(), png()],
         })
         car = Car.objects.get(model='Model S Plaid')
@@ -376,15 +377,25 @@ class RegistrationTests(TestCase):
     def test_register_with_profile_fields(self):
         response = self.client.post(reverse('users:register'), {
             'last_name': 'Petrov', 'first_name': 'Ivan',
-            'email': 'Ivan@Example.com', 'country': 'RU',
+            'email': 'Ivan@Example.com', 'country': 'DE',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
         })
         self.assertRedirects(response, reverse('cars:my_cars'))
         user = CustomUser.objects.get(email='ivan@example.com')
-        self.assertEqual((user.phone, user.country.code), (None, 'RU'))
+        self.assertEqual((user.phone, user.country.code), (None, 'DE'))
         self.assertEqual(user.full_name, 'Petrov Ivan')
         from users.forms import RegistrationForm
         self.assertNotIn('middle_name', RegistrationForm().fields)
+
+    def test_russia_is_not_offered(self):
+        page = self.client.get(reverse('users:register'))
+        self.assertNotContains(page, 'value="RU"')
+        self.assertContains(page, 'value="DE"')
+        response = self.client.post(reverse('users:register'), {
+            'last_name': 'Petrov', 'first_name': 'Ivan', 'email': 'b@example.com', 'country': 'RU',
+            'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
+        })
+        self.assertIn('country', response.context['form'].errors)
 
     def test_phone_is_not_asked_at_signup(self):
         page = self.client.get(reverse('users:register'))
@@ -437,7 +448,7 @@ class ContactTests(TestCase):
     def post(self, **contacts):
         data = {'make': Make.get_by_name('Audi').pk, 'model': 'Q8', 'price': '1000', 'currency': 'EUR', 'accident': 'False',
                 'fuel': 'petrol', 'contact_name': 'Ivan',
-                'contact_phone': '+49 151 0000001'}
+                'contact_phone': '+49 151 0000001', 'country': 'DE'}
         data.update(contacts)
         return self.client.post(reverse('cars:add'), data)
 
@@ -530,11 +541,11 @@ class LayoutTests(TestCase):
         self.client.force_login(user)
         response = self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
-            'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+            'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
         self.assertIn('accident', response.context['form'].errors)
         self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
-            'fuel': 'petrol', 'accident': 'True', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+            'fuel': 'petrol', 'accident': 'True', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
         self.assertIs(Car.objects.get(model='S8').accident, True)
 
     def test_all_pickers_are_dropdowns(self):
@@ -542,9 +553,9 @@ class LayoutTests(TestCase):
         content = page.content.decode()
         self.assertEqual(content.count('data-dropdown-button aria-haspopup'), 5)
         self.assertNotIn('<select name="sort"', content)
-        self.assertNotIn('<select name="source"', content)
         self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;sort=price-ascending')
-        self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;source=user')
+        self.assertContains(page, 'All countries')
+        self.assertNotContains(page, 'All sellers')
 
     def test_mobile_menu_and_partnership(self):
         page = self.client.get(reverse('cars:home'))
@@ -595,7 +606,7 @@ class ModerationTests(TestCase):
         self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol', 'contact_name': 'Ivan',
-            'contact_phone': '+49 151 0000001',
+            'contact_phone': '+49 151 0000001', 'country': 'DE',
         })
         return Car.objects.get(model='RS6')
 
@@ -636,7 +647,7 @@ class ModerationTests(TestCase):
         self.client.post(reverse('cars:edit', args=[car.pk]), {
             'make': car.make.pk, 'model': 'M5 Competition', 'price': '95000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol', 'contact_name': 'Ivan',
-            'contact_phone': '+49 151 0000001',
+            'contact_phone': '+49 151 0000001', 'country': 'DE',
         })
         car.refresh_from_db()
         self.assertTrue(car.is_pending)
@@ -719,19 +730,34 @@ class FilterTests(TestCase):
 
     def test_filters(self):
         self.assertEqual(self.ids(year_min=2010), {self.usd.pk})
-        self.assertEqual(self.ids(mileage_max=50000), {self.usd.pk})
         self.assertEqual(self.ids(price_max=20000), {self.cheap_old.pk})
         # $100,000 = €92,000 with the default rate
         self.assertEqual(self.ids(price_min=91000, price_max=93000), {self.usd.pk})
         self.assertEqual(self.ids(price_min='abc'), {self.usd.pk, self.cheap_old.pk})
 
-    def test_typed_numbers_with_separators_and_presets(self):
+    def test_price_in_dollars(self):
+        # $16,000 = €14,720 < €15,000; $17,000 = €15,640 > €15,000
+        self.assertEqual(self.ids(price_max=16000, cur='USD'), set())
+        self.assertEqual(self.ids(price_max=17000, cur='USD'), {self.cheap_old.pk})
         self.assertEqual(self.ids(price_max='20 000'), {self.cheap_old.pk})
-        self.assertEqual(self.ids(mileage_max='50,000'), {self.usd.pk})
+
+    def test_year_presets_and_no_mileage(self):
         page = self.client.get(reverse('cars:list'))
-        self.assertContains(page, 'class="form-field combo"', count=5)
-        self.assertContains(page, 'data-value="1000000"')
-        self.assertContains(page, 'data-value="100000"')
+        self.assertContains(page, 'class="form-field combo"', count=2)
+        self.assertContains(page, 'data-value="1970"')
+        self.assertContains(page, 'data-value="1985"')
+        self.assertNotContains(page, 'mileage_max')
+        self.assertContains(page, 'name="cur" value="USD"')
+
+    def test_country_filter_lists_only_countries_with_cars(self):
+        Car.objects.filter(pk=self.usd.pk).update(country='AE')
+        Car.objects.filter(pk=self.cheap_old.pk).update(country='DE')
+        page = self.client.get(reverse('cars:list'))
+        self.assertContains(page, '?country=AE')
+        self.assertContains(page, '?country=DE')
+        self.assertNotContains(page, '?country=FR')
+        self.assertEqual(self.ids(country='AE'), {self.usd.pk})
+        self.assertEqual(self.ids(country='de'), {self.cheap_old.pk})
 
 
 class FakeSessionObj(dict):
@@ -816,7 +842,7 @@ class WayForPayTests(TestCase):
     def submit(self):
         return self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'RS7', 'price': '120000', 'currency': 'EUR',
-            'accident': 'False', 'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+            'accident': 'False', 'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
 
     def callback(self, payment, status='Approved', amount=None, tamper=False):
         import hashlib, hmac, json

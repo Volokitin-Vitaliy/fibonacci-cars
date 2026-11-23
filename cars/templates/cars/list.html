@@ -51,7 +51,7 @@
         </div>
 
         {% for o in accident_options %}{% if o.active %}{% trans 'Accident' as l_acc %}{% include "includes/picker.html" with label=l_acc value=o.label options=accident_options is_set=accident %}{% endif %}{% endfor %}
-        {% for o in source_options %}{% if o.active %}{% trans 'Seller' as l_src %}{% include "includes/picker.html" with label=l_src value=o.label options=source_options is_set=source align="right" %}{% endif %}{% endfor %}
+        {% for o in country_options %}{% if o.active %}{% trans 'Country' as l_country %}{% include "includes/picker.html" with label=l_country value=o.label options=country_options is_set=country align="right" %}{% endif %}{% endfor %}
         {% for o in sort_options %}{% if o.active %}{% trans 'Sort' as l_sort %}{% include "includes/picker.html" with label=l_sort value=o.label options=sort_options align="right" class="col-span-2 sm:col-span-1" %}{% endif %}{% endfor %}
     </div>
 
@@ -59,14 +59,36 @@
     <div class="mb-10">
         <input type="checkbox" id="filters-toggle" class="peer hidden" {% if filters.active_count %}checked{% endif %}>
         <label for="filters-toggle" class="lg:hidden btn btn-outline w-full cursor-pointer">{% trans 'Filters' %}{% if filters.active_count %} ({{ filters.active_count }}){% endif %}</label>
-        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             {% if fuel %}<input type="hidden" name="fuel" value="{{ fuel }}">{% endif %}
             {% if make %}<input type="hidden" name="make" value="{{ make.slug }}">{% endif %}
-            {% if source %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
+            {% if country %}<input type="hidden" name="country" value="{{ country }}">{% endif %}
             {% if accident %}<input type="hidden" name="accident" value="{{ accident }}">{% endif %}
             <input type="hidden" name="sort" value="{{ sort }}">
-            {% for field in filters %}
-            <div class="form-field combo" data-combo{% if 'year' not in field.name %} data-group{% endif %}>
+
+            {# Price: one dropdown with "from", "to" and the currency #}
+            <div class="form-field col-span-2 lg:col-span-1 relative" data-price>
+                <label for="price-button">{% trans 'Price' %}</label>
+                <button type="button" id="price-button" class="price-button {% if filters.price_active %}is-set{% endif %}" aria-expanded="false" aria-controls="price-panel">
+                    <span class="truncate">{% if filters.price_active %}{{ filters.price_summary }}{% else %}<span class="text-neutral-500">{% trans 'Any' %}</span>{% endif %}</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" class="price-arrow shrink-0"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+                </button>
+                <div id="price-panel" class="price-panel" hidden>
+                    <div class="space-y-3">
+                        {% for field in filters.price_fields %}
+                        <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" inputmode="numeric" autocomplete="off" placeholder="{{ field.label }}" aria-label="{% trans 'Price' %}: {{ field.label }}" data-number>
+                        {% endfor %}
+                    </div>
+                    <div class="flex gap-2 mt-4" role="radiogroup" aria-label="{% trans 'Currency' %}">
+                        <label class="cur-option"><input type="radio" name="cur" value="EUR" {% if filters.currency == 'EUR' %}checked{% endif %}><span>€ EUR</span></label>
+                        <label class="cur-option"><input type="radio" name="cur" value="USD" {% if filters.currency == 'USD' %}checked{% endif %}><span>$ USD</span></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mt-4">{% trans 'Apply' %}</button>
+                </div>
+            </div>
+
+            {% for field in filters.year_fields %}
+            <div class="form-field combo" data-combo>
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 <div class="relative">
                     <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" inputmode="numeric" autocomplete="off" placeholder="{% trans 'Any' %}" role="combobox" aria-expanded="false" aria-controls="{{ field.id_for_label }}-list" class="!pr-10">
@@ -80,7 +102,7 @@
             {% endfor %}
             <div class="col-span-2 lg:col-span-1 flex gap-2">
                 <button type="submit" class="btn btn-primary flex-1 !px-3">{% trans 'Apply' %}</button>
-                {% if filters.active_count or fuel or make or source or accident %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
+                {% if filters.active_count or fuel or make or country or accident %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
             </div>
         </form>
     </div>
@@ -198,6 +220,28 @@ document.querySelectorAll('[data-combo]').forEach(function (root) {
     options.forEach(function (o) {
         o.addEventListener('mousedown', function (e) { e.preventDefault(); });
         o.addEventListener('click', function () { choose(o); });
+    });
+});
+// Price dropdown: "from", "to" typed by hand, currency switch.
+document.querySelectorAll('[data-price]').forEach(function (root) {
+    var button = root.querySelector('.price-button'), panel = root.querySelector('.price-panel');
+    function setOpen(open) {
+        panel.hidden = !open; button.setAttribute('aria-expanded', open);
+        if (open) { var first = panel.querySelector('input[type=text]'); if (window.matchMedia('(min-width: 640px)').matches) first.focus(); }
+    }
+    button.addEventListener('click', function () { setOpen(panel.hidden); });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    panel.querySelectorAll('[data-number]').forEach(function (input) {
+        function digits(v) { return (v || '').replace(/\D/g, ''); }
+        function group(v) { return digits(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f'); }
+        input.value = group(input.value);
+        input.addEventListener('input', function () {
+            var atEnd = input.selectionStart === input.value.length;
+            input.value = group(input.value);
+            if (atEnd) input.setSelectionRange(input.value.length, input.value.length);
+        });
+        input.form.addEventListener('submit', function () { input.value = digits(input.value); });
     });
 });
 </script>

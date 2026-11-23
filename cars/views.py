@@ -10,6 +10,7 @@ from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django_countries.fields import Country
 
 from . import favorites, payments, services
 from .forms import CarFilterForm, CarForm
@@ -68,11 +69,8 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     make_slug = make_slug or request.GET.get('make', '')
     make = get_object_or_404(Make, slug=make_slug) if make_slug else None
 
-    source = request.GET.get('source', '')
-    if source not in Car.Source.values:
-        source = ''
-    if source:
-        base = base.filter(source=source)
+    # Countries offered in the picker: only those with cars matching the other choices.
+    country = request.GET.get('country', '').upper()
     accident = request.GET.get('accident', '')
     if accident not in ACCIDENT_FILTERS:
         accident = ''
@@ -80,6 +78,15 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         base = base.filter(accident=ACCIDENT_FILTERS[accident])
     filters = CarFilterForm(request.GET or None)
     base = filters.apply(base)
+    for_countries = base.filter(fuel=fuel) if fuel else base
+    if make:
+        for_countries = for_countries.filter(make=make)
+    country_counts = dict(for_countries.exclude(country='').order_by().values_list('country')
+                          .annotate(n=Count('pk', distinct=True)))
+    if country not in country_counts:
+        country = ''
+    if country:
+        base = base.filter(country=country)
 
     cars = base
     if fuel:
@@ -125,8 +132,8 @@ def car_list(request, make_slug=None, fuel=None, new=False):
 
     accident_options = options('accident', accident, [
         ('', _('Any')), ('no', _('No accidents')), ('yes', _('After an accident'))])
-    source_options = options('source', source, [
-        ('', _('All sellers')), ('user', _('Private listings')), ('hollmann', 'hollmann.international')])
+    country_options = options('country', country, [('', _('All countries'))] + sorted(
+        ((code, Country(code).name) for code in country_counts), key=lambda c: str(c[1])))
     sort_options = options('sort', sort, [
         ('date-descending', _('Newest first')), ('date-ascending', _('Oldest first')),
         ('price-ascending', _('Price: low to high')), ('price-descending', _('Price: high to low'))])
@@ -136,13 +143,13 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         title = ' · '.join(str(x) for x in (make.name if make else '',
                                             Car.Fuel(fuel).label if fuel else '') if x)
     return render(request, 'cars/list.html', {
-        'page': page, 'title': title, 'sort': sort, 'is_new': new, 'source': source,
+        'page': page, 'title': title, 'sort': sort, 'is_new': new, 'country': country,
         'filters': filters, 'fuel': fuel, 'make': make,
         'fuel_label': Car.Fuel(fuel).label if fuel else _('All categories'),
         'fuel_options': fuel_options, 'make_options': make_options,
         'all_makes_href': link(make=''),
         'accident': accident, 'accident_options': accident_options,
-        'source_options': source_options, 'sort_options': sort_options,
+        'country_options': country_options, 'sort_options': sort_options,
     })
 
 
@@ -196,7 +203,7 @@ def my_cars(request):
 def car_create(request):
     phone = request.user.phone or ''
     initial = {'contact_name': request.user.full_name, 'contact_phone': phone,
-               'contact_whatsapp': phone}
+               'contact_whatsapp': phone, 'country': str(request.user.country or '')}
     form = CarForm(request.POST or None, request.FILES or None, initial=initial)
     if request.method == 'POST' and form.is_valid():
         form.instance.owner = request.user

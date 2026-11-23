@@ -4,7 +4,7 @@
         <span class="min-w-0"><span class="picker-label">{{ label }}</span><span class="block truncate">{{ value }}</span></span>
         <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
     </button>
-    <div data-dropdown-panel class="picker-panel hidden {% if align == 'right' %}picker-panel-end{% endif %} w-full min-w-[12rem]">
+    <div data-dropdown-panel class="picker-panel hidden {% if align == 'right' %}picker-panel-end{% endif %} min-w-full w-max max-w-[min(22rem,calc(100vw-2rem))]">
         <div class="py-2">
             {% for o in options %}
             <a href="{{ o.href }}" class="picker-option {% if o.active %}is-active{% endif %}">

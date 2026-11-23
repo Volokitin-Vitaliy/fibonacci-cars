@@ -65,6 +65,7 @@
 
             {# Key numbers #}
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-8">
+                {% if car.country %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Country' %}</div><div class="mt-1 text-lg font-semibold">{{ car.country.name }}</div></div>{% endif %}
                 {% if car.year %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Year' %}</div><div class="mt-1 text-lg font-semibold">{{ car.year }}</div></div>{% endif %}
                 {% if car.mileage_km is not None %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Mileage' %}</div><div class="mt-1 text-lg font-semibold">{{ car.mileage_km|thousands }} km</div></div>{% endif %}
                 {% if car.power_hp %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Power' %}</div><div class="mt-1 text-lg font-semibold">{{ car.power_hp }} {% trans 'hp' %}</div></div>{% endif %}

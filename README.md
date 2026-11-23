@@ -4,8 +4,8 @@ Django marketplace for exclusive vehicles, in English and Russian.
 
 - **Catalog**: All Vehicles and New Offers with two separate pickers that can be combined:
   **category** (engine type: combustion/petrol, diesel, hybrid, electric, gas) and
-  **make**, plus accident history (no accidents / after an accident), seller and sorting by
-  date or price — all as dropdowns; a vehicle page with gallery, gross/net price,
+  **make**, plus accident history (no accidents / after an accident), **country** (only
+  countries that have cars) and sorting by date or price — all as dropdowns; a vehicle page with gallery, gross/net price,
   details table, description and contacts.
 - **Daily import** from hollmann.international (with their permission): make, model,
   prices, engine type, specification table, **photos** (copied and re-compressed, up to 20
@@ -21,7 +21,9 @@ Django marketplace for exclusive vehicles, in English and Russian.
   the owner activates it again from the cabinet.
 - **Paid listings via WayForPay** (or Stripe): 10 EUR when a listing is submitted and when
   it is reactivated; switched off by default.
-- **Filters** by price (EUR, USD converted), year and mileage.
+- **Filters:** price from/to typed by hand in EUR or USD, and year from/to (suggested years
+  1970 to today, or typed). Every listing has a country (Russia is not offered); imported
+  Hollmann cars are set to Germany.
 - **Favorites for guests:** kept in the session for 30 days after the last visit and moved
   to the account when the guest signs in.
 - **Admin** on django-unfold: dashboard (listings to review, expiring soon, import status,

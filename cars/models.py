@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
+from django_countries.fields import CountryField
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
@@ -128,6 +129,8 @@ class Car(models.Model):
     color = models.CharField(_('color'), max_length=100, blank=True)
     # Was the car damaged in an accident? None = not stated (imported cars).
     accident = models.BooleanField(_('accident damage'), null=True, blank=True, db_index=True)
+    # Where the car is. Imported Hollmann cars are in Germany.
+    country = CountryField(_('country'), blank=True, db_index=True)
 
     # Full specification table as [label, value] pairs (imported cars).
     specs = models.JSONField(default=list, blank=True)

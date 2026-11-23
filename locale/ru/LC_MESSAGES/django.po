@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 15:50+0000\n"
+"POT-Creation-Date: 2026-11-23 16:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -231,6 +231,9 @@ msgstr "Смотреть фото на hollmann.international"
 
 msgid "No photos yet"
 msgstr "Фотографий пока нет"
+
+msgid "Country"
+msgstr "Страна"
 
 msgid "Year"
 msgstr "Год"
@@ -488,14 +491,17 @@ msgstr "Найти марку"
 msgid "Nothing found"
 msgstr "Ничего не найдено"
 
-msgid "Seller"
-msgstr "Продавец"
-
 msgid "Sort"
 msgstr "Сортировка"
 
 msgid "Filters"
 msgstr "Фильтры"
+
+msgid "Any"
+msgstr "Любые"
+
+msgid "Currency"
+msgstr "Валюта"
 
 msgid "Apply"
 msgstr "Применить"
@@ -731,6 +737,9 @@ msgstr "Номер с кодом страны, например +7 999 123-45-67
 msgid "@username or phone number"
 msgstr "@username или номер телефона"
 
+msgid "Country where the car is"
+msgstr "Страна, где находится автомобиль"
+
 msgid "Choose a make"
 msgstr "Выберите марку"
 
@@ -753,11 +762,11 @@ msgstr "Цена должна быть больше нуля."
 msgid "A listing can have at most %(n)s photos."
 msgstr "В объявлении может быть не больше %(n)s фотографий."
 
-msgid "Price from, €"
-msgstr "Цена от, €"
+msgid "From"
+msgstr "От"
 
-msgid "Price to, €"
-msgstr "Цена до, €"
+msgid "To"
+msgstr "До"
 
 msgid "Year from"
 msgstr "Год от"
@@ -765,8 +774,13 @@ msgstr "Год от"
 msgid "Year to"
 msgstr "Год до"
 
-msgid "Mileage up to, km"
-msgstr "Пробег до, км"
+#, python-format
+msgid "from %(price)s"
+msgstr "от %(price)s"
+
+#, python-format
+msgid "up to %(price)s"
+msgstr "до %(price)s"
 
 msgid "name"
 msgstr "название"
@@ -839,6 +853,9 @@ msgstr "цвет"
 
 msgid "accident damage"
 msgstr "был в ДТП"
+
+msgid "country"
+msgstr "страна"
 
 msgid "price"
 msgstr "цена"
@@ -1047,14 +1064,8 @@ msgstr "Подключаемый гибрид (бензин/электро)"
 msgid "All categories"
 msgstr "Все категории"
 
-msgid "Any"
-msgstr "Любые"
-
-msgid "All sellers"
-msgstr "Все продавцы"
-
-msgid "Private listings"
-msgstr "Частные объявления"
+msgid "All countries"
+msgstr "Все страны"
 
 msgid "Newest first"
 msgstr "Сначала новые"
@@ -1172,9 +1183,6 @@ msgstr "Фамилия"
 msgid "Middle name"
 msgstr "Отчество"
 
-msgid "Country"
-msgstr "Страна"
-
 msgid "This phone number is already registered."
 msgstr "Этот номер телефона уже зарегистрирован."
 
@@ -1195,9 +1203,6 @@ msgstr "фамилия"
 
 msgid "middle name"
 msgstr "отчество"
-
-msgid "country"
-msgstr "страна"
 
 msgid "phone"
 msgstr "телефон"
