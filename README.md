@@ -19,6 +19,11 @@ Django marketplace for exclusive vehicles, in English and Russian.
   the owner activates it again from the cabinet.
 - **Paid activation via Stripe** (5 EUR per month), switched off by default.
 - **Filters** by price (EUR, USD converted), year and mileage.
+- **Favorites for guests:** kept in the session for 30 days after the last visit and moved
+  to the account when the guest signs in.
+- **Admin** on django-unfold: dashboard (listings to review, expiring soon, import status,
+  new users, payments), sidebar with a moderation counter, coloured status labels.
+- **Floating bottom menu** on every page: a full-width bar on phones, a pill on desktop.
 - **Language choice first:** on the first visit to any page the visitor chooses English or
   Russian, then the site continues to the requested page (`/en/...`, `/ru/...`).
   Search engines skip the picker; pages have `hreflang` links, `/robots.txt` and

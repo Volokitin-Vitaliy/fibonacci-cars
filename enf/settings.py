@@ -40,6 +40,8 @@ X_FRAME_OPTIONS = 'DENY'
 
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -236,3 +238,94 @@ if os.getenv('APPLE_SERVICE_ID') and os.getenv('APPLE_TEAM_ID') and os.getenv('A
         },
         'EMAIL_AUTHENTICATION': True,
     }
+
+
+# Admin theme (django-unfold): dark-ready, with a dashboard and a sidebar.
+from django.templatetags.static import static  # noqa: E402
+from django.urls import reverse_lazy  # noqa: E402
+
+UNFOLD = {
+    'SITE_TITLE': 'FIBONACCI',
+    'SITE_HEADER': 'FIBONACCI',
+    'SITE_SUBHEADER': _('Admin panel'),
+    'SITE_URL': '/',
+    'SITE_ICON': lambda request: static('img/logo-96.png'),
+    'SITE_SYMBOL': 'directions_car',
+    'SITE_FAVICONS': [
+        {'rel': 'icon', 'sizes': '32x32', 'type': 'image/png',
+         'href': lambda request: static('img/favicon-32.png')},
+    ],
+    'SHOW_HISTORY': True,
+    'SHOW_VIEW_ON_SITE': True,
+    'DASHBOARD_CALLBACK': 'cars.dashboard.dashboard_callback',
+    'COLORS': {
+        'base': {
+            '50': '250, 250, 250', '100': '245, 245, 245', '200': '229, 229, 229',
+            '300': '212, 212, 212', '400': '163, 163, 163', '500': '115, 115, 115',
+            '600': '82, 82, 82', '700': '64, 64, 64', '800': '38, 38, 38',
+            '900': '23, 23, 23', '950': '10, 10, 10',
+        },
+        'primary': {  # the blue glow of the logo
+            '50': '239, 246, 255', '100': '219, 234, 254', '200': '191, 219, 254',
+            '300': '147, 197, 253', '400': '96, 165, 250', '500': '59, 130, 246',
+            '600': '37, 99, 235', '700': '29, 78, 216', '800': '30, 64, 175',
+            '900': '30, 58, 138', '950': '23, 37, 84',
+        },
+    },
+    'SIDEBAR': {
+        'show_search': True,
+        'show_all_applications': False,
+        'navigation': [
+            {
+                'title': _('Overview'),
+                'items': [
+                    {'title': _('Dashboard'), 'icon': 'space_dashboard',
+                     'link': reverse_lazy('admin:index')},
+                    {'title': _('Open the site'), 'icon': 'open_in_new', 'link': '/'},
+                ],
+            },
+            {
+                'title': _('Listings'),
+                'items': [
+                    {'title': _('Moderation'), 'icon': 'fact_check',
+                     'link': lambda request: str(reverse_lazy('admin:cars_car_changelist')) + '?moderation=pending',
+                     'badge': 'cars.dashboard.pending_badge'},
+                    {'title': _('All vehicles'), 'icon': 'directions_car',
+                     'link': reverse_lazy('admin:cars_car_changelist')},
+                    {'title': _('Categories'), 'icon': 'category',
+                     'link': reverse_lazy('admin:cars_category_changelist')},
+                    {'title': _('Makes'), 'icon': 'sell',
+                     'link': reverse_lazy('admin:cars_make_changelist')},
+                ],
+            },
+            {
+                'title': _('People'),
+                'items': [
+                    {'title': _('Users'), 'icon': 'group',
+                     'link': reverse_lazy('admin:users_customuser_changelist')},
+                    {'title': _('Favorites'), 'icon': 'favorite',
+                     'link': reverse_lazy('admin:cars_favorite_changelist')},
+                    {'title': _('Google / Apple accounts'), 'icon': 'key',
+                     'link': reverse_lazy('admin:socialaccount_socialaccount_changelist')},
+                ],
+            },
+            {
+                'title': _('Money'),
+                'items': [
+                    {'title': _('Payments'), 'icon': 'payments',
+                     'link': reverse_lazy('admin:cars_payment_changelist')},
+                ],
+            },
+            {
+                'title': _('System'),
+                'collapsible': True,
+                'items': [
+                    {'title': _('Hollmann import'), 'icon': 'sync',
+                     'link': reverse_lazy('admin:cars_importrun_changelist')},
+                    {'title': _('Groups'), 'icon': 'admin_panel_settings',
+                     'link': reverse_lazy('admin:auth_group_changelist')},
+                ],
+            },
+        ],
+    },
+}

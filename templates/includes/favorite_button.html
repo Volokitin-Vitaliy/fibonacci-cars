@@ -1,14 +1,17 @@
-{% load i18n %}
-{% if user.is_authenticated %}
+{% load i18n %}{% with fav=car.pk|default:0 %}
 <form method="post" action="{% url 'cars:favorite' car.pk %}" class="{% if compact %}absolute top-3 right-3{% endif %}" data-favorite-form>
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
     {% if car.pk in favorite_ids %}
-    <button type="submit" class="{% if compact %}w-9 h-9 bg-black/70 hover:bg-black{% else %}btn btn-outline w-full{% endif %} text-red-400" title="{% trans 'Remove from favorites' %}" data-fav="1">♥{% if not compact %} <span>{% trans 'In favorites' %}</span>{% endif %}</button>
+    <button type="submit" data-fav="1" aria-pressed="true" title="{% trans 'Remove from favorites' %}" data-title-on="{% trans 'Remove from favorites' %}" data-title-off="{% trans 'Add to favorites' %}"
+            class="{% if compact %}w-9 h-9 bg-black/70 hover:bg-black flex items-center justify-center{% else %}btn btn-outline w-full{% endif %} text-red-400">
+        <span data-fav-icon>♥</span>{% if not compact %} <span data-fav-label data-on="{% trans 'In favorites' %}" data-off="{% trans 'Add to favorites' %}">{% trans 'In favorites' %}</span>{% endif %}
+    </button>
     {% else %}
-    <button type="submit" class="{% if compact %}w-9 h-9 bg-black/70 hover:bg-black{% else %}btn btn-outline w-full{% endif %} text-white" title="{% trans 'Add to favorites' %}" data-fav="0">♡{% if not compact %} <span>{% trans 'Add to favorites' %}</span>{% endif %}</button>
+    <button type="submit" data-fav="0" aria-pressed="false" title="{% trans 'Add to favorites' %}" data-title-on="{% trans 'Remove from favorites' %}" data-title-off="{% trans 'Add to favorites' %}"
+            class="{% if compact %}w-9 h-9 bg-black/70 hover:bg-black flex items-center justify-center{% else %}btn btn-outline w-full{% endif %} text-white">
+        <span data-fav-icon>♡</span>{% if not compact %} <span data-fav-label data-on="{% trans 'In favorites' %}" data-off="{% trans 'Add to favorites' %}">{% trans 'Add to favorites' %}</span>{% endif %}
+    </button>
     {% endif %}
 </form>
-{% else %}
-<a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" class="{% if compact %}absolute top-3 right-3 w-9 h-9 bg-black/70 hover:bg-black flex items-center justify-center{% else %}btn btn-outline w-full{% endif %}" title="{% trans 'Log in to save favorites' %}">♡{% if not compact %} {% trans 'Add to favorites' %}{% endif %}</a>
-{% endif %}
+{% endwith %}

@@ -1,0 +1,62 @@
+{% load i18n %}{% with name=request.resolver_match.url_name app=request.resolver_match.app_name %}
+{# Floating bottom menu: a full-width bar on phones, a centred pill on desktop. #}
+<nav aria-label="{% trans 'Main menu' %}"
+     class="fixed z-40 inset-x-0 bottom-0 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:bottom-5
+            bg-black/95 lg:bg-black/80 backdrop-blur-xl border-t border-neutral-800 lg:border lg:rounded-full lg:shadow-2xl lg:shadow-black/70"
+     style="padding-bottom: env(safe-area-inset-bottom);">
+    <ul class="grid grid-cols-5 lg:flex lg:items-center lg:gap-1 lg:px-2 lg:py-2">
+        <li>
+            <a href="{% url 'cars:home' %}" class="bn-item {% if app == 'cars' and name == 'home' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+                <span>{% trans 'Home' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:list' %}" class="bn-item {% if app == 'cars' and name in 'list new category make detail' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14M6.5 17v2M17.5 17v2M3 13l2-5.5A2 2 0 0 1 6.9 6h10.2a2 2 0 0 1 1.9 1.5L21 13v4H3z"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></svg>
+                <span>{% trans 'Vehicles' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:add' %}" class="bn-item bn-sell {% if app == 'cars' and name == 'add' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                <span>{% trans 'Sell' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:favorites' %}" class="bn-item {% if app == 'cars' and name == 'favorites' %}bn-active{% endif %}">
+                <span class="relative">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-9A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5c-2.2 4.6-9.2 9-9.2 9z"/></svg>
+                    <b data-fav-count data-fav-badge class="bn-badge {% if not favorite_ids %}hidden{% endif %}">{{ favorite_ids|length }}</b>
+                </span>
+                <span>{% trans 'Favorites' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% if user.is_authenticated %}{% url 'cars:my_cars' %}{% else %}{% url 'users:login' %}{% endif %}"
+               class="bn-item {% if app == 'cars' and name in 'my_cars edit' or app == 'users' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <span>{% if user.is_authenticated %}{% trans 'Profile' %}{% else %}{% trans 'Log in' %}{% endif %}</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+<style>
+    .bn-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
+               height: 4.25rem; color: #a3a3a3; font-size: .7rem; letter-spacing: .02em; transition: color .2s, background .2s; }
+    .bn-item svg { width: 1.45rem; height: 1.45rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .bn-item:hover, .bn-active { color: #fff; }
+    .bn-active svg { stroke-width: 2; }
+    .bn-sell svg { width: 2.2rem; height: 2.2rem; padding: .35rem; border-radius: 999px; background: #f5f5f5; color: #0b0b0b; stroke-width: 2.2;
+                   margin: -.4rem 0 -.35rem; box-shadow: 0 0 0 4px rgba(0,0,0,.85); }
+    .bn-badge { position: absolute; top: -.35rem; right: -.6rem; min-width: 1.1rem; height: 1.1rem; padding: 0 .25rem;
+                border-radius: 999px; background: #2563eb; color: #fff; font-size: .65rem; line-height: 1.1rem; text-align: center; font-weight: 600; }
+    @media (min-width: 1024px) {
+        .bn-item { flex-direction: row; height: 2.75rem; gap: .5rem; padding: 0 1.1rem; border-radius: 999px; font-size: .8rem; }
+        .bn-item svg { width: 1.2rem; height: 1.2rem; }
+        .bn-active { background: rgba(255,255,255,.08); }
+        .bn-sell svg { width: 1.7rem; height: 1.7rem; padding: .25rem; margin: 0; box-shadow: none; }
+        .bn-item > .relative { margin-right: .4rem; }
+    }
+</style>
+{% endwith %}

@@ -4,7 +4,7 @@
 {% block cabinet %}
 <h2 class="text-xl font-semibold mb-8">{% trans 'Favorites' %}</h2>
 <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
-    {% for fav in favorites %}{% with car=fav.car %}{% include "includes/car_card.html" %}{% endwith %}
+    {% for car in cars %}{% include "includes/car_card.html" %}
     {% empty %}
     <div class="col-span-full border border-dashed border-neutral-800 p-12 text-center">
         <p class="text-neutral-400">{% trans 'You have not saved any vehicles yet. Tap ♡ on a vehicle to save it here.' %}</p>

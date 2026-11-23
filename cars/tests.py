@@ -248,11 +248,44 @@ class FavoriteTests(TestCase):
         self.client.post(reverse('cars:favorite', args=[car.pk]))
         self.assertFalse(Favorite.objects.filter(user=user, car=car).exists())
 
-    def test_favorites_require_login(self):
+    def test_guest_favorites_kept_in_session_and_moved_on_login(self):
         self.client.cookies.load(LANG)
-        response = self.client.get(reverse('cars:favorites'))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse('users:login'), response['Location'])
+        owner = make_user('owner@example.com', '+49 151 0000003')
+        car1, car2 = make_listing(owner), make_listing(owner)
+        response = self.client.post(reverse('cars:favorite', args=[car1.pk]),
+                                    HTTP_X_REQUESTED_WITH='fetch')
+        self.assertEqual(response.json(), {'favorite': True, 'count': 1})
+        self.client.post(reverse('cars:favorite', args=[car2.pk]))
+        page = self.client.get(reverse('cars:favorites'))
+        self.assertEqual([c.pk for c in page.context['cars']], [car2.pk, car1.pk])
+        self.assertContains(page, '30 days')
+        self.assertEqual(Favorite.objects.count(), 0)
+        # Guest session lasts 30 days and is extended on every visit.
+        self.assertEqual(settings.SESSION_COOKIE_AGE, 60 * 60 * 24 * 30)
+        self.assertTrue(settings.SESSION_SAVE_EVERY_REQUEST)
+
+        user = make_user('guest@example.com', '+49 151 0000004')
+        self.client.post(reverse('users:login'), {'username': user.email, 'password': 'Sup3r-secret-pw'})
+        self.assertEqual(set(user.favorites.values_list('car_id', flat=True)), {car1.pk, car2.pk})
+        self.assertEqual(len(self.client.get(reverse('cars:favorites')).context['cars']), 2)
+
+    def test_guest_toggle_off_and_hidden_cars_skipped(self):
+        self.client.cookies.load(LANG)
+        car = make_listing(make_user())
+        self.client.post(reverse('cars:favorite', args=[car.pk]))
+        self.client.post(reverse('cars:favorite', args=[car.pk]))
+        self.assertEqual(self.client.get(reverse('cars:favorites')).context['cars'], [])
+        self.client.post(reverse('cars:favorite', args=[car.pk]))
+        car.deactivate()
+        self.assertEqual(self.client.get(reverse('cars:favorites')).context['cars'], [])
+
+    def test_bottom_menu_on_every_page(self):
+        self.client.cookies.load(LANG)
+        for url in (reverse('cars:home'), reverse('cars:list'), reverse('users:login')):
+            page = self.client.get(url)
+            self.assertContains(page, 'aria-label="Main menu"')
+            self.assertContains(page, reverse('cars:add'))
+        self.assertContains(self.client.get(reverse('cars:list')), 'bn-item bn-active', count=1)
 
 
 class LanguageTests(TestCase):
@@ -458,6 +491,30 @@ class ModerationTests(TestCase):
         car.refresh_from_db()
         self.assertEqual(car.active_until, until)
         self.assertTrue(Car.objects.visible().filter(pk=car.pk).exists())
+
+    def test_admin_pages_open(self):
+        admin = CustomUser.objects.create_superuser('admin@example.com', 'A', 'B', 'pw-123456789')
+        car = self.create()
+        self.client.force_login(admin)
+        for url in (reverse('admin:index'), reverse('admin:cars_car_changelist'),
+                    reverse('admin:cars_car_changelist') + '?moderation=pending',
+                    reverse('admin:cars_car_change', args=[car.pk]),
+                    reverse('admin:users_customuser_changelist'),
+                    reverse('admin:users_customuser_change', args=[self.user.pk]),
+                    reverse('admin:cars_payment_changelist'), reverse('admin:cars_importrun_changelist'),
+                    reverse('admin:socialaccount_socialaccount_changelist'),
+                    reverse('admin:auth_group_changelist')):
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+        dashboard = self.client.get(reverse('admin:index'))
+        self.assertContains(dashboard, 'RS6')  # in "waiting for review"
+
+    def test_admin_login_opens_admin(self):
+        CustomUser.objects.create_superuser('admin@example.com', 'A', 'B', 'pw-123456789')
+        self.assertRedirects(self.client.get('/admin/login/'), '/admin/login/?next=/admin/',
+                             fetch_redirect_response=False)
+        response = self.client.post('/admin/login/?next=/admin/',
+                                    {'username': 'admin@example.com', 'password': 'pw-123456789'})
+        self.assertRedirects(response, '/admin/', fetch_redirect_response=False)
 
     def test_admin_approve_action(self):
         car = self.create()

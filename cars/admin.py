@@ -1,30 +1,32 @@
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import display
 
 from . import services
 from .models import Car, CarPhoto, Category, Favorite, ImportRun, ListingPeriod, Make, Payment
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ('name_en', 'name_ru', 'slug', 'hollmann_id', 'position')
     list_editable = ('position',)
     prepopulated_fields = {'slug': ('name_en',)}
 
 
 @admin.register(Make)
-class MakeAdmin(admin.ModelAdmin):
+class MakeAdmin(ModelAdmin):
     list_display = ('name', 'slug')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 
 
-class CarPhotoInline(admin.TabularInline):
+class CarPhotoInline(TabularInline):
     model = CarPhoto
     extra = 0
 
 
-class ListingPeriodInline(admin.TabularInline):
+class ListingPeriodInline(TabularInline):
     model = ListingPeriod
     extra = 0
     readonly_fields = ('starts_at', 'ends_at', 'amount', 'method', 'created_at')
@@ -44,9 +46,10 @@ class ModerationFilter(admin.SimpleListFilter):
 
 
 @admin.register(Car)
-class CarAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'source', 'moderation', 'price', 'currency', 'status',
-                    'active_until', 'is_published', 'owner', 'created_at')
+class CarAdmin(ModelAdmin):
+    list_display = ('title_with_make', 'source_badge', 'moderation_badge', 'price_display',
+                    'status_badge', 'active_until', 'owner', 'created_at')
+    list_display_links = ('title_with_make',)
     list_filter = (ModerationFilter, 'source', 'status', 'is_published', 'is_new',
                    'categories', 'make')
     search_fields = ('model', 'make__name', 'external_id', 'owner__email', 'contact_phone')
@@ -55,6 +58,50 @@ class CarAdmin(admin.ModelAdmin):
     filter_horizontal = ('categories',)
     inlines = (CarPhotoInline, ListingPeriodInline)
     actions = ('approve_selected', 'reject_selected')
+    list_per_page = 50
+    date_hierarchy = 'created_at'
+    readonly_fields = ('price_eur', 'external_id', 'source_url', 'last_synced_at',
+                       'created_at', 'updated_at')
+    fieldsets = (
+        (_('Moderation'), {'fields': ('moderation', 'rejection_reason')}),
+        (_('Vehicle'), {'fields': ('make', 'model', 'categories', 'description')}),
+        (_('Characteristics'), {'fields': (('year', 'mileage_km'), ('fuel', 'transmission'),
+                                           ('power_hp', 'color'), 'specs')}),
+        (_('Price'), {'fields': (('price', 'currency'), 'price_net', 'price_eur')}),
+        (_('Contacts'), {'fields': ('owner', 'contact_name', 'contact_phone',
+                                    'contact_whatsapp', 'contact_telegram')}),
+        (_('Publication'), {'fields': ('source', 'status', ('activated_at', 'active_until'),
+                                       'is_published', 'is_new')}),
+        (_('Import'), {'classes': ('collapse',),
+                       'fields': ('external_id', 'source_url', 'last_synced_at',
+                                  'created_at', 'updated_at')}),
+    )
+
+    @display(description=_('Vehicle'), header=True)
+    def title_with_make(self, obj):
+        return obj.model, obj.make.name
+
+    @display(description=_('Source'), label={'hollmann': 'info', 'user': 'primary'})
+    def source_badge(self, obj):
+        return obj.source, ('Hollmann' if obj.is_imported else _('Private'))
+
+    @display(description=_('moderation'), label={'pending': 'warning', 'approved': 'success',
+                                                   'rejected': 'danger'})
+    def moderation_badge(self, obj):
+        if obj.source != Car.Source.USER:
+            return None
+        return obj.moderation, obj.get_moderation_display()
+
+    @display(description=_('Price'), ordering='price_eur')
+    def price_display(self, obj):
+        return f'{obj.currency_symbol}{obj.price:,.0f}'
+
+    @display(description=_('Status'), label={'active': 'success', 'inactive': 'info',
+                                               'hidden': 'danger'})
+    def status_badge(self, obj):
+        if obj.is_imported:
+            return ('active', _('Active')) if obj.is_published else ('hidden', _('Removed'))
+        return ('active', _('Active')) if obj.is_listing_active else ('inactive', _('Inactive'))
 
     def save_model(self, request, obj, form, change):
         # Changing "moderation" in the form goes through the same steps as the
@@ -94,13 +141,13 @@ class CarAdmin(admin.ModelAdmin):
 
 
 @admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
+class FavoriteAdmin(ModelAdmin):
     list_display = ('user', 'car', 'created_at')
     raw_id_fields = ('user', 'car')
 
 
 @admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(ModelAdmin):
     list_display = ('created_at', 'car', 'user', 'amount', 'currency', 'status', 'paid_at')
     list_filter = ('status',)
     search_fields = ('stripe_session_id', 'user__email')
@@ -108,6 +155,6 @@ class PaymentAdmin(admin.ModelAdmin):
 
 
 @admin.register(ImportRun)
-class ImportRunAdmin(admin.ModelAdmin):
+class ImportRunAdmin(ModelAdmin):
     list_display = ('started_at', 'finished_at', 'ok', 'created', 'updated', 'unpublished')
     readonly_fields = [f.name for f in ImportRun._meta.fields]

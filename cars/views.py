@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import payments, services
+from . import favorites, payments, services
 from .forms import CarFilterForm, CarForm
 from .models import Car, CarPhoto, Category, Favorite, Make, Payment
 
@@ -99,19 +99,24 @@ def car_detail(request, pk):
     })
 
 
-@login_required
 @require_POST
 def toggle_favorite(request, pk):
+    """Works for guests too (kept in the session for 30 days)."""
     car = get_object_or_404(Car, pk=pk)
-    favorite, created = Favorite.objects.get_or_create(user=request.user, car=car)
-    if not created:
-        favorite.delete()
+    is_favorite = favorites.toggle(request, car)
     if request.headers.get('X-Requested-With') == 'fetch':
-        return JsonResponse({'favorite': created})
+        return JsonResponse({'favorite': is_favorite,
+                             'count': len(favorites.favorite_ids(request))})
     next_url = request.POST.get('next')
     if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
         return redirect(next_url)
     return redirect(car)
+
+
+def favorites_page(request):
+    cars = favorites.favorite_cars(request)
+    template = 'cars/cabinet/favorites.html' if request.user.is_authenticated else 'cars/favorites_guest.html'
+    return render(request, template, {'cars': cars, 'section': 'favorites'})
 
 
 # --- Cabinet -------------------------------------------------------------
@@ -125,16 +130,6 @@ def my_cars(request):
         'listing_price': settings.LISTING_PRICE_EUR,
         'duration': settings.LISTING_DURATION_DAYS,
         'moderation': settings.LISTING_MODERATION,
-    })
-
-
-@login_required
-def favorites(request):
-    favs = (request.user.favorites
-            .select_related('car__make')
-            .prefetch_related('car__photos'))
-    return render(request, 'cars/cabinet/favorites.html', {
-        'favorites': favs, 'section': 'favorites',
     })
 
 
@@ -279,6 +274,8 @@ def robots_txt(request):
         'Disallow: /ru/cabinet/',
         'Disallow: /en/users/',
         'Disallow: /ru/users/',
+        'Disallow: /en/favorites/',
+        'Disallow: /ru/favorites/',
         f'Sitemap: {request.build_absolute_uri("/sitemap.xml")}',
     ]
     return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')

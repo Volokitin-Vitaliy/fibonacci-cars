@@ -130,9 +130,9 @@ class Car(models.Model):
         AUTOMATIC = 'automatic', _('Automatic')
         MANUAL = 'manual', _('Manual')
 
-    source = models.CharField(max_length=20, choices=Source.choices, default=Source.USER)
+    source = models.CharField(_('source'), max_length=20, choices=Source.choices, default=Source.USER)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                              null=True, blank=True, related_name='cars')
+                              null=True, blank=True, related_name='cars', verbose_name=_('owner'))
 
     make = models.ForeignKey(Make, on_delete=models.PROTECT, related_name='cars',
                              verbose_name=_('make'))
@@ -157,7 +157,7 @@ class Car(models.Model):
     currency = models.CharField(_('currency'), max_length=3, choices=Currency.choices,
                                 default=Currency.EUR)
     # Net export price shown by hollmann.international next to the gross price.
-    price_net = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    price_net = models.DecimalField(_('net price'), max_digits=12, decimal_places=2, null=True, blank=True)
     # Price converted to EUR, used for filtering and sorting across currencies.
     price_eur = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,
                                     db_index=True, editable=False)
@@ -169,9 +169,9 @@ class Car(models.Model):
     contact_telegram = models.CharField(_('Telegram'), max_length=40, blank=True)
 
     # User listing lifecycle.
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
-    activated_at = models.DateTimeField(null=True, blank=True)
-    active_until = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(_('status'), max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    activated_at = models.DateTimeField(_('activated at'), null=True, blank=True)
+    active_until = models.DateTimeField(_('active until'), null=True, blank=True)
     reminder_sent_at = models.DateTimeField(null=True, blank=True)
 
     # Moderation of user listings.
@@ -182,12 +182,12 @@ class Car(models.Model):
     # Import bookkeeping.
     external_id = models.CharField(max_length=50, blank=True)
     source_url = models.URLField(blank=True)
-    is_published = models.BooleanField(default=True)
-    is_new = models.BooleanField(default=False)
+    is_published = models.BooleanField(_('published'), default=True)
+    is_new = models.BooleanField(_('new offer'), default=False)
     last_synced_at = models.DateTimeField(null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(_('created'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated'), auto_now=True)
 
     objects = CarQuerySet.as_manager()
 

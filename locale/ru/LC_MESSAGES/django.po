@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 13:14+0000\n"
+"POT-Creation-Date: 2026-11-23 13:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -248,6 +248,61 @@ msgstr "Телефон"
 msgid "More from %(make)s"
 msgstr "Ещё %(make)s"
 
+msgid "Activate it in your cabinet to publish it:"
+msgstr "Активируйте его в кабинете, чтобы опубликовать:"
+
+#, python-format
+msgid "Hello %(name)s,"
+msgstr "Здравствуйте, %(name)s!"
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved."
+msgstr "Ваше объявление «%(car)s» одобрено."
+
+#, python-format
+msgid "It is now visible on the site until %(date)s."
+msgstr "Теперь оно опубликовано на сайте до %(date)s."
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved"
+msgstr "Объявление «%(car)s» одобрено"
+
+msgid "After that it will be hidden from the site until you activate it again in your cabinet:"
+msgstr "После этого оно будет скрыто с сайта, пока вы снова не активируете его в кабинете:"
+
+msgid "Your listing:"
+msgstr "Ваше объявление:"
+
+#, python-format
+msgid "Your listing \"%(car)s\" on FIBONACCI will be deactivated on %(date)s."
+msgstr "Ваше объявление «%(car)s» на FIBONACCI будет деактивировано %(date)s."
+
+#, python-format
+msgid "Your listing \"%(car)s\" expires soon"
+msgstr "Срок объявления «%(car)s» скоро закончится"
+
+msgid "You can edit the listing and submit it again in your cabinet:"
+msgstr "Вы можете исправить объявление и отправить его повторно в кабинете:"
+
+#, python-format
+msgid "Unfortunately, your listing \"%(car)s\" was not approved."
+msgstr "К сожалению, ваше объявление «%(car)s» не прошло модерацию."
+
+#, python-format
+msgid "Your listing \"%(car)s\" was not approved"
+msgstr "Объявление «%(car)s» не прошло модерацию"
+
+msgid "Your favorites are saved in this browser for 30 days. Log in to keep them on all your devices."
+msgstr ""
+"Избранное сохраняется в этом браузере на 30 дней. Войдите, чтобы оно было доступно на всех ваших "
+"устройствах."
+
+msgid "Log in"
+msgstr "Войти"
+
+msgid "Create an account"
+msgstr "Зарегистрироваться"
+
 msgid "Exclusive vehicles"
 msgstr "Эксклюзивные автомобили"
 
@@ -321,6 +376,48 @@ msgstr[0] "%(n)s автомобиль"
 msgstr[1] "%(n)s автомобиля"
 msgstr[2] "%(n)s автомобилей"
 
+msgid "Dashboard"
+msgstr "Обзор"
+
+msgid "Waiting for review"
+msgstr "Ждут модерации"
+
+msgid "Review"
+msgstr "Проверить"
+
+msgid "Nothing to review. All listings are checked."
+msgstr "Проверять нечего — все объявления просмотрены."
+
+msgid "Expiring in the next 3 days"
+msgstr "Истекают в ближайшие 3 дня"
+
+msgid "No listings expire soon."
+msgstr "В ближайшие дни ничего не истекает."
+
+msgid "Hollmann import"
+msgstr "Импорт Hollmann"
+
+msgid "Last run"
+msgstr "Последний запуск"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Started"
+msgstr "Начат"
+
+msgid "New / updated"
+msgstr "Новых / обновлено"
+
+msgid "Removed from site"
+msgstr "Снято с сайта"
+
+msgid "The import has not run yet."
+msgstr "Импорт ещё не запускался."
+
+msgid "New users"
+msgstr "Новые пользователи"
+
 msgid "Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles."
 msgstr "Эксклюзивные автомобили на продажу: тюнинг, бронированные, олдтаймеры и электромобили."
 
@@ -330,14 +427,8 @@ msgstr "Автомобили"
 msgid "Sell your car"
 msgstr "Продать автомобиль"
 
-msgid "Log in"
-msgstr "Войти"
-
 msgid "Menu"
 msgstr "Меню"
-
-msgid "Create an account"
-msgstr "Зарегистрироваться"
 
 msgid "Exclusive vehicles from trusted dealers and private sellers."
 msgstr "Эксклюзивные автомобили от проверенных дилеров и частных продавцов."
@@ -348,6 +439,18 @@ msgstr "Аккаунт"
 msgid "Some offers are listed from hollmann.international and link to the original offer."
 msgstr "Часть предложений взята с hollmann.international и ведёт на оригинальное предложение."
 
+msgid "Main menu"
+msgstr "Главное меню"
+
+msgid "Home"
+msgstr "Главная"
+
+msgid "Sell"
+msgstr "Продать"
+
+msgid "Profile"
+msgstr "Профиль"
+
 msgid "Photos on hollmann.international"
 msgstr "Фото на hollmann.international"
 
@@ -357,14 +460,11 @@ msgstr "л.с."
 msgid "Remove from favorites"
 msgstr "Убрать из избранного"
 
-msgid "In favorites"
-msgstr "В избранном"
-
 msgid "Add to favorites"
 msgstr "В избранное"
 
-msgid "Log in to save favorites"
-msgstr "Войдите, чтобы сохранять избранное"
+msgid "In favorites"
+msgstr "В избранном"
 
 msgid "Continue with Google"
 msgstr "Войти через Google"
@@ -393,52 +493,32 @@ msgstr "Продавайте свой автомобиль и сохраняйт
 msgid "Already registered?"
 msgstr "Уже зарегистрированы?"
 
-msgid "Activate it in your cabinet to publish it:"
-msgstr "Активируйте его в кабинете, чтобы опубликовать:"
-
-#, python-format
-msgid "Hello %(name)s,"
-msgstr "Здравствуйте, %(name)s!"
-
-#, python-format
-msgid "Your listing \"%(car)s\" has been approved."
-msgstr "Ваше объявление «%(car)s» одобрено."
-
-#, python-format
-msgid "It is now visible on the site until %(date)s."
-msgstr "Теперь оно опубликовано на сайте до %(date)s."
-
-#, python-format
-msgid "Your listing \"%(car)s\" has been approved"
-msgstr "Объявление «%(car)s» одобрено"
-
-msgid "After that it will be hidden from the site until you activate it again in your cabinet:"
-msgstr "После этого оно будет скрыто с сайта, пока вы снова не активируете его в кабинете:"
-
-msgid "Your listing:"
-msgstr "Ваше объявление:"
-
-#, python-format
-msgid "Your listing \"%(car)s\" on FIBONACCI will be deactivated on %(date)s."
-msgstr "Ваше объявление «%(car)s» на FIBONACCI будет деактивировано %(date)s."
-
-#, python-format
-msgid "Your listing \"%(car)s\" expires soon"
-msgstr "Срок объявления «%(car)s» скоро закончится"
-
-msgid "You can edit the listing and submit it again in your cabinet:"
-msgstr "Вы можете исправить объявление и отправить его повторно в кабинете:"
-
-#, python-format
-msgid "Unfortunately, your listing \"%(car)s\" was not approved."
-msgstr "К сожалению, ваше объявление «%(car)s» не прошло модерацию."
-
-#, python-format
-msgid "Your listing \"%(car)s\" was not approved"
-msgstr "Объявление «%(car)s» не прошло модерацию"
-
 msgid "moderation"
 msgstr "модерация"
+
+msgid "Moderation"
+msgstr "Модерация"
+
+msgid "Contacts"
+msgstr "Контакты"
+
+msgid "Publication"
+msgstr "Публикация"
+
+msgid "Import"
+msgstr "Импорт"
+
+msgid "Source"
+msgstr "Источник"
+
+msgid "Private"
+msgstr "Частное"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Removed"
+msgstr "Снято"
 
 msgid "Approve selected listings"
 msgstr "Одобрить выбранные объявления"
@@ -455,6 +535,29 @@ msgid "Rejected: %(n)s. To give a reason, open the listing and fill in \"rejecti
 msgstr ""
 "Отклонено: %(n)s. Чтобы указать причину, откройте объявление и заполните поле «причина "
 "отклонения»."
+
+msgid "Active private listings"
+msgstr "Активные частные объявления"
+
+msgid "Vehicles from Hollmann"
+msgstr "Автомобили Hollmann"
+
+msgid "Users"
+msgstr "Пользователи"
+
+#, python-format
+msgid "+%(n)s this week"
+msgstr "+%(n)s за неделю"
+
+msgid "Saved to favorites"
+msgstr "Добавлений в избранное"
+
+msgid "Paid, €"
+msgstr "Оплачено, €"
+
+#, python-format
+msgid "%(n)s payments"
+msgstr "Платежей: %(n)s"
 
 msgid "Enter a valid phone number, for example +49 151 1234567."
 msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
@@ -557,6 +660,12 @@ msgstr "Автомат"
 msgid "Manual"
 msgstr "Механика"
 
+msgid "source"
+msgstr "источник"
+
+msgid "owner"
+msgstr "владелец"
+
 msgid "model / title"
 msgstr "модель / название"
 
@@ -587,6 +696,9 @@ msgstr "цена"
 msgid "currency"
 msgstr "валюта"
 
+msgid "net price"
+msgstr "цена нетто"
+
 msgid "contact person"
 msgstr "контактное лицо"
 
@@ -599,8 +711,29 @@ msgstr "WhatsApp"
 msgid "Telegram"
 msgstr "Telegram"
 
+msgid "status"
+msgstr "статус"
+
+msgid "activated at"
+msgstr "активировано"
+
+msgid "active until"
+msgstr "активно до"
+
 msgid "rejection reason"
 msgstr "причина отклонения"
+
+msgid "published"
+msgstr "опубликовано"
+
+msgid "new offer"
+msgstr "новое предложение"
+
+msgid "created"
+msgstr "создано"
+
+msgid "updated"
+msgstr "обновлено"
 
 msgid "vehicle"
 msgstr "автомобиль"
@@ -820,6 +953,45 @@ msgstr "Английский"
 
 msgid "Russian"
 msgstr "Русский"
+
+msgid "Admin panel"
+msgstr "Панель управления"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Open the site"
+msgstr "Открыть сайт"
+
+msgid "Listings"
+msgstr "Объявления"
+
+msgid "All vehicles"
+msgstr "Все автомобили"
+
+msgid "Categories"
+msgstr "Категории"
+
+msgid "Makes"
+msgstr "Марки"
+
+msgid "People"
+msgstr "Люди"
+
+msgid "Google / Apple accounts"
+msgstr "Входы через Google / Apple"
+
+msgid "Money"
+msgstr "Деньги"
+
+msgid "Payments"
+msgstr "Платежи"
+
+msgid "System"
+msgstr "Система"
+
+msgid "Groups"
+msgstr "Группы"
 
 msgid "First name"
 msgstr "Имя"

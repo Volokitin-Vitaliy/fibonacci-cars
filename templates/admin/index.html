@@ -1,0 +1,103 @@
+{% extends "admin/base.html" %}
+{% load i18n unfold %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block title %}{% trans 'Dashboard' %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block branding %}{% include "unfold/helpers/site_branding.html" %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .fb-kpi-value { font-size: 2rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
+    .fb-kpi-accent .fb-kpi-value { color: rgb(var(--color-primary-500)); }
+    .fb-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid rgba(127,127,127,.15); }
+    .fb-row:last-child { border-bottom: 0; }
+    .fb-muted { opacity: .6; font-size: .8rem; }
+    .fb-pill { font-size: .7rem; padding: .15rem .5rem; border-radius: 999px; background: rgba(59,130,246,.15); color: rgb(96,165,250); white-space: nowrap; }
+    .fb-pill-ok { background: rgba(16,185,129,.15); color: rgb(52,211,153); }
+    .fb-pill-bad { background: rgba(239,68,68,.15); color: rgb(248,113,113); }
+    .fb-empty { opacity: .6; padding: .5rem 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    {% component "unfold/components/title.html" %}{% trans 'Dashboard' %}{% endcomponent %}
+    {% component "unfold/components/text.html" with class="text-font-subtle-light dark:text-font-subtle-dark mt-1" %}{% now "j E Y" %}{% endcomponent %}
+</div>
+
+<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+    {% for k in kpis %}
+        {% component "unfold/components/card.html" with href=k.href class=k.accent|yesno:"fb-kpi-accent," %}
+            <div class="fb-muted uppercase">{{ k.title }}</div>
+            <div class="fb-kpi-value mt-1">{{ k.value }}</div>
+            {% if k.note %}<div class="fb-muted mt-1">{{ k.note }}</div>{% endif %}
+        {% endcomponent %}
+    {% endfor %}
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+        {% trans 'Waiting for review' as t_pending %}
+        {% component "unfold/components/card.html" with title=t_pending %}
+            {% for car in pending_cars %}
+                <div class="fb-row">
+                    <div class="truncate">
+                        <a href="{% url 'admin:cars_car_change' car.pk %}" class="font-semibold text-primary-600">{{ car.make }} {{ car.model }}</a>
+                        <div class="fb-muted truncate">{{ car.owner.email }} · {{ car.currency_symbol }}{{ car.price|floatformat:"0g" }} · {{ car.created_at|timesince }}</div>
+                    </div>
+                    <a href="{% url 'admin:cars_car_change' car.pk %}" class="fb-pill">{% trans 'Review' %} →</a>
+                </div>
+            {% empty %}
+                <div class="fb-empty">{% trans 'Nothing to review. All listings are checked.' %}</div>
+            {% endfor %}
+        {% endcomponent %}
+
+        <div class="mt-6">
+        {% trans 'Expiring in the next 3 days' as t_exp %}
+        {% component "unfold/components/card.html" with title=t_exp %}
+            {% for car in expiring_cars %}
+                <div class="fb-row">
+                    <a href="{% url 'admin:cars_car_change' car.pk %}" class="truncate">{{ car.make }} {{ car.model }}</a>
+                    <span class="fb-muted">{{ car.active_until|date:"d.m H:i" }}</span>
+                </div>
+            {% empty %}
+                <div class="fb-empty">{% trans 'No listings expire soon.' %}</div>
+            {% endfor %}
+        {% endcomponent %}
+        </div>
+    </div>
+
+    <div>
+        {% trans 'Hollmann import' as t_imp %}
+        {% component "unfold/components/card.html" with title=t_imp %}
+            {% if last_import %}
+                <div class="fb-row">
+                    <span>{% trans 'Last run' %}</span>
+                    <span class="fb-pill {% if last_import.ok %}fb-pill-ok{% else %}fb-pill-bad{% endif %}">{% if last_import.ok %}OK{% else %}{% trans 'Error' %}{% endif %}</span>
+                </div>
+                <div class="fb-row"><span>{% trans 'Started' %}</span><span class="fb-muted">{{ last_import.started_at|date:"d.m.Y H:i" }}</span></div>
+                <div class="fb-row"><span>{% trans 'New / updated' %}</span><span>{{ last_import.created }} / {{ last_import.updated }}</span></div>
+                <div class="fb-row"><span>{% trans 'Removed from site' %}</span><span>{{ last_import.unpublished }}</span></div>
+                {% if last_import.error %}<div class="fb-muted mt-1 truncate">{{ last_import.error }}</div>{% endif %}
+            {% else %}
+                <div class="fb-empty">{% trans 'The import has not run yet.' %}</div>
+            {% endif %}
+        {% endcomponent %}
+
+        <div class="mt-6">
+        {% trans 'New users' as t_users %}
+        {% component "unfold/components/card.html" with title=t_users %}
+            {% for u in recent_users %}
+                <div class="fb-row">
+                    <a href="{% url 'admin:users_customuser_change' u.pk %}" class="truncate">{{ u.full_name|default:u.email }}</a>
+                    <span class="fb-muted">{{ u.date_joined|date:"d.m" }}</span>
+                </div>
+            {% empty %}
+                <div class="fb-empty">—</div>
+            {% endfor %}
+        {% endcomponent %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@
 <html lang="{{ LANG }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
     <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
     {% hreflang %}
@@ -55,7 +55,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-24">
 <header class="sticky top-0 z-40 bg-[#0b0b0b]/95 backdrop-blur border-b border-neutral-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
         <a href="{% url 'cars:home' %}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
@@ -98,8 +98,8 @@
                 <button type="submit" name="language" value="{{ code }}" class="px-2.5 h-8 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
                 {% endfor %}
             </form>
+            <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span data-fav-count>{{ favorite_ids|length }}</span></a>
             {% if user.is_authenticated %}
-                <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span>{{ favorite_ids|length }}</span></a>
                 <a href="{% url 'cars:my_cars' %}" class="nav-link hidden sm:inline">{% trans 'Cabinet' %}</a>
             {% else %}
                 <a href="{% url 'users:login' %}" class="nav-link hidden sm:inline">{% trans 'Log in' %}</a>
@@ -112,9 +112,9 @@
         <a href="{% url 'cars:new' %}" class="block py-3">{% trans 'New Offers' %}</a>
         {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}" class="block py-3">{{ c.name }}</a>{% endfor %}
         <a href="{% url 'cars:add' %}" class="block py-3">{% trans 'Sell your car' %}</a>
+        <a href="{% url 'cars:favorites' %}" class="block py-3">{% trans 'Favorites' %} (<span data-fav-count>{{ favorite_ids|length }}</span>)</a>
         {% if user.is_authenticated %}
         <a href="{% url 'cars:my_cars' %}" class="block py-3">{% trans 'Cabinet' %}</a>
-        <a href="{% url 'cars:favorites' %}" class="block py-3">{% trans 'Favorites' %} ({{ favorite_ids|length }})</a>
         <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="py-3 uppercase tracking-wider text-neutral-400">{% trans 'Log out' %}</button></form>
         {% else %}
         <a href="{% url 'users:login' %}" class="block py-3">{% trans 'Log in' %}</a>
@@ -157,12 +157,12 @@
             <ul class="space-y-2">
                 {% if user.is_authenticated %}
                 <li><a href="{% url 'cars:my_cars' %}" class="hover:text-neutral-400">{% trans 'My listings' %}</a></li>
-                <li><a href="{% url 'cars:favorites' %}" class="hover:text-neutral-400">{% trans 'Favorites' %}</a></li>
                 <li><a href="{% url 'users:account' %}" class="hover:text-neutral-400">{% trans 'Account details' %}</a></li>
                 {% else %}
                 <li><a href="{% url 'users:login' %}" class="hover:text-neutral-400">{% trans 'Log in' %}</a></li>
                 <li><a href="{% url 'users:register' %}" class="hover:text-neutral-400">{% trans 'Create an account' %}</a></li>
                 {% endif %}
+                <li><a href="{% url 'cars:favorites' %}" class="hover:text-neutral-400">{% trans 'Favorites' %}</a></li>
                 <li><a href="{% url 'cars:add' %}" class="hover:text-neutral-400">{% trans 'Sell your car' %}</a></li>
             </ul>
         </div>
@@ -171,6 +171,35 @@
         © {% now "Y" %} FIBONACCI · {% trans 'Some offers are listed from hollmann.international and link to the original offer.' %}
     </div>
 </footer>
+{% include "includes/bottom_nav.html" %}
+<script>
+/* Favorites without reloading the page; works for guests too. */
+document.addEventListener('submit', function (e) {
+    var form = e.target.closest('[data-favorite-form]');
+    if (!form || !window.fetch) return;
+    e.preventDefault();
+    var button = form.querySelector('button');
+    fetch(form.action, {method: 'POST', body: new FormData(form), headers: {'X-Requested-With': 'fetch'}, credentials: 'same-origin'})
+        .then(function (r) { if (!r.ok) throw r; return r.json(); })
+        .then(function (data) {
+            document.querySelectorAll('form[action="' + form.getAttribute('action') + '"] button').forEach(function (b) {
+                b.dataset.fav = data.favorite ? '1' : '0';
+                b.setAttribute('aria-pressed', data.favorite);
+                b.title = data.favorite ? b.dataset.titleOn : b.dataset.titleOff;
+                b.classList.toggle('text-red-400', data.favorite);
+                b.classList.toggle('text-white', !data.favorite);
+                var icon = b.querySelector('[data-fav-icon]'); if (icon) icon.textContent = data.favorite ? '♥' : '♡';
+                var label = b.querySelector('[data-fav-label]'); if (label) label.textContent = data.favorite ? label.dataset.on : label.dataset.off;
+            });
+            document.querySelectorAll('[data-fav-count]').forEach(function (el) {
+                el.textContent = data.count;
+                if (el.hasAttribute('data-fav-badge')) el.classList.toggle('hidden', !data.count);
+            });
+            button.animate && button.animate([{transform: 'scale(1)'}, {transform: 'scale(1.25)'}, {transform: 'scale(1)'}], {duration: 250});
+        })
+        .catch(function () { form.submit(); });
+});
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

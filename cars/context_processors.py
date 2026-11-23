@@ -1,5 +1,6 @@
 from django.db.models import Count, Q
 
+from . import favorites
 from .models import Car, Category, Make
 
 
@@ -10,9 +11,7 @@ def navigation(request):
     makes = (Make.objects
              .annotate(n=Count('cars', filter=Q(cars__in=visible)))
              .filter(n__gt=0))
-    favorite_ids = set()
-    if request.user.is_authenticated:
-        favorite_ids = set(request.user.favorites.values_list('car_id', flat=True))
+    favorite_ids = favorites.favorite_ids(request)
     return {
         'nav_categories': Category.objects.all(),
         'nav_makes': makes,
