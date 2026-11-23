@@ -113,7 +113,7 @@
                     <a href="{{ car.make.get_absolute_url }}" class="text-xs uppercase tracking-[0.3em] text-neutral-500 hover:text-white">{{ car.make.name }}</a>
                     <h1 class="text-2xl sm:text-3xl mt-2 leading-tight">{{ car.model }}</h1>
                     <div class="flex flex-wrap gap-1.5 mt-4">
-                        {% if car.is_new_offer %}<span class="chip chip-accent">{% trans 'New' %}</span>{% endif %}
+                        {% if car.is_new_offer %}<span class="chip chip-new">{% trans 'New' %}</span>{% endif %}
                         {% if car.fuel %}<a href="{{ car.get_fuel_url }}" class="chip chip-glass hover:border-white/40">{{ car.get_fuel_display }}</a>{% endif %}
                         {% if car.accident is False %}<span class="chip chip-ok">{% trans 'No accidents' %}</span>{% elif car.accident is True %}<span class="chip chip-warn">{% trans 'After an accident' %}</span>{% endif %}
                     </div>

@@ -113,14 +113,51 @@ class CarForm(forms.ModelForm):
         return car
 
 
-class CarFilterForm(forms.Form):
-    """Catalog filters. Prices are compared in EUR (USD is converted)."""
+class LooseIntegerField(forms.IntegerField):
+    """Accepts numbers typed with spaces, commas or dots as thousand separators."""
 
-    price_min = forms.IntegerField(label=_('Price from, €'), required=False, min_value=0)
-    price_max = forms.IntegerField(label=_('Price to, €'), required=False, min_value=0)
-    year_min = forms.IntegerField(label=_('Year from'), required=False, min_value=1900, max_value=2100)
-    year_max = forms.IntegerField(label=_('Year to'), required=False, min_value=1900, max_value=2100)
-    mileage_max = forms.IntegerField(label=_('Mileage up to, km'), required=False, min_value=0)
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = re.sub(r'[\s,.\u00a0\u202f€$km]', '', value, flags=re.I)
+        return super().to_python(value)
+
+
+def _presets(values, fmt='{:,}'):
+    return [(v, fmt.format(v).replace(',', '\u202f')) for v in values]
+
+
+PRICE_PRESETS = _presets([25_000, 50_000, 75_000, 100_000, 150_000, 200_000, 300_000,
+                          500_000, 750_000, 1_000_000, 2_000_000, 3_000_000])
+MILEAGE_PRESETS = _presets([1_000, 5_000, 10_000, 20_000, 30_000, 50_000, 75_000,
+                            100_000, 150_000, 200_000])
+
+
+def year_presets():
+    this_year = date.today().year
+    years = list(range(this_year, this_year - 11, -1)) + [2010, 2005, 2000, 1990, 1980, 1970]
+    return [(y, str(y)) for y in years]
+
+
+class CarFilterForm(forms.Form):
+    """Catalog filters. Prices are compared in EUR (USD is converted).
+
+    Every field has suggested values (``presets``) shown in a dropdown; visitors can also
+    type their own number.
+    """
+
+    price_min = LooseIntegerField(label=_('Price from, €'), required=False, min_value=0)
+    price_max = LooseIntegerField(label=_('Price to, €'), required=False, min_value=0)
+    year_min = LooseIntegerField(label=_('Year from'), required=False, min_value=1900, max_value=2100)
+    year_max = LooseIntegerField(label=_('Year to'), required=False, min_value=1900, max_value=2100)
+    mileage_max = LooseIntegerField(label=_('Mileage up to, km'), required=False, min_value=0)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        years = year_presets()
+        presets = {'price_min': PRICE_PRESETS, 'price_max': PRICE_PRESETS,
+                   'year_min': years, 'year_max': years, 'mileage_max': MILEAGE_PRESETS}
+        for name, values in presets.items():
+            self.fields[name].presets = values
 
     def apply(self, cars):
         if not self.is_valid():

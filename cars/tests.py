@@ -725,6 +725,14 @@ class FilterTests(TestCase):
         self.assertEqual(self.ids(price_min=91000, price_max=93000), {self.usd.pk})
         self.assertEqual(self.ids(price_min='abc'), {self.usd.pk, self.cheap_old.pk})
 
+    def test_typed_numbers_with_separators_and_presets(self):
+        self.assertEqual(self.ids(price_max='20 000'), {self.cheap_old.pk})
+        self.assertEqual(self.ids(mileage_max='50,000'), {self.usd.pk})
+        page = self.client.get(reverse('cars:list'))
+        self.assertContains(page, 'class="form-field combo"', count=5)
+        self.assertContains(page, 'data-value="1000000"')
+        self.assertContains(page, 'data-value="100000"')
+
 
 class FakeSessionObj(dict):
     def __getattr__(self, key):

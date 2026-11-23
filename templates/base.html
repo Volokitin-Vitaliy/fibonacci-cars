@@ -62,6 +62,16 @@
             background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.04) 40%, rgba(59,130,246,.45));
             -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
         .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; border-radius: 999px; font-size: .68rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+        .combo-toggle { position: absolute; right: .35rem; top: 50%; transform: translateY(-50%); width: 2rem; height: 2rem; display: grid; place-items: center; color: var(--muted); border-radius: 999px; transition: transform .2s, color .2s; }
+        .combo-toggle:hover { color: #fff; }
+        .combo.open .combo-toggle { transform: translateY(-50%) rotate(180deg); color: #fff; }
+        .combo-list { position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + .4rem); max-height: 17rem; overflow-y: auto; padding: .35rem; border-radius: 1rem; background: rgba(12,12,14,.98); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 20px 50px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+        .combo-list li { padding: .55rem .8rem; border-radius: .6rem; font-size: .9rem; color: #e5e5e5; cursor: pointer; font-variant-numeric: tabular-nums; }
+        .combo-list li:hover, .combo-list li.is-active { background: rgba(255,255,255,.08); color: #fff; }
+        .combo-list li.is-selected { background: #fff; color: #0a0a0a; }
+        .combo-list li.combo-any { color: var(--muted); }
+        .combo-list li[hidden] { display: none; }
+        .chip-new { background: #fff; color: #0a0a0a; border: 1px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,.45); letter-spacing: .14em; }
         .chip-accent { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
         .chip-glass { background: rgba(0,0,0,.55); color: #e5e5e5; border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
         .chip-ok { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }

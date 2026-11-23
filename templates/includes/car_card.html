@@ -12,7 +12,7 @@
             {% endwith %}
             <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
             <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pr-14">
-                {% if car.is_new_offer %}<span class="chip chip-accent">{% trans 'New' %}</span>{% endif %}
+                {% if car.is_new_offer %}<span class="chip chip-new">{% trans 'New' %}</span>{% endif %}
                 {% if car.accident is False %}<span class="chip chip-ok">{% trans 'No accidents' %}</span>{% elif car.accident is True %}<span class="chip chip-warn">{% trans 'After an accident' %}</span>{% endif %}
             </div>
             {# Key numbers slide up on hover (always visible on touch screens) #}

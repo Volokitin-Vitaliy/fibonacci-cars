@@ -66,9 +66,16 @@
             {% if accident %}<input type="hidden" name="accident" value="{{ accident }}">{% endif %}
             <input type="hidden" name="sort" value="{{ sort }}">
             {% for field in filters %}
-            <div class="form-field">
+            <div class="form-field combo" data-combo{% if 'year' not in field.name %} data-group{% endif %}>
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                <input type="number" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" min="0" inputmode="numeric">
+                <div class="relative">
+                    <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" inputmode="numeric" autocomplete="off" placeholder="{% trans 'Any' %}" role="combobox" aria-expanded="false" aria-controls="{{ field.id_for_label }}-list" class="!pr-10">
+                    <button type="button" class="combo-toggle" tabindex="-1" aria-label="{{ field.label }}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button>
+                    <ul class="combo-list" id="{{ field.id_for_label }}-list" role="listbox" hidden>
+                        <li role="option" data-value="" class="combo-any">{% trans 'Any' %}</li>
+                        {% for value, label in field.field.presets %}<li role="option" data-value="{{ value }}">{{ label }}</li>{% endfor %}
+                    </ul>
+                </div>
             </div>
             {% endfor %}
             <div class="col-span-2 lg:col-span-1 flex gap-2">
@@ -140,6 +147,57 @@ document.querySelectorAll('[data-dropdown]').forEach(function (root) {
         var q = search.value.trim().toLowerCase(), shown = 0;
         items.forEach(function (a) { var ok = a.dataset.dropdownItem.indexOf(q) !== -1; a.classList.toggle('hidden', !ok); if (ok) shown++; });
         empty.classList.toggle('hidden', shown > 0);
+    });
+});
+// Filter fields: suggested values in a dropdown, or type your own number.
+document.querySelectorAll('[data-combo]').forEach(function (root) {
+    var input = root.querySelector('input');
+    var list = root.querySelector('.combo-list');
+    var toggle = root.querySelector('.combo-toggle');
+    var options = Array.prototype.slice.call(list.querySelectorAll('li'));
+    var active = -1;
+    function digits(v) { return (v || '').replace(/\D/g, ''); }
+    function visible() { return options.filter(function (o) { return !o.hidden; }); }
+    function filter(all) {
+        var q = all ? '' : digits(input.value);
+        options.forEach(function (o) {
+            o.hidden = q !== '' && (o.dataset.value === '' || o.dataset.value.indexOf(q) !== 0);
+            o.classList.toggle('is-selected', o.dataset.value !== '' && o.dataset.value === digits(input.value));
+        });
+        setActive(-1);
+        return visible().length > 0;
+    }
+    function setOpen(open) {
+        if (open) document.querySelectorAll('[data-combo].open').forEach(function (r) { if (r !== root) r.dispatchEvent(new Event('combo:close')); });
+        list.hidden = !open; root.classList.toggle('open', open); input.setAttribute('aria-expanded', open);
+        if (open) { var sel = list.querySelector('.is-selected'); if (sel) list.scrollTop = sel.offsetTop - 40; }
+    }
+    function setActive(i) {
+        var vis = visible(); options.forEach(function (o) { o.classList.remove('is-active'); });
+        active = Math.max(-1, Math.min(i, vis.length - 1));
+        if (active >= 0) { vis[active].classList.add('is-active'); vis[active].scrollIntoView({ block: 'nearest' }); }
+    }
+    function group(v) { return root.hasAttribute('data-group') && digits(v) ? digits(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') : v; }
+    input.value = group(input.value);
+    input.addEventListener('change', function () { input.value = group(input.value); });
+    function choose(o) { input.value = group(o.dataset.value); setOpen(false); input.dispatchEvent(new Event('change', { bubbles: true })); }
+    if (input.form) input.form.addEventListener('submit', function () { input.value = digits(input.value); });
+    root.addEventListener('combo:close', function () { setOpen(false); });
+    input.addEventListener('focus', function () { setOpen(filter(true)); });
+    input.addEventListener('click', function () { if (list.hidden) setOpen(filter(true)); });
+    input.addEventListener('input', function () { setOpen(filter(false)); });
+    input.addEventListener('blur', function () { setTimeout(function () { setOpen(false); }, 120); });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) setOpen(filter(true)); else setActive(active + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+        else if (e.key === 'Enter' && !list.hidden && active >= 0) { e.preventDefault(); choose(visible()[active]); }
+        else if (e.key === 'Escape') setOpen(false);
+    });
+    toggle.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    toggle.addEventListener('click', function () { if (list.hidden) { input.focus(); setOpen(filter(true)); } else setOpen(false); });
+    options.forEach(function (o) {
+        o.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        o.addEventListener('click', function () { choose(o); });
     });
 });
 </script>
