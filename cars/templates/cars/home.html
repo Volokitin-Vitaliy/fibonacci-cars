@@ -36,11 +36,7 @@
 
     <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14 sm:pb-20 pt-32">
         <div class="max-w-2xl" data-reveal>
-            <div class="flex items-center gap-3">
-                <img src="{% static 'img/logo-256.png' %}" alt="FIBONACCI" width="56" height="56" class="logo-mark w-12 h-12 sm:w-14 sm:h-14">
-                <span class="font-display text-sm sm:text-base tracking-[0.4em] text-white/80">FIBONACCI</span>
-            </div>
-            <h1 class="mt-6 font-display text-[1.85rem] min-[360px]:text-4xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight">{% trans 'Cars worldwide.' %}</h1>
+            <h1 class="font-display text-[1.85rem] min-[360px]:text-4xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight">{% trans 'Cars worldwide.' %}</h1>
             <div class="mt-9 flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a href="{% url 'cars:list' %}" class="btn btn-primary h-14 !px-8 !text-sm">{% trans 'Choose a car' %} <span aria-hidden="true">→</span></a>
                 <a href="{% url 'cars:add' %}" class="btn btn-outline glass h-14 !px-8 !text-sm">{% trans 'Sell a car' %} <span aria-hidden="true">→</span></a>

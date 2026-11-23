@@ -480,7 +480,7 @@ class LayoutTests(TestCase):
         self.assertContains(page, 'Cars worldwide.')
         self.assertContains(page, 'View all')
         self.assertNotContains(page, 'p-6 h-32')  # collection tiles are gone from the home page
-        self.assertContains(page, 'img/logo-256.png')
+        self.assertContains(page, 'img/logo-96.png')
 
     def test_category_and_make_are_separate_and_combine(self):
         owner = make_user()

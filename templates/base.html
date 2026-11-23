@@ -15,7 +15,7 @@
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Unbounded:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* ---- Design tokens: black & white with the logo's blue as the accent ---- */
@@ -43,8 +43,13 @@
         :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         h1, h2, h3 { overflow-wrap: break-word; }
         h1 { hyphens: auto; }
-        .font-display { font-family: 'Unbounded', 'Inter', sans-serif; letter-spacing: -.01em; }
-        main h1 { font-family: 'Unbounded', 'Inter', sans-serif; font-weight: 600; letter-spacing: -.01em; }
+        .font-display { font-family: 'Manrope', 'Inter', sans-serif; font-weight: 800 !important; letter-spacing: -.035em; }
+        main h1 { font-family: 'Manrope', 'Inter', sans-serif; font-weight: 800; letter-spacing: -.035em; }
+        .font-brand { font-family: 'Unbounded', 'Inter', sans-serif; font-weight: 600; letter-spacing: 0; }
+        .menu-panel { background: rgba(10,10,12,.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.12); }
+        .menu-panel a { color: #e5e5e5; transition: color .15s; }
+        .menu-panel a:hover { color: #fff; }
+        .menu-panel a span { color: #737373; }
         fieldset { min-width: 0; }
         .logo-mark { filter: drop-shadow(0 0 12px rgba(59,130,246,.25)); }
         .text-accent { color: var(--accent-2); }
@@ -131,26 +136,26 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
         <a href="{% url 'cars:home' %}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
             <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-9 h-9 sm:w-10 sm:h-10">
-            <span class="font-display text-[0.8rem] min-[360px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.14em] min-[360px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
+            <span class="font-brand text-[0.8rem] min-[360px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.14em] min-[360px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
         </a>
 
         <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
             <div class="has-dropdown relative">
                 <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new fuel make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
                 <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
-                    <div class="w-[42rem] glass rounded-2xl shadow-2xl shadow-black/60 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
+                    <div class="w-[42rem] menu-panel rounded-2xl shadow-2xl shadow-black/60 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
                         <div>
                             <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Categories' %}</div>
                             <ul class="space-y-2 text-sm">
-                                <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
-                                <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
-                                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:text-neutral-400">{{ c.label }}</a></li>{% endfor %}
+                                <li><a href="{% url 'cars:list' %}" class="hover:underline underline-offset-4">{% trans 'All Vehicles' %}</a></li>
+                                <li><a href="{% url 'cars:new' %}" class="hover:underline underline-offset-4">{% trans 'New Offers' %}</a></li>
+                                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:underline underline-offset-4">{{ c.label }}</a></li>{% endfor %}
                             </ul>
                         </div>
                         <div class="col-span-2">
                             <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Manufacturers' %}</div>
                             <ul class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm max-h-80 overflow-y-auto">
-                                {% for m in nav_makes %}<li><a href="{{ m.get_absolute_url }}" class="hover:text-neutral-400">{{ m.name }} <span class="text-neutral-600">{{ m.n }}</span></a></li>{% empty %}<li class="text-neutral-500">—</li>{% endfor %}
+                                {% for m in nav_makes %}<li><a href="{{ m.get_absolute_url }}" class="hover:underline underline-offset-4">{{ m.name }} <span class="text-neutral-600">{{ m.n }}</span></a></li>{% empty %}<li class="text-neutral-500">—</li>{% endfor %}
                             </ul>
                         </div>
                     </div>
@@ -215,31 +220,31 @@
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
-                <span class="font-display text-lg font-semibold tracking-[0.3em]">FIBONACCI</span>
+                <span class="font-brand text-lg tracking-[0.3em]">FIBONACCI</span>
             </div>
             <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
         </div>
         <div>
             <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Vehicles' %}</div>
             <ul class="space-y-2">
-                <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
-                <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
-                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:text-neutral-400">{{ c.label }}</a></li>{% endfor %}
+                <li><a href="{% url 'cars:list' %}" class="hover:underline underline-offset-4">{% trans 'All Vehicles' %}</a></li>
+                <li><a href="{% url 'cars:new' %}" class="hover:underline underline-offset-4">{% trans 'New Offers' %}</a></li>
+                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:underline underline-offset-4">{{ c.label }}</a></li>{% endfor %}
             </ul>
         </div>
         <div>
             <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Account' %}</div>
             <ul class="space-y-2">
                 {% if user.is_authenticated %}
-                <li><a href="{% url 'cars:my_cars' %}" class="hover:text-neutral-400">{% trans 'My listings' %}</a></li>
-                <li><a href="{% url 'users:account' %}" class="hover:text-neutral-400">{% trans 'Account details' %}</a></li>
+                <li><a href="{% url 'cars:my_cars' %}" class="hover:underline underline-offset-4">{% trans 'My listings' %}</a></li>
+                <li><a href="{% url 'users:account' %}" class="hover:underline underline-offset-4">{% trans 'Account details' %}</a></li>
                 {% else %}
-                <li><a href="{% url 'users:login' %}" class="hover:text-neutral-400">{% trans 'Log in' %}</a></li>
-                <li><a href="{% url 'users:register' %}" class="hover:text-neutral-400">{% trans 'Create an account' %}</a></li>
+                <li><a href="{% url 'users:login' %}" class="hover:underline underline-offset-4">{% trans 'Log in' %}</a></li>
+                <li><a href="{% url 'users:register' %}" class="hover:underline underline-offset-4">{% trans 'Create an account' %}</a></li>
                 {% endif %}
-                <li><a href="{% url 'cars:favorites' %}" class="hover:text-neutral-400">{% trans 'Favorites' %}</a></li>
-                <li><a href="{% url 'cars:add' %}" class="hover:text-neutral-400">{% trans 'Sell your car' %}</a></li>
-                <li><a href="{% url 'cars:partnership' %}" class="hover:text-neutral-400">{% trans 'Partnership' %}</a></li>
+                <li><a href="{% url 'cars:favorites' %}" class="hover:underline underline-offset-4">{% trans 'Favorites' %}</a></li>
+                <li><a href="{% url 'cars:add' %}" class="hover:underline underline-offset-4">{% trans 'Sell your car' %}</a></li>
+                <li><a href="{% url 'cars:partnership' %}" class="hover:underline underline-offset-4">{% trans 'Partnership' %}</a></li>
             </ul>
         </div>
     </div>
