@@ -52,7 +52,6 @@
                 {% endfor %}
             </div>
             {% endif %}
-            {% if car.is_imported %}<div class="mt-2 text-xs text-neutral-600">{% trans 'Photos: Hollmann International' %}</div>{% endif %}
             {% else %}
             <div class="relative aspect-[4/3] sm:aspect-[16/10] rounded-[var(--radius)] overflow-hidden panel">
                 {% include "includes/car_silhouette.html" %}

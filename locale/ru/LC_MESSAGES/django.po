@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 15:25+0000\n"
+"POT-Creation-Date: 2026-11-23 15:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -225,9 +225,6 @@ msgstr "Вперёд"
 
 msgid "Photo"
 msgstr "Фото"
-
-msgid "Photos: Hollmann International"
-msgstr "Фото: Hollmann International"
 
 msgid "View photos on hollmann.international"
 msgstr "Смотреть фото на hollmann.international"
@@ -597,9 +594,6 @@ msgstr "Эксклюзивные автомобили от проверенны�
 
 msgid "Account"
 msgstr "Аккаунт"
-
-msgid "Some offers are listed from hollmann.international and link to the original offer."
-msgstr "Часть предложений взята с hollmann.international и ведёт на оригинальное предложение."
 
 msgid "Main menu"
 msgstr "Главное меню"
