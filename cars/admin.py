@@ -44,7 +44,7 @@ class CarAdmin(ModelAdmin):
                     'status_badge', 'active_until', 'owner', 'created_at')
     list_display_links = ('title_with_make',)
     list_filter = (ModerationFilter, 'source', 'status', 'is_published', 'is_new',
-                   'fuel', 'make')
+                   'fuel', 'accident', 'make')
     search_fields = ('model', 'make__name', 'external_id', 'owner__email', 'contact_phone')
     autocomplete_fields = ('make',)
     raw_id_fields = ('owner',)
@@ -57,7 +57,7 @@ class CarAdmin(ModelAdmin):
     fieldsets = (
         (_('Moderation'), {'fields': ('moderation', 'rejection_reason')}),
         (_('Vehicle'), {'fields': (('make', 'fuel'), 'model', 'description')}),
-        (_('Characteristics'), {'fields': (('year', 'mileage_km'), 'transmission',
+        (_('Characteristics'), {'fields': (('year', 'mileage_km'), ('transmission', 'accident'),
                                            ('power_hp', 'color'), 'specs')}),
         (_('Price'), {'fields': (('price', 'currency'), 'price_net', 'price_eur')}),
         (_('Contacts'), {'fields': ('owner', 'contact_name', 'contact_phone',

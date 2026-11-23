@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 14:01+0000\n"
+"POT-Creation-Date: 2026-11-23 14:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -342,35 +342,20 @@ msgstr "Найти марку"
 msgid "Nothing found"
 msgstr "Ничего не найдено"
 
+msgid "Accident"
+msgstr "ДТП"
+
 msgid "Seller"
 msgstr "Продавец"
-
-msgid "All sellers"
-msgstr "Все продавцы"
-
-msgid "Private listings"
-msgstr "Частные объявления"
 
 msgid "Sort"
 msgstr "Сортировка"
 
-msgid "Newest first"
-msgstr "Сначала новые"
-
-msgid "Oldest first"
-msgstr "Сначала старые"
-
-msgid "Price: low to high"
-msgstr "Сначала дешевле"
-
-msgid "Price: high to low"
-msgstr "Сначала дороже"
+msgid "Filters"
+msgstr "Фильтры"
 
 msgid "Apply"
 msgstr "Применить"
-
-msgid "Filters"
-msgstr "Фильтры"
 
 msgid "Reset filters"
 msgstr "Сбросить фильтры"
@@ -384,6 +369,16 @@ msgid_plural "%(n)s vehicles"
 msgstr[0] "%(n)s автомобиль"
 msgstr[1] "%(n)s автомобиля"
 msgstr[2] "%(n)s автомобилей"
+
+msgid "Partnership"
+msgstr "Сотрудничество"
+
+msgid "Partnership and contacts."
+msgstr "Сотрудничество и контакты."
+
+#, python-format
+msgid "%(n)s followers"
+msgstr "%(n)s подписчиков"
 
 msgid "Dashboard"
 msgstr "Обзор"
@@ -474,6 +469,12 @@ msgstr "Фото на hollmann.international"
 
 msgid "hp"
 msgstr "л.с."
+
+msgid "After an accident"
+msgstr "После ДТП"
+
+msgid "No accidents"
+msgstr "Без ДТП"
 
 msgid "Remove from favorites"
 msgstr "Убрать из избранного"
@@ -584,6 +585,15 @@ msgstr "Введите корректный номер телефона, нап�
 msgid "Up to %(n)s images."
 msgstr "До %(n)s изображений."
 
+msgid "Was the car in an accident?"
+msgstr "Был ли автомобиль в ДТП?"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Yes"
+msgstr "Да"
+
 msgid "Number with country code, e.g. +49 151 1234567"
 msgstr "Номер с кодом страны, например +7 999 123-45-67"
 
@@ -693,6 +703,9 @@ msgstr "мощность, л.с."
 msgid "color"
 msgstr "цвет"
 
+msgid "accident damage"
+msgstr "был в ДТП"
+
 msgid "price"
 msgstr "цена"
 
@@ -758,6 +771,12 @@ msgstr "Мощность"
 
 msgid "Color"
 msgstr "Цвет"
+
+msgid "Accident damage"
+msgstr "ДТП"
+
+msgid "Yes, after an accident"
+msgstr "Да, был в ДТП"
 
 msgid "Pending"
 msgstr "Ожидает"
@@ -905,6 +924,27 @@ msgstr "Подключаемый гибрид (бензин/электро)"
 
 msgid "All categories"
 msgstr "Все категории"
+
+msgid "Any"
+msgstr "Любые"
+
+msgid "All sellers"
+msgstr "Все продавцы"
+
+msgid "Private listings"
+msgstr "Частные объявления"
+
+msgid "Newest first"
+msgstr "Сначала новые"
+
+msgid "Oldest first"
+msgstr "Сначала старые"
+
+msgid "Price: low to high"
+msgstr "Сначала дешевле"
+
+msgid "Price: high to low"
+msgstr "Сначала дороже"
 
 msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
 msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."

@@ -197,7 +197,7 @@ class ListingLifecycleTests(TestCase):
             'make': Make.get_by_name('Tesla').pk, 'model': 'Model S Plaid',
             'description': 'Like new', 'year': 2023, 'mileage_km': 12000, 'fuel': 'electric',
             'transmission': 'automatic', 'power_hp': 1020, 'color': 'White', 'price': '79000',
-            'currency': 'USD', 'contact_name': 'Ivan Petrov', 'contact_phone': '+49 151 0000001',
+            'currency': 'USD', 'accident': 'False', 'contact_name': 'Ivan Petrov', 'contact_phone': '+49 151 0000001',
             'photos': [png(), png()],
         })
         car = Car.objects.get(model='Model S Plaid')
@@ -220,7 +220,7 @@ class ListingLifecycleTests(TestCase):
 
     def test_contact_name_and_phone_are_required(self):
         response = self.client.post(reverse('cars:add'), {
-            'make': Make.get_by_name('Audi').pk, 'model': 'A6', 'price': '1000', 'currency': 'EUR',
+            'make': Make.get_by_name('Audi').pk, 'model': 'A6', 'price': '1000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol',
         })
         self.assertEqual(response.status_code, 200)
@@ -374,7 +374,7 @@ class ContactTests(TestCase):
         self.client.force_login(self.user)
 
     def post(self, **contacts):
-        data = {'make': Make.get_by_name('Audi').pk, 'model': 'Q8', 'price': '1000', 'currency': 'EUR',
+        data = {'make': Make.get_by_name('Audi').pk, 'model': 'Q8', 'price': '1000', 'currency': 'EUR', 'accident': 'False',
                 'fuel': 'petrol', 'contact_name': 'Ivan',
                 'contact_phone': '+49 151 0000001'}
         data.update(contacts)
@@ -447,6 +447,57 @@ class LayoutTests(TestCase):
         fuels = {o['value']: o['count'] for o in page.context['fuel_options']}
         self.assertEqual((fuels['diesel'], fuels['petrol'], fuels['gas']), (2, 1, 0))
 
+    def test_accident_filter(self):
+        owner = make_user()
+        clean = make_listing(owner, accident=False)
+        damaged = make_listing(owner, accident=True)
+        unknown = make_listing(owner)
+
+        def ids(**params):
+            return {c.pk for c in self.client.get(reverse('cars:list'), params).context['page']}
+
+        self.assertEqual(ids(accident='no'), {clean.pk})
+        self.assertEqual(ids(accident='yes'), {damaged.pk})
+        self.assertEqual(ids(), {clean.pk, damaged.pk, unknown.pk})
+        page = self.client.get(reverse('cars:list'), {'accident': 'yes'})
+        self.assertContains(page, 'After an accident')
+        self.assertContains(self.client.get(clean.get_absolute_url()), 'No accidents')
+
+    def test_listing_form_requires_accident_answer(self):
+        user = make_user('seller2@example.com', '+49 151 0000009')
+        self.client.force_login(user)
+        response = self.client.post(reverse('cars:add'), {
+            'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
+            'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+        self.assertIn('accident', response.context['form'].errors)
+        self.client.post(reverse('cars:add'), {
+            'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
+            'fuel': 'petrol', 'accident': 'True', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+        self.assertIs(Car.objects.get(model='S8').accident, True)
+
+    def test_all_pickers_are_dropdowns(self):
+        page = self.client.get(reverse('cars:list'), {'fuel': 'diesel'})
+        content = page.content.decode()
+        self.assertEqual(content.count('data-dropdown-button aria-haspopup'), 5)
+        self.assertNotIn('<select name="sort"', content)
+        self.assertNotIn('<select name="source"', content)
+        self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;sort=price-ascending')
+        self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;source=user')
+
+    def test_mobile_menu_and_partnership(self):
+        page = self.client.get(reverse('cars:home'))
+        menu = page.content.decode().split('id="mobile-nav"')[1].split('</header>')[0]
+        self.assertNotIn('/en/category/', menu)
+        for url in (reverse('cars:list'), reverse('cars:new'), reverse('cars:add'),
+                    reverse('cars:favorites'), reverse('cars:partnership')):
+            self.assertIn(url, menu)
+        self.assertLess(menu.index(reverse('cars:favorites')), menu.index(reverse('cars:partnership')))
+        partnership = self.client.get(reverse('cars:partnership'))
+        for link in ('https://t.me/fibonaccicars', 'https://www.tiktok.com/@fibonacci_io',
+                     'https://www.instagram.com/fibonacci_io', 'https://t.me/fibonacci_io',
+                     'mailto:fibonacci.iox@gmail.com'):
+            self.assertContains(partnership, link)
+
     def test_sort_by_date_and_price_only(self):
         page = self.client.get(reverse('cars:list'))
         self.assertNotContains(page, 'name-ascending')
@@ -479,7 +530,7 @@ class ModerationTests(TestCase):
 
     def create(self):
         self.client.post(reverse('cars:add'), {
-            'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR',
+            'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol', 'contact_name': 'Ivan',
             'contact_phone': '+49 151 0000001',
         })
@@ -520,7 +571,7 @@ class ModerationTests(TestCase):
         car = make_listing(self.user)
         until = car.active_until
         self.client.post(reverse('cars:edit', args=[car.pk]), {
-            'make': car.make.pk, 'model': 'M5 Competition', 'price': '95000', 'currency': 'EUR',
+            'make': car.make.pk, 'model': 'M5 Competition', 'price': '95000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol', 'contact_name': 'Ivan',
             'contact_phone': '+49 151 0000001',
         })

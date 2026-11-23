@@ -34,6 +34,10 @@ class CarForm(forms.ModelForm):
     photos = MultipleImageField(
         label=_('Photos'), required=False,
         help_text=_('Up to %(n)s images.') % {'n': settings.LISTING_MAX_PHOTOS})
+    accident = forms.TypedChoiceField(
+        label=_('Was the car in an accident?'), widget=forms.RadioSelect,
+        choices=[('False', _('No')), ('True', _('Yes'))],
+        coerce=lambda value: value == 'True')
     contact_phone = forms.CharField(label=_('Phone'), max_length=30,
                                     validators=[phone_validator])
     contact_whatsapp = forms.CharField(label='WhatsApp', max_length=30, required=False,
@@ -45,7 +49,7 @@ class CarForm(forms.ModelForm):
     class Meta:
         model = Car
         fields = ('make', 'model', 'fuel', 'description', 'year', 'mileage_km',
-                  'transmission', 'power_hp', 'color', 'price', 'currency',
+                  'transmission', 'power_hp', 'color', 'accident', 'price', 'currency',
                   'contact_name', 'contact_phone', 'contact_whatsapp', 'contact_telegram')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
@@ -65,6 +69,8 @@ class CarForm(forms.ModelForm):
         self.fields['transmission'].choices = [('', '—')] + list(self.fields['transmission'].choices)[1:]
         self.fields['year'].widget.attrs.update(min=1900, max=date.today().year + 1)
         self.fields['price'].widget.attrs.update(min=1, step='1')
+        if self.instance.pk and self.instance.accident is not None:
+            self.initial['accident'] = str(self.instance.accident)
 
     def clean_year(self):
         year = self.cleaned_data.get('year')

@@ -22,6 +22,7 @@ SORTS = {
     'price-descending': ('-price_eur',),
 }
 PER_PAGE = 24
+ACCIDENT_FILTERS = {'no': False, 'yes': True}
 
 
 def with_cover(queryset):
@@ -54,9 +55,16 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     make_slug = make_slug or request.GET.get('make', '')
     make = get_object_or_404(Make, slug=make_slug) if make_slug else None
 
-    source = request.GET.get('source')
-    if source in Car.Source.values:
+    source = request.GET.get('source', '')
+    if source not in Car.Source.values:
+        source = ''
+    if source:
         base = base.filter(source=source)
+    accident = request.GET.get('accident', '')
+    if accident not in ACCIDENT_FILTERS:
+        accident = ''
+    if accident:
+        base = base.filter(accident=ACCIDENT_FILTERS[accident])
     filters = CarFilterForm(request.GET or None)
     base = filters.apply(base)
 
@@ -76,6 +84,7 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     params = request.GET.copy()
     params.pop('page', None)
     params['fuel'], params['make'] = fuel, make.slug if make else ''
+    params['sort'] = '' if sort == 'date-descending' else sort
 
     def link(**changes):
         query = params.copy()
@@ -97,6 +106,18 @@ def car_list(request, make_slug=None, fuel=None, new=False):
                      'active': make == m, 'count': make_counts[m.pk]}
                     for m in Make.objects.filter(pk__in=make_counts).order_by('name')]
 
+    def options(key, current, choices):
+        return [{'value': value, 'label': label, 'href': link(**{key: value}),
+                 'active': current == value} for value, label in choices]
+
+    accident_options = options('accident', accident, [
+        ('', _('Any')), ('no', _('No accidents')), ('yes', _('After an accident'))])
+    source_options = options('source', source, [
+        ('', _('All sellers')), ('user', _('Private listings')), ('hollmann', 'hollmann.international')])
+    sort_options = options('sort', sort, [
+        ('date-descending', _('Newest first')), ('date-ascending', _('Oldest first')),
+        ('price-ascending', _('Price: low to high')), ('price-descending', _('Price: high to low'))])
+
     title = _('New Offers') if new else _('All Vehicles')
     if fuel or make:
         title = ' · '.join(str(x) for x in (make.name if make else '',
@@ -107,7 +128,8 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         'fuel_label': Car.Fuel(fuel).label if fuel else _('All categories'),
         'fuel_options': fuel_options, 'make_options': make_options,
         'all_makes_href': link(make=''),
-        'hidden_params': {k: v for k, v in params.items() if v and k not in ('sort', 'source')},
+        'accident': accident, 'accident_options': accident_options,
+        'source_options': source_options, 'sort_options': sort_options,
     })
 
 
@@ -303,3 +325,10 @@ def robots_txt(request):
         f'Sitemap: {request.build_absolute_uri("/sitemap.xml")}',
     ]
     return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')
+
+
+def partnership_page(request):
+    from . import partnership
+    return render(request, 'cars/partnership.html', {
+        'links': partnership.LINKS, 'email': partnership.EMAIL, 'followers': partnership.FOLLOWERS,
+    })

@@ -121,6 +121,8 @@ class Car(models.Model):
                                     choices=Transmission.choices, blank=True)
     power_hp = models.PositiveIntegerField(_('power, hp'), null=True, blank=True)
     color = models.CharField(_('color'), max_length=100, blank=True)
+    # Was the car damaged in an accident? None = not stated (imported cars).
+    accident = models.BooleanField(_('accident damage'), null=True, blank=True, db_index=True)
 
     # Full specification table as [label, value] pairs (imported cars).
     specs = models.JSONField(default=list, blank=True)
@@ -275,6 +277,8 @@ class Car(models.Model):
             rows.append((_('Power'), f'{self.power_hp} {_("hp")}'))
         if self.color:
             rows.append((_('Color'), self.color))
+        if self.accident is not None:
+            rows.append((_('Accident damage'), _('Yes, after an accident') if self.accident else _('No accidents')))
         return rows
 
     def activate(self, days=None, paid_amount=Decimal('0'), method='free'):

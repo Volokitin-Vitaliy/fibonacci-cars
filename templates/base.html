@@ -107,19 +107,29 @@
             <button type="button" class="lg:hidden w-10 h-10 -mr-2 flex items-center justify-center text-2xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
         </div>
     </div>
-    <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 py-2 text-sm uppercase tracking-wider divide-y divide-neutral-900 max-h-[calc(100vh-4rem)] overflow-y-auto">
-        <a href="{% url 'cars:list' %}" class="block py-3">{% trans 'All Vehicles' %}</a>
-        <a href="{% url 'cars:new' %}" class="block py-3">{% trans 'New Offers' %}</a>
-        {% for c in nav_fuels %}<a href="{{ c.url }}" class="block py-3">{{ c.label }}</a>{% endfor %}
-        <a href="{% url 'cars:add' %}" class="block py-3">{% trans 'Sell your car' %}</a>
-        <a href="{% url 'cars:favorites' %}" class="block py-3">{% trans 'Favorites' %} (<span data-fav-count>{{ favorite_ids|length }}</span>)</a>
-        {% if user.is_authenticated %}
-        <a href="{% url 'cars:my_cars' %}" class="block py-3">{% trans 'Cabinet' %}</a>
-        <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="py-3 uppercase tracking-wider text-neutral-400">{% trans 'Log out' %}</button></form>
-        {% else %}
-        <a href="{% url 'users:login' %}" class="block py-3">{% trans 'Log in' %}</a>
-        <a href="{% url 'users:register' %}" class="block py-3">{% trans 'Create an account' %}</a>
-        {% endif %}
+    <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 pt-2 pb-5 text-sm uppercase tracking-wider max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div class="divide-y divide-neutral-900">
+            <a href="{% url 'cars:list' %}" class="block py-3.5">{% trans 'All Vehicles' %}</a>
+            <a href="{% url 'cars:new' %}" class="block py-3.5">{% trans 'New Offers' %}</a>
+        </div>
+        <a href="{% url 'cars:add' %}" class="my-3 flex items-center justify-center gap-2 h-12 bg-neutral-100 text-neutral-950 font-semibold rounded-full hover:bg-white">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            {% trans 'Sell your car' %}
+        </a>
+        <div class="divide-y divide-neutral-900 border-t border-neutral-900">
+            <a href="{% url 'cars:favorites' %}" class="flex items-center justify-between py-3.5">{% trans 'Favorites' %}<span data-fav-count class="text-neutral-500">{{ favorite_ids|length }}</span></a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cars:my_cars' %}" class="block py-3.5">{% trans 'Cabinet' %}</a>
+            <a href="{% url 'users:account' %}" class="block py-3.5">{% trans 'Account details' %}</a>
+            {% else %}
+            <a href="{% url 'users:login' %}" class="block py-3.5">{% trans 'Log in' %}</a>
+            <a href="{% url 'users:register' %}" class="block py-3.5">{% trans 'Create an account' %}</a>
+            {% endif %}
+            <a href="{% url 'cars:partnership' %}" class="block py-3.5">{% trans 'Partnership' %}</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="py-3.5 uppercase tracking-wider text-neutral-500">{% trans 'Log out' %}</button></form>
+            {% endif %}
+        </div>
     </div>
 </header>
 
@@ -164,6 +174,7 @@
                 {% endif %}
                 <li><a href="{% url 'cars:favorites' %}" class="hover:text-neutral-400">{% trans 'Favorites' %}</a></li>
                 <li><a href="{% url 'cars:add' %}" class="hover:text-neutral-400">{% trans 'Sell your car' %}</a></li>
+                <li><a href="{% url 'cars:partnership' %}" class="hover:text-neutral-400">{% trans 'Partnership' %}</a></li>
             </ul>
         </div>
     </div>

@@ -4,7 +4,8 @@ Django marketplace for exclusive vehicles, in English and Russian.
 
 - **Catalog**: All Vehicles and New Offers with two separate pickers that can be combined:
   **category** (engine type: combustion/petrol, diesel, hybrid, electric, gas) and
-  **make**; sorting by date or price; a vehicle page with gallery, gross/net price,
+  **make**, plus accident history (no accidents / after an accident), seller and sorting by
+  date or price — all as dropdowns; a vehicle page with gallery, gross/net price,
   details table, description and contacts.
 - **Daily import** from hollmann.international: make, model, prices, engine type and the
   specification table, with a link to the original offer. Photos, descriptions and staff
@@ -23,6 +24,8 @@ Django marketplace for exclusive vehicles, in English and Russian.
   to the account when the guest signs in.
 - **Admin** on django-unfold: dashboard (listings to review, expiring soon, import status,
   new users, payments), sidebar with a moderation counter, coloured status labels.
+- **Partnership page** (`/partnership/`) with the brand's links; edit them in
+  `cars/partnership.py`.
 - **Floating bottom menu** on every page: a full-width bar on phones, a pill on desktop.
 - **Language choice first:** on the first visit to any page the visitor chooses English or
   Russian, then the site continues to the requested page (`/en/...`, `/ru/...`).

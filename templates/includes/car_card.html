@@ -23,6 +23,7 @@
                 {% if car.mileage_km is not None %}<span>{{ car.mileage_km|thousands }} km</span>{% endif %}
                 {% if car.fuel %}<span>{{ car.get_fuel_display }}</span>{% endif %}
                 {% if car.power_hp %}<span>{{ car.power_hp }} {% trans 'hp' %}</span>{% endif %}
+                {% if car.accident is True %}<span class="text-amber-400">{% trans 'After an accident' %}</span>{% elif car.accident is False %}<span class="text-emerald-400">{% trans 'No accidents' %}</span>{% endif %}
             </div>
         </div>
     </a>
