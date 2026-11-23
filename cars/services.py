@@ -52,12 +52,18 @@ def submit_for_review(car):
 
 def approve(car):
     """Approve a listing. A listing that has never run starts its first month
-    now, unless activation must be paid; then the owner pays in the cabinet."""
+    now: the month paid at submission, or a free one when payments are off."""
+    from . import payments
+
     car.moderation = Car.Moderation.APPROVED
     car.rejection_reason = ''
     car.save(update_fields=['moderation', 'rejection_reason', 'updated_at'])
-    if car.activated_at is None and not settings.LISTING_PAYMENT_REQUIRED:
-        car.activate()
+    if not car.is_listing_active:
+        paid = payments.unused_payment(car)
+        if paid:
+            payments.use_payment(car, paid)
+        elif car.activated_at is None and not settings.LISTING_PAYMENT_REQUIRED:
+            car.activate()
     notifications.notify_approved(car)
 
 

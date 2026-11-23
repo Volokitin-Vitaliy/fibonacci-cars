@@ -83,6 +83,7 @@ class Car(models.Model):
         INACTIVE = 'inactive', _('Inactive')
 
     class Moderation(models.TextChoices):
+        AWAITING_PAYMENT = 'awaiting_payment', _('Awaiting payment')
         PENDING = 'pending', _('Pending review')
         APPROVED = 'approved', _('Approved')
         REJECTED = 'rejected', _('Rejected')
@@ -111,6 +112,10 @@ class Car(models.Model):
                              verbose_name=_('make'))
     model = models.CharField(_('model / title'), max_length=200)
     description = models.TextField(_('description'), blank=True)
+    # Imported cars: the dealer's description (sanitized HTML) and contacts,
+    # a list of {name, languages, phone, mobile, whatsapp, photo}.
+    description_html = models.TextField(_('description (HTML)'), blank=True)
+    dealer_contacts = models.JSONField(_('dealer contacts'), default=list, blank=True)
 
     # Short characteristics (user listings fill these in).
     year = models.PositiveIntegerField(_('year'), null=True, blank=True)
@@ -307,6 +312,8 @@ class CarPhoto(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='photos')
     image = models.ImageField(upload_to=car_photo_path)
     position = models.PositiveIntegerField(default=0)
+    # Original address of an imported photo, so the daily import downloads it only once.
+    source_url = models.URLField(max_length=500, blank=True, db_index=True)
 
     class Meta:
         ordering = ('position', 'id')
@@ -355,7 +362,11 @@ class ImportRun(models.Model):
 
 
 class Payment(models.Model):
-    """A Stripe Checkout payment for one listing period."""
+    """A payment for one listing period (WayForPay or Stripe)."""
+
+    class Provider(models.TextChoices):
+        WAYFORPAY = 'wayforpay', 'WayForPay'
+        STRIPE = 'stripe', 'Stripe'
 
     class Status(models.TextChoices):
         PENDING = 'pending', _('Pending')
@@ -367,10 +378,14 @@ class Payment(models.Model):
                              related_name='payments')
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=3, default='EUR')
-    stripe_session_id = models.CharField(max_length=255, unique=True)
+    provider = models.CharField(max_length=20, choices=Provider.choices, default=Provider.STRIPE)
+    # Stripe Checkout session id or WayForPay orderReference.
+    reference = models.CharField(max_length=255, unique=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
+    # When the paid period was started (paid at submission, used on approval).
+    used_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ('-created_at',)

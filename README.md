@@ -7,9 +7,10 @@ Django marketplace for exclusive vehicles, in English and Russian.
   **make**, plus accident history (no accidents / after an accident), seller and sorting by
   date or price — all as dropdowns; a vehicle page with gallery, gross/net price,
   details table, description and contacts.
-- **Daily import** from hollmann.international: make, model, prices, engine type and the
-  specification table, with a link to the original offer. Photos, descriptions and staff
-  contacts are not copied.
+- **Daily import** from hollmann.international (with their permission): make, model,
+  prices, engine type, specification table, **photos** (copied and re-compressed, up to 20
+  per car), **description** (sanitized HTML) and **dealer contacts** with portraits. Cars
+  sold or removed on their site are hidden here and their photos deleted.
 - **User accounts** (full name, email, country; or one click with Google / Apple) with a
   cabinet: add vehicles for sale with phone, WhatsApp and Telegram contacts, edit,
   deactivate/activate, delete, and a favorites list.
@@ -18,7 +19,8 @@ Django marketplace for exclusive vehicles, in English and Russian.
 - **Listings run for 30 days** from approval. Three days before the end the owner gets an
   email; when the month is over the listing is hidden immediately and stays inactive until
   the owner activates it again from the cabinet.
-- **Paid activation via Stripe** (5 EUR per month), switched off by default.
+- **Paid listings via WayForPay** (or Stripe): 10 EUR when a listing is submitted and when
+  it is reactivated; switched off by default.
 - **Filters** by price (EUR, USD converted), year and mileage.
 - **Favorites for guests:** kept in the session for 30 days after the last visit and moved
   to the account when the guest signs in.
@@ -51,7 +53,7 @@ Without `POSTGRES_DB` in `.env` the project uses SQLite. Admin: http://localhost
 
 | Command | What it does |
 | --- | --- |
-| `python manage.py import_hollmann` | Updates vehicles from hollmann.international. Vehicles no longer listed there are hidden. Options: `--no-details` (listing pages only), `--delay 1.0`. |
+| `python manage.py import_hollmann` | Updates vehicles from hollmann.international, downloads new photos, hides sold cars and deletes their photos. The first run takes ~45 min (≈600 MB of photos), later runs only fetch what changed. Options: `--no-media`, `--no-details`, `--limit 10` (test on a few cars), `--delay 1.0`. |
 | `python manage.py expire_listings` | Marks listings whose month is over as inactive. Visibility does not depend on it: expired listings are hidden at once. |
 | `python manage.py send_expiry_reminders` | Emails owners whose listing expires within `LISTING_REMINDER_DAYS` (3). One email per listing period. |
 | `python manage.py run_scheduler` | Runs all three commands every 24 hours in a loop (the `scheduler` service in docker-compose). |
@@ -70,33 +72,52 @@ Every import is recorded in the admin under **Import runs**, with errors if any.
 LISTING_DURATION_DAYS=30
 LISTING_REMINDER_DAYS=3
 LISTING_MODERATION=True        # new/edited listings need approval
-LISTING_PAYMENT_REQUIRED=False # True = activation costs LISTING_PRICE_EUR via Stripe
-LISTING_PRICE_EUR=5.00
+LISTING_PAYMENT_REQUIRED=False # True = a listing costs LISTING_PRICE_EUR
+LISTING_PRICE_EUR=10.00
 USD_TO_EUR_RATE=0.92           # for filtering/sorting prices across currencies
 ```
 
-Lifecycle: created → **pending review** → approved (first month starts, or the owner pays
-first when payments are on) → reminder 3 days before the end → **inactive** → owner
-activates again (pays again when payments are on). Editing an approved listing sends it
+Lifecycle: created → (**awaiting payment** → paid, when payments are on) → **pending
+review** → approved (the month starts) → reminder 3 days before the end → **inactive** →
+owner activates again (pays again when payments are on). Editing an approved listing sends it
 back to review; its remaining time is kept. Each period is stored as a `ListingPeriod`.
 
-### Turning on Stripe payments
+### Turning on WayForPay (10 EUR per listing)
 
-1. In the Stripe dashboard create a webhook endpoint
-   `https://<your-domain>/payments/stripe/webhook/` with the events
-   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
-   `checkout.session.expired`, `checkout.session.async_payment_failed`.
-2. Put the keys in `.env` and switch payments on:
+1. In the WayForPay merchant cabinet open your store → **Store settings** and copy the
+   **Merchant login** (merchantAccount) and **Merchant secret key**. The store's domain must
+   be your site's domain.
+2. Ask WayForPay support to enable **EUR** for the store if it is not enabled (by default
+   stores usually accept UAH).
+3. Put the keys in `.env` on the server (never in the code):
 
 ```ini
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+PAYMENT_PROVIDER=wayforpay
+WAYFORPAY_MERCHANT_ACCOUNT=your_merchant_login
+WAYFORPAY_SECRET_KEY=your_secret_key
+WAYFORPAY_DOMAIN=domen.com
+SITE_URL=https://domen.com
+LISTING_PRICE_EUR=10.00
 LISTING_PAYMENT_REQUIRED=True
 ```
 
-The owner presses "Activate for €5", pays on Stripe Checkout and the listing becomes active
-for 30 days. Payments are listed in the admin under **Payments**. For local testing use test
-keys and `stripe listen --forward-to localhost:8000/payments/stripe/webhook/`.
+The site sends WayForPay the result address itself
+(`https://<domain>/payments/wayforpay/callback/`); it must be reachable from the internet
+over HTTPS. Flow: the seller fills in the listing → pays on the WayForPay page → the
+listing goes to moderation → on approval the paid 30 days start. Reactivating an expired
+listing costs 10 EUR again and starts right away. Payments are in the admin under
+**Payments**.
+
+For a test run, WayForPay's public test store can be used:
+`WAYFORPAY_MERCHANT_ACCOUNT=test_merch_n1`, `WAYFORPAY_SECRET_KEY=flk3409refn54t54t*FNJRET`
+(test cards from the WayForPay documentation).
+
+### Stripe (alternative)
+
+Set `PAYMENT_PROVIDER=stripe`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and create a webhook
+to `https://<domain>/payments/stripe/webhook/` (events `checkout.session.completed`,
+`checkout.session.async_payment_succeeded`, `checkout.session.expired`,
+`checkout.session.async_payment_failed`).
 
 ## Email
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 14:46+0000\n"
+"POT-Creation-Date: 2026-11-23 15:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -72,12 +72,24 @@ msgid "Cancel"
 msgstr "Отмена"
 
 #, python-format
+msgid ""
+"Publishing a listing costs €%(price)s for %(days)s days. After saving you will be taken to the "
+"payment page; after payment the listing goes to review."
+msgstr ""
+"Размещение объявления стоит €%(price)s на %(days)s дней. После сохранения откроется страница "
+"оплаты, после оплаты объявление уйдёт на модерацию."
+
+#, python-format
 msgid "After a moderator approves your listing, it will be published for %(days)s days."
 msgstr "После одобрения модератором объявление будет опубликовано на %(days)s дней."
 
 #, python-format
 msgid "Your listing will be published right away for %(days)s days."
 msgstr "Объявление будет опубликовано сразу на %(days)s дней."
+
+#, python-format
+msgid "Continue to payment · €%(price)s"
+msgstr "Перейти к оплате · €%(price)s"
 
 msgid "You have not saved any vehicles yet. Tap ♡ on a vehicle to save it here."
 msgstr "Вы пока ничего не добавили в избранное. Нажмите ♡ на автомобиле, чтобы сохранить его здесь."
@@ -90,6 +102,9 @@ msgstr "Новые и изменённые объявления публикую
 
 msgid "Listings are free for now."
 msgstr "Пока размещение бесплатное."
+
+msgid "Awaiting payment"
+msgstr "Ожидает оплаты"
 
 msgid "Pending review"
 msgstr "На модерации"
@@ -142,8 +157,20 @@ msgstr ""
 "деактивируется и скрывается, пока вы снова его не активируете."
 
 #, python-format
-msgid "Activation costs €%(listing_price)s per month."
-msgstr "Активация стоит €%(listing_price)s в месяц."
+msgid ""
+"A listing costs €%(listing_price)s for %(duration)s days; it is paid when you submit it and when "
+"you reactivate it."
+msgstr ""
+"Объявление стоит €%(listing_price)s на %(duration)s дней: оплата при подаче и при повторной "
+"активации."
+
+#, python-format
+msgid ""
+"Pay €%(listing_price)s to send the listing for review. The paid %(duration)s days start when it "
+"is approved."
+msgstr ""
+"Оплатите €%(listing_price)s, чтобы отправить объявление на модерацию. Оплаченные %(duration)s "
+"дней начнутся после одобрения."
 
 #, python-format
 msgid "Active until %(date)s (%(days)s day left)"
@@ -164,6 +191,10 @@ msgstr[1] "%(n)s в избранном"
 msgstr[2] "%(n)s в избранном"
 
 #, python-format
+msgid "Pay €%(listing_price)s"
+msgstr "Оплатить €%(listing_price)s"
+
+#, python-format
 msgid "Activate for €%(listing_price)s"
 msgstr "Активировать за €%(listing_price)s"
 
@@ -182,6 +213,9 @@ msgstr "Смотреть фото на hollmann.international"
 
 msgid "No photos yet"
 msgstr "Фотографий пока нет"
+
+msgid "Photos: Hollmann International"
+msgstr "Фото: Hollmann International"
 
 msgid "Close"
 msgstr "Закрыть"
@@ -227,6 +261,18 @@ msgstr "Открыть оригинальное предложение"
 msgid "Interested in this vehicle?"
 msgstr "Заинтересовал автомобиль?"
 
+msgid "This vehicle is offered by Hollmann International. Our partners will help you:"
+msgstr "Этот автомобиль предлагает Hollmann International. Наши партнёры помогут вам:"
+
+msgid "Phone"
+msgstr "Телефон"
+
+msgid "Mobile"
+msgstr "Мобильный"
+
+msgid "Original offer on hollmann.international"
+msgstr "Оригинальное предложение на hollmann.international"
+
 msgid "This vehicle is offered by Hollmann International. Contact the dealer through the original offer."
 msgstr ""
 "Этот автомобиль предлагает Hollmann International. Свяжитесь с дилером через оригинальное "
@@ -240,9 +286,6 @@ msgstr "Свяжитесь с продавцом напрямую:"
 
 msgid "Contact person"
 msgstr "Контактное лицо"
-
-msgid "Phone"
-msgstr "Телефон"
 
 #, python-format
 msgid "More from %(make)s"
@@ -380,6 +423,22 @@ msgstr "Сотрудничество и контакты."
 msgid "%(n)s followers"
 msgstr "%(n)s подписчиков"
 
+msgid "Payment"
+msgstr "Оплата"
+
+msgid "Go to payment"
+msgstr "Перейти к оплате"
+
+msgid "You will be redirected to the secure WayForPay payment page."
+msgstr "Вы будете перенаправлены на защищённую страницу оплаты WayForPay."
+
+msgid "Pay later"
+msgstr "Оплатить позже"
+
+#, python-format
+msgid "Listing for %(days)s days"
+msgstr "Размещение на %(days)s дней"
+
 msgid "Dashboard"
 msgstr "Обзор"
 
@@ -463,9 +522,6 @@ msgstr "Продать"
 
 msgid "Profile"
 msgstr "Профиль"
-
-msgid "Photos on hollmann.international"
-msgstr "Фото на hollmann.international"
 
 msgid "hp"
 msgstr "л.с."
@@ -684,6 +740,12 @@ msgstr "модель / название"
 
 msgid "description"
 msgstr "описание"
+
+msgid "description (HTML)"
+msgstr "описание (HTML)"
+
+msgid "dealer contacts"
+msgstr "контакты дилера"
 
 msgid "year"
 msgstr "год"
@@ -949,18 +1011,15 @@ msgstr "Сначала дороже"
 msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
 msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
 
-msgid "Your listing is saved. Activate it to publish it."
-msgstr "Объявление сохранено. Активируйте его, чтобы опубликовать."
-
 #, python-format
 msgid "Your listing is published for %(days)s days."
 msgstr "Ваше объявление опубликовано на %(days)s дней."
 
-msgid "Listing updated and sent for review."
-msgstr "Объявление обновлено и отправлено на модерацию."
-
 msgid "Listing updated."
 msgstr "Объявление обновлено."
+
+msgid "Listing updated and sent for review."
+msgstr "Объявление обновлено и отправлено на модерацию."
 
 msgid "Listing deleted."
 msgstr "Объявление удалено."
@@ -971,12 +1030,6 @@ msgstr "Это объявление уже активно."
 msgid "The listing can be activated after it has been approved."
 msgstr "Объявление можно активировать после одобрения модератором."
 
-msgid "Online payment is not available yet."
-msgstr "Онлайн-оплата пока недоступна."
-
-msgid "The payment could not be started. Please try again later."
-msgstr "Не удалось начать оплату. Попробуйте позже."
-
 #, python-format
 msgid "Listing activated for %(days)s days."
 msgstr "Объявление активировано на %(days)s дней."
@@ -984,9 +1037,26 @@ msgstr "Объявление активировано на %(days)s дней."
 msgid "Listing deactivated."
 msgstr "Объявление деактивировано."
 
+msgid "Online payment is not available yet. Your listing is saved."
+msgstr "Онлайн-оплата пока недоступна. Объявление сохранено."
+
+msgid "The payment could not be started. Please try again later."
+msgstr "Не удалось начать оплату. Попробуйте позже."
+
+msgid "We could not confirm the payment."
+msgstr "Не удалось подтвердить оплату."
+
 #, python-format
 msgid "Payment received. Your listing is active for %(days)s days."
 msgstr "Оплата получена. Объявление активно на %(days)s дней."
+
+msgid ""
+"Payment received. Your listing has been sent for review; the paid month starts when it is "
+"approved."
+msgstr "Оплата получена. Объявление отправлено на модерацию, оплаченный месяц начнётся после одобрения."
+
+msgid "The payment was not completed. You can try again from your cabinet."
+msgstr "Оплата не прошла. Вы можете попробовать снова в кабинете."
 
 msgid "We are waiting for the payment confirmation. Your listing will be activated in a moment."
 msgstr "Ждём подтверждения оплаты. Объявление будет активировано через несколько секунд."

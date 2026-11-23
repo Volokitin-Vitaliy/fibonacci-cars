@@ -140,9 +140,10 @@ class FavoriteAdmin(ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(ModelAdmin):
-    list_display = ('created_at', 'car', 'user', 'amount', 'currency', 'status', 'paid_at')
-    list_filter = ('status',)
-    search_fields = ('stripe_session_id', 'user__email')
+    list_display = ('created_at', 'car', 'user', 'amount', 'currency', 'provider', 'status',
+                    'paid_at', 'used_at')
+    list_filter = ('status', 'provider')
+    search_fields = ('reference', 'user__email')
     readonly_fields = [f.name for f in Payment._meta.fields]
 
 

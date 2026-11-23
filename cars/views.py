@@ -173,7 +173,7 @@ def my_cars(request):
     return render(request, 'cars/cabinet/my_cars.html', {
         'cars': cars, 'section': 'cars',
         'payment_required': settings.LISTING_PAYMENT_REQUIRED,
-        'listing_price': settings.LISTING_PRICE_EUR,
+        'listing_price': payments.price(),
         'duration': settings.LISTING_DURATION_DAYS,
         'moderation': settings.LISTING_MODERATION,
     })
@@ -189,12 +189,13 @@ def car_create(request):
         form.instance.owner = request.user
         form.instance.source = Car.Source.USER
         form.instance.status = Car.Status.INACTIVE
+        if settings.LISTING_PAYMENT_REQUIRED:
+            form.instance.moderation = Car.Moderation.AWAITING_PAYMENT
+            car = form.save()
+            return _start_payment(request, car)
         car = form.save()
         if services.submit_for_review(car):
             messages.success(request, _('Thank you! Your listing has been sent for review. We will email you once it is approved.'))  # noqa: E501
-        elif settings.LISTING_PAYMENT_REQUIRED:
-            messages.success(request, _('Your listing is saved. Activate it to publish it.'))
-            return redirect('cars:my_cars')
         else:
             car.activate()
             messages.success(request, _('Your listing is published for %(days)s days.')
@@ -202,7 +203,8 @@ def car_create(request):
         return redirect(car)
     return render(request, 'cars/cabinet/car_form.html', {
         'form': form, 'section': 'add', 'duration': settings.LISTING_DURATION_DAYS,
-        'moderation': settings.LISTING_MODERATION})
+        'moderation': settings.LISTING_MODERATION,
+        'payment_required': settings.LISTING_PAYMENT_REQUIRED, 'listing_price': payments.price()})
 
 
 def _own_car(request, pk):
@@ -218,7 +220,9 @@ def car_edit(request, pk):
         remove = request.POST.getlist('remove_photo')
         if remove:
             car.photos.filter(pk__in=remove).delete()
-        if services.submit_for_review(car):
+        if car.moderation == Car.Moderation.AWAITING_PAYMENT:
+            messages.success(request, _('Listing updated.'))
+        elif services.submit_for_review(car):
             messages.success(request, _('Listing updated and sent for review.'))
         else:
             messages.success(request, _('Listing updated.'))
@@ -242,20 +246,12 @@ def car_activate(request, pk):
     car = _own_car(request, pk)
     if car.is_listing_active:
         messages.info(request, _('This listing is already active.'))
+    elif car.moderation == Car.Moderation.AWAITING_PAYMENT:
+        return _start_payment(request, car)
     elif not car.is_approved:
         messages.error(request, _('The listing can be activated after it has been approved.'))
     elif settings.LISTING_PAYMENT_REQUIRED:
-        try:
-            url = payments.create_checkout(
-                car, request.user,
-                success_url=request.build_absolute_uri(reverse('cars:payment_success')),
-                cancel_url=request.build_absolute_uri(reverse('cars:my_cars')))
-        except payments.PaymentsNotConfigured:
-            messages.error(request, _('Online payment is not available yet.'))
-        except Exception:
-            messages.error(request, _('The payment could not be started. Please try again later.'))
-        else:
-            return redirect(url)
+        return _start_payment(request, car)
     else:
         car.activate()
         messages.success(request, _('Listing activated for %(days)s days.')
@@ -272,25 +268,46 @@ def car_deactivate(request, pk):
     return redirect('cars:my_cars')
 
 
+def _start_payment(request, car):
+    try:
+        return payments.start(request, car)
+    except payments.PaymentsNotConfigured:
+        messages.error(request, _('Online payment is not available yet. Your listing is saved.'))
+    except Exception:
+        messages.error(request, _('The payment could not be started. Please try again later.'))
+    return redirect('cars:my_cars')
+
+
+def _payment_message(request, payment):
+    if payment is None:
+        messages.error(request, _('We could not confirm the payment.'))
+    elif payment.status == Payment.Status.PAID:
+        car = payment.car
+        if car and car.is_listing_active:
+            messages.success(request, _('Payment received. Your listing is active for %(days)s days.')
+                             % {'days': settings.LISTING_DURATION_DAYS})
+        else:
+            messages.success(request, _('Payment received. Your listing has been sent for review; the paid month starts when it is approved.'))  # noqa: E501
+    elif payment.status == Payment.Status.FAILED:
+        messages.error(request, _('The payment was not completed. You can try again from your cabinet.'))
+    else:
+        messages.info(request, _('We are waiting for the payment confirmation. Your listing will be activated in a moment.'))  # noqa: E501
+
+
 @login_required
 def payment_success(request):
-    """Stripe redirects here after checkout. The webhook activates the
-    listing; checking the session here makes it immediate."""
+    """Stripe redirects here after checkout."""
     session_id = request.GET.get('session_id', '')
-    payment = Payment.objects.filter(stripe_session_id=session_id, user=request.user).first()
+    payment = Payment.objects.filter(reference=session_id, user=request.user).first()
     if payment is None:
         return redirect('cars:my_cars')
     if payment.status != Payment.Status.PAID:
         try:
-            payments.fulfill(payments.retrieve_session(session_id))
+            payments.stripe_fulfill(payments.retrieve_session(session_id))
         except Exception:
             pass
         payment.refresh_from_db()
-    if payment.status == Payment.Status.PAID:
-        messages.success(request, _('Payment received. Your listing is active for %(days)s days.')
-                         % {'days': settings.LISTING_DURATION_DAYS})
-    else:
-        messages.info(request, _('We are waiting for the payment confirmation. Your listing will be activated in a moment.'))  # noqa: E501
+    _payment_message(request, payment)
     return redirect('cars:my_cars')
 
 
@@ -303,12 +320,42 @@ def stripe_webhook(request):
         return HttpResponse(status=503)
     except Exception:
         return HttpResponseBadRequest()
+    session = event['data']['object']
     if event['type'] in ('checkout.session.completed', 'checkout.session.async_payment_succeeded'):
-        payments.fulfill(event['data']['object'])
+        payments.stripe_fulfill(session)
     elif event['type'] in ('checkout.session.expired', 'checkout.session.async_payment_failed'):
-        Payment.objects.filter(stripe_session_id=event['data']['object']['id'],
-                               status=Payment.Status.PENDING).update(status=Payment.Status.FAILED)
+        payments.fulfill(session['id'], paid=False)
     return HttpResponse(status=200)
+
+
+@csrf_exempt
+@require_POST
+def wayforpay_callback(request):
+    """serviceUrl: WayForPay reports the result here (server to server)."""
+    data = payments.parse_callback_body(request.body)
+    payment = payments.wayforpay_process(data)
+    if payment is None:
+        return HttpResponseBadRequest()
+    return JsonResponse(payments.wayforpay_answer(payment.reference))
+
+
+@csrf_exempt
+def wayforpay_return(request):
+    """returnUrl: WayForPay posts the result here when the buyer comes back.
+    That cross-site POST carries no session cookie, so record the result and
+    continue with a normal GET where the user is signed in again."""
+    data = request.POST.dict() if request.method == 'POST' else {}
+    if data:
+        payments.wayforpay_process(data)
+    order = data.get('orderReference', '')
+    return redirect(reverse('wayforpay_done') + (f'?{urlencode({"order": order})}' if order else ''))
+
+
+@login_required
+def wayforpay_done(request):
+    payment = Payment.objects.filter(reference=request.GET.get('order', ''), user=request.user).first()
+    _payment_message(request, payment)
+    return redirect('cars:my_cars')
 
 
 def robots_txt(request):

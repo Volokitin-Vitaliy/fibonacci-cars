@@ -8,7 +8,7 @@
 </div>
 <p class="text-sm text-neutral-400 mb-8 max-w-2xl">
     {% if moderation %}{% trans 'New and edited listings are published after a moderator approves them.' %} {% endif %}{% blocktrans %}Each listing is published for {{ duration }} days. When the period ends, the listing is deactivated and hidden until you activate it again.{% endblocktrans %}
-    {% if payment_required %}{% blocktrans %}Activation costs €{{ listing_price }} per month.{% endblocktrans %}{% else %}{% trans 'Listings are free for now.' %}{% endif %}
+    {% if payment_required %}{% blocktrans %}A listing costs €{{ listing_price }} for {{ duration }} days; it is paid when you submit it and when you reactivate it.{% endblocktrans %}{% else %}{% trans 'Listings are free for now.' %}{% endif %}
 </p>
 
 <div class="space-y-4">
@@ -24,7 +24,9 @@
                     <a href="{{ car.get_absolute_url }}" class="font-semibold text-lg hover:underline">{{ car.model }}</a>
                     <div class="mt-1">{{ car.currency_symbol }}{{ car.price|money }}</div>
                 </div>
-                {% if car.is_pending %}
+                {% if car.moderation == 'awaiting_payment' %}
+                <span class="text-xs uppercase tracking-widest border border-blue-800 text-blue-300 px-2 py-1">{% trans 'Awaiting payment' %}</span>
+                {% elif car.is_pending %}
                 <span class="text-xs uppercase tracking-widest border border-amber-800 text-amber-300 px-2 py-1">{% trans 'Pending review' %}</span>
                 {% elif car.is_rejected %}
                 <span class="text-xs uppercase tracking-widest border border-red-900 text-red-300 px-2 py-1">{% trans 'Rejected' %}</span>
@@ -34,7 +36,9 @@
                 <span class="text-xs uppercase tracking-widest border border-neutral-700 text-neutral-400 px-2 py-1">{% trans 'Inactive' %}</span>
                 {% endif %}
             </div>
-            {% if car.is_pending %}
+            {% if car.moderation == 'awaiting_payment' %}
+            <div class="text-sm text-blue-300/90 mt-3">{% blocktrans %}Pay €{{ listing_price }} to send the listing for review. The paid {{ duration }} days start when it is approved.{% endblocktrans %}</div>
+            {% elif car.is_pending %}
             <div class="text-sm text-amber-300/90 mt-3">{% trans 'The listing is being reviewed by a moderator. We will email you once it is approved.' %}</div>
             {% elif car.is_rejected %}
             <div class="text-sm text-red-300 mt-3">{% trans 'The listing was not approved.' %}{% if car.rejection_reason %} {% trans 'Reason:' %} {{ car.rejection_reason }}{% endif %} {% trans 'Edit it to submit it again.' %}</div>
@@ -50,6 +54,8 @@
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-4">
                 {% if car.is_listing_active %}
                 <form method="post" action="{% url 'cars:deactivate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-outline !py-2 !px-4 w-full">{% trans 'Deactivate' %}</button></form>
+                {% elif car.moderation == 'awaiting_payment' %}
+                <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% blocktrans %}Pay €{{ listing_price }}{% endblocktrans %}</button></form>
                 {% elif car.is_approved %}
                 <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% if payment_required %}{% blocktrans %}Activate for €{{ listing_price }}{% endblocktrans %}{% else %}{% blocktrans %}Activate for {{ duration }} days{% endblocktrans %}{% endif %}</button></form>
                 {% endif %}

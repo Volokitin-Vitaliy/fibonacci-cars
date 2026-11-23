@@ -83,8 +83,9 @@ class ParserTests(TestCase):
 
 
 class FakeResponse:
-    def __init__(self, text):
+    def __init__(self, text, content=b''):
         self.text = text
+        self.content = content
 
     def raise_for_status(self):
         pass
@@ -94,8 +95,14 @@ class FakeSession:
     def __init__(self, pages):
         self.pages = pages
         self.headers = {}
+        self.downloads = []
 
     def get(self, url, timeout=None):
+        if 'cache.hollmann.international' in url:
+            self.downloads.append(url)
+            buf = BytesIO()
+            Image.new('RGBA' if 'employee' in url else 'RGB', (1600, 1200), (200, 0, 0, 255)).save(buf, 'PNG')
+            return FakeResponse('', buf.getvalue())
         path = url.replace('https://hollmann.international/', '')
         return FakeResponse(self.pages.get(path, listing_page()))
 
@@ -128,6 +135,58 @@ class ImporterTests(TestCase):
         self.assertEqual((run.created, run.updated, run.unpublished), (0, 1, 1))
         self.assertEqual(Car.objects.get(external_id='T1').price, Decimal('190000.00'))
         self.assertFalse(Car.objects.visible().filter(external_id='T2').exists())
+
+    @override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media', HOLLMANN_MAX_PHOTOS=3, HOLLMANN_PHOTO_WIDTH=800)
+    def test_photos_description_and_contacts(self):
+        cache = 'https://cache.hollmann.international'
+        page = f'''<main><section><div class="strip"><div class="content">
+            <img src="{cache}/vehicle/T1/images/1/900/"><img src="{cache}/vehicle/T1/images/2/900/">
+            <img src="{cache}/vehicle/T1/images/3/900/"><img src="{cache}/vehicle/T1/images/4/900/">
+            </div></div></section>{DETAIL}
+            <div class="description"><b onclick="x()">NEW G 63</b><br><script>alert(1)</script>
+              <a href="http://evil">link</a> <code>197</code></div>
+            <div class="contacts"><div class="contact"><div><img src="{cache}/employee/anna-k/portrait/circle/180/">
+              <div><div class="name">Anna K</div><div class="languages">English &amp; Russian</div></div></div>
+              <div><a class="phone" href="tel:+491"><div>Phone</div>+49 421 1</a>
+              <a class="whatsapp" href="https://wa.me/492"><div>WhatsApp</div>+49 176 2</a></div></div></div>
+            </main>'''
+        pages = {'vehicles/': listing_page(offer_html('T1', 'Mercedes-Benz', 'G 63', '300,000.00', '252,000.00')),
+                 'vehicle/T1/': page}
+        session = FakeSession(pages)
+        HollmannImporter(session=session, delay=0, photo_delay=0, import_media=True).run()
+        car = Car.objects.get(external_id='T1')
+        photos = list(car.photos.order_by('position'))
+        self.assertEqual(len(photos), 3)  # HOLLMANN_MAX_PHOTOS
+        with Image.open(photos[0].image.path) as img:
+            self.assertEqual((img.format, img.width), ('JPEG', 800))
+        html = car.description_html
+        self.assertIn('<b>NEW G 63</b>', html)
+        self.assertIn('<code>197</code>', html)
+        for bad in ('script', 'alert', 'onclick', 'href', '<a'):
+            self.assertNotIn(bad, html)
+        self.assertEqual(car.dealer_contacts, [{
+            'name': 'Anna K', 'languages': 'English & Russian', 'phone': '+49 421 1', 'mobile': '',
+            'whatsapp': '+49 176 2', 'photo': 'hollmann/staff/anna-k.jpg'}])
+
+        # Next day: same photos are not downloaded again, a removed photo is deleted.
+        session.downloads.clear()
+        pages['vehicle/T1/'] = page.replace(f'<img src="{cache}/vehicle/T1/images/2/900/">', '')
+        HollmannImporter(session=session, delay=0, photo_delay=0, import_media=True).run()
+        self.assertEqual([u.split('/images/')[1] for u in session.downloads], ['4/900/'])
+        self.assertEqual(car.photos.count(), 3)
+
+        # Sold: the car disappears from their site -> hidden here, photos deleted.
+        path = car.photos.first().image.path
+        pages['vehicles/'] = listing_page(offer_html('T9', 'Audi', 'R8', '1.00', '1.00'))
+        HollmannImporter(session=session, delay=0, photo_delay=0, import_media=True).run()
+        car.refresh_from_db()
+        self.assertFalse(car.is_published)
+        self.assertEqual(car.photos.count(), 0)
+        import os
+        self.assertFalse(os.path.exists(path))
+
+        self.client.cookies.load(LANG)
+        self.assertEqual(self.client.get(car.get_absolute_url()).status_code, 404)
 
     def test_empty_listing_page_fails_without_unpublishing(self):
         Car.objects.create(source=Car.Source.HOLLMANN, external_id='OLD', make=Make.get_by_name('Audi'),
@@ -670,7 +729,7 @@ class FakeSessionObj(dict):
         return self[key]
 
 
-@override_settings(LISTING_PAYMENT_REQUIRED=True, STRIPE_SECRET_KEY='sk_test_x',
+@override_settings(LISTING_PAYMENT_REQUIRED=True, PAYMENT_PROVIDER='stripe', STRIPE_SECRET_KEY='sk_test_x',
                    STRIPE_WEBHOOK_SECRET='whsec_x')
 class PaymentTests(TestCase):
     def setUp(self):
@@ -686,7 +745,7 @@ class PaymentTests(TestCase):
         response = self.client.post(reverse('cars:activate', args=[self.car.pk]))
         self.assertRedirects(response, 'https://checkout.stripe.com/c/cs_test_1', fetch_redirect_response=False)
         kwargs = create.call_args.kwargs
-        self.assertEqual(kwargs['line_items'][0]['price_data']['unit_amount'], 500)
+        self.assertEqual(kwargs['line_items'][0]['price_data']['unit_amount'], 1000)
         self.assertEqual(kwargs['line_items'][0]['price_data']['currency'], 'eur')
         self.assertEqual(kwargs['metadata']['car_id'], str(self.car.pk))
         self.assertEqual(Payment.objects.get().status, Payment.Status.PENDING)
@@ -694,8 +753,8 @@ class PaymentTests(TestCase):
         self.assertFalse(self.car.is_listing_active)
 
     def paid_session(self):
-        Payment.objects.create(car=self.car, user=self.user, amount=Decimal('5.00'),
-                               stripe_session_id='cs_test_2')
+        Payment.objects.create(car=self.car, user=self.user, amount=Decimal('10.00'),
+                               provider='stripe', reference='cs_test_2')
         return {'id': 'cs_test_2', 'payment_status': 'paid'}
 
     @mock.patch('cars.payments.stripe.Webhook.construct_event')
@@ -709,7 +768,7 @@ class PaymentTests(TestCase):
         self.car.refresh_from_db()
         self.assertTrue(self.car.is_listing_active)
         period = ListingPeriod.objects.filter(car=self.car).first()
-        self.assertEqual((period.amount, period.method), (Decimal('5.00'), 'stripe'))
+        self.assertEqual((period.amount, period.method), (Decimal('10.00'), 'stripe'))
         self.assertEqual(ListingPeriod.objects.filter(car=self.car, method='stripe').count(), 1)
 
     @mock.patch('cars.payments.stripe.Webhook.construct_event', side_effect=ValueError('bad sig'))
@@ -729,6 +788,112 @@ class PaymentTests(TestCase):
         self.client.post(reverse('cars:activate', args=[self.car.pk]))
         self.car.refresh_from_db()
         self.assertFalse(self.car.is_listing_active)
+
+
+WFP = dict(LISTING_PAYMENT_REQUIRED=True, PAYMENT_PROVIDER='wayforpay', LISTING_PRICE_EUR='10.00',
+           WAYFORPAY_MERCHANT_ACCOUNT='test_merch_n1', WAYFORPAY_SECRET_KEY='flk3409refn54t54t*FNJRET',
+           WAYFORPAY_DOMAIN='fibonacci.example', WAYFORPAY_CURRENCY='EUR',
+           MEDIA_ROOT='/tmp/fibonacci-test-media')
+
+
+@override_settings(**WFP)
+class WayForPayTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.cookies.load(LANG)
+        self.client.force_login(self.user)
+
+    def submit(self):
+        return self.client.post(reverse('cars:add'), {
+            'make': Make.get_by_name('Audi').pk, 'model': 'RS7', 'price': '120000', 'currency': 'EUR',
+            'accident': 'False', 'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001'})
+
+    def callback(self, payment, status='Approved', amount=None, tamper=False):
+        import hashlib, hmac, json
+        data = {'merchantAccount': 'test_merch_n1', 'orderReference': payment.reference,
+                'amount': amount or str(payment.amount), 'currency': 'EUR', 'authCode': '123456',
+                'cardPan': '41****1111', 'transactionStatus': status, 'reasonCode': '1100'}
+        msg = ';'.join(data[k] for k in ('merchantAccount', 'orderReference', 'amount', 'currency',
+                                         'authCode', 'cardPan', 'transactionStatus', 'reasonCode'))
+        data['merchantSignature'] = hmac.new(b'flk3409refn54t54t*FNJRET', msg.encode(), hashlib.md5).hexdigest()
+        if tamper:
+            data['merchantSignature'] = '0' * 32
+        return self.client.post(reverse('wayforpay_callback'), json.dumps(data), content_type='application/json')
+
+    def test_submitting_a_listing_opens_wayforpay_with_signed_form(self):
+        import hashlib, hmac
+        page = self.submit()
+        car = Car.objects.get(model='RS7')
+        self.assertEqual(car.moderation, Car.Moderation.AWAITING_PAYMENT)
+        self.assertFalse(Car.objects.visible().filter(pk=car.pk).exists())
+        self.assertContains(page, 'action="https://secure.wayforpay.com/pay"')
+        fields = page.context['fields']
+        self.assertEqual((fields['amount'], fields['currency'], fields['merchantDomainName']),
+                         ('10.00', 'EUR', 'fibonacci.example'))
+        msg = ';'.join(str(fields[k]) for k in ('merchantAccount', 'merchantDomainName', 'orderReference',
+                                                 'orderDate', 'amount', 'currency', 'productName[]',
+                                                 'productCount[]', 'productPrice[]'))
+        expected = hmac.new(b'flk3409refn54t54t*FNJRET', msg.encode(), hashlib.md5).hexdigest()
+        self.assertEqual(fields['merchantSignature'], expected)
+        self.assertTrue(fields['serviceUrl'].endswith('/payments/wayforpay/callback/'))
+
+    def test_paid_listing_goes_to_review_and_month_starts_on_approval(self):
+        self.submit()
+        car = Car.objects.get(model='RS7')
+        payment = Payment.objects.get(car=car)
+        response = self.callback(payment)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'accept')
+        self.assertEqual(len(response.json()['signature']), 32)
+        self.callback(payment)  # duplicate notification
+        car.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual((car.moderation, payment.status), (Car.Moderation.PENDING, Payment.Status.PAID))
+        self.assertFalse(car.is_listing_active)
+
+        services.approve(car)
+        car.refresh_from_db()
+        self.assertTrue(car.is_listing_active)
+        self.assertEqual(car.days_left, 30)
+        period = car.periods.get()
+        self.assertEqual((period.amount, period.method), (Decimal('10.00'), 'wayforpay'))
+        payment.refresh_from_db()
+        self.assertIsNotNone(payment.used_at)
+
+    def test_rejects_bad_signature_wrong_amount_and_declined(self):
+        self.submit()
+        payment = Payment.objects.get()
+        self.assertEqual(self.callback(payment, tamper=True).status_code, 400)
+        self.assertEqual(self.callback(payment, amount='1.00').status_code, 400)
+        self.callback(payment, status='Declined')
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.Status.FAILED)
+        self.assertEqual(Car.objects.get().moderation, Car.Moderation.AWAITING_PAYMENT)
+
+    def test_return_page_redirects_to_signed_in_page(self):
+        self.submit()
+        payment = Payment.objects.get()
+        self.callback(payment)
+        response = self.client.post(reverse('wayforpay_return'), {'orderReference': payment.reference})
+        self.assertRedirects(response, reverse('wayforpay_done') + f'?order={payment.reference}',
+                             fetch_redirect_response=False)
+        done = self.client.get(response['Location'], follow=True)
+        self.assertContains(done, 'Payment received')
+
+    def test_reactivation_of_expired_listing_is_paid(self):
+        car = make_listing(self.user)
+        car.deactivate()
+        page = self.client.post(reverse('cars:activate', args=[car.pk]))
+        self.assertContains(page, 'secure.wayforpay.com')
+        self.callback(Payment.objects.get(car=car))
+        car.refresh_from_db()
+        self.assertTrue(car.is_listing_active)
+
+    @override_settings(WAYFORPAY_SECRET_KEY='')
+    def test_not_configured_keeps_listing_saved(self):
+        response = self.submit()
+        self.assertRedirects(response, reverse('cars:my_cars'))
+        self.assertEqual(Car.objects.get().moderation, Car.Moderation.AWAITING_PAYMENT)
 
 
 class SeoTests(TestCase):

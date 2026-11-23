@@ -1,7 +1,14 @@
 {% extends "base.html" %}
-{% load i18n cars_tags %}
+{% load i18n static cars_tags %}
 {% block title %}{{ car.make.name }} {{ car.model }}{% endblock %}
 {% block meta_description %}{{ car.make.name }} {{ car.model }} — {{ car.currency_symbol }}{{ car.price|money }}{% endblock %}
+{% block extra_head %}
+<style>
+    .dealer-description b, .dealer-description strong { color: #f5f5f5; font-weight: 600; }
+    .dealer-description code { font-family: ui-monospace, monospace; font-size: .75rem; color: #a3a3a3; background: #1a1a1a; padding: .05rem .3rem; margin-right: .3rem; }
+    .dealer-description hr { border-color: #262626; margin: 1rem 0; }
+</style>
+{% endblock %}
 {% block content %}
 
 {# Gallery strip, as on hollmann.international: horizontal photos with previous/next and fullscreen #}
@@ -30,6 +37,9 @@
     {% endif %}
 </section>
 
+{% if photos and car.is_imported %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 text-xs text-neutral-600">{% trans 'Photos: Hollmann International' %}</div>
+{% endif %}
 {% if photos %}
 <div id="fullscreen" class="fixed inset-0 z-50 bg-black hidden">
     <img id="fullscreen-img" src="" alt="" class="w-full h-full object-contain">
@@ -98,6 +108,9 @@
             <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Description' %}</h2>
             {% if car.description %}
                 <div class="text-neutral-300 leading-relaxed whitespace-pre-line">{{ car.description }}</div>
+            {% elif car.description_html %}
+                {# Sanitized by the importer: only simple formatting tags remain #}
+                <div class="dealer-description text-neutral-300 leading-relaxed text-sm">{{ car.description_html|safe }}</div>
             {% elif car.is_imported %}
                 <p class="text-neutral-400 leading-relaxed">{% trans 'The full description, equipment list and photos of this vehicle are available on the seller’s website.' %}</p>
                 <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-outline mt-6">{% trans 'Open the original offer' %} ↗</a>
@@ -110,7 +123,29 @@
     {# Contacts #}
     <div class="border-t border-neutral-900 pt-12">
         <h2 class="text-xl font-semibold">{% trans 'Interested in this vehicle?' %}</h2>
-        {% if car.is_imported %}
+        {% if car.is_imported and car.dealer_contacts %}
+            <p class="text-neutral-400 mt-2">{% trans 'This vehicle is offered by Hollmann International. Our partners will help you:' %}</p>
+            <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% get_media_prefix as MEDIA %}
+                {% for c in car.dealer_contacts %}
+                <div class="border border-neutral-800 p-5">
+                    <div class="flex items-center gap-4">
+                        {% if c.photo %}<img src="{{ MEDIA }}{{ c.photo }}" alt="" width="56" height="56" class="w-14 h-14 rounded-full object-cover bg-neutral-900" loading="lazy">{% endif %}
+                        <div class="min-w-0">
+                            <div class="font-semibold truncate">{{ c.name }}</div>
+                            {% if c.languages %}<div class="text-xs text-neutral-500 mt-0.5">{{ c.languages }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm">
+                        {% if c.phone %}<a href="tel:{{ c.phone|cut:' ' }}" class="flex justify-between gap-3 hover:text-white text-neutral-300"><span class="text-neutral-500">{% trans 'Phone' %}</span>{{ c.phone }}</a>{% endif %}
+                        {% if c.mobile %}<a href="tel:{{ c.mobile|cut:' ' }}" class="flex justify-between gap-3 hover:text-white text-neutral-300"><span class="text-neutral-500">{% trans 'Mobile' %}</span>{{ c.mobile }}</a>{% endif %}
+                        {% if c.whatsapp %}<a href="https://wa.me/{{ c.whatsapp|cut:' '|cut:'+' }}" target="_blank" rel="noopener" class="flex justify-between gap-3 hover:text-[#25D366] text-neutral-300"><span class="text-neutral-500">WhatsApp</span>{{ c.whatsapp }}</a>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="inline-block mt-6 text-sm text-neutral-400 hover:text-white underline">{% trans 'Original offer on hollmann.international' %} ↗</a>
+        {% elif car.is_imported %}
             <p class="text-neutral-400 mt-2">{% trans 'This vehicle is offered by Hollmann International. Contact the dealer through the original offer.' %}</p>
             <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-primary mt-6">{% trans 'Contact the dealer' %} ↗</a>
         {% else %}

@@ -167,10 +167,17 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # Listings created by users from their cabinet.
 LISTING_DURATION_DAYS = int(os.getenv('LISTING_DURATION_DAYS', 30))
-LISTING_PRICE_EUR = os.getenv('LISTING_PRICE_EUR', '5.00')
-# When True, (re)activating a listing requires a payment. Payment itself is
-# not implemented yet, so this stays False and activation is free.
+LISTING_PRICE_EUR = os.getenv('LISTING_PRICE_EUR', '10.00')
+# When True, submitting a listing (and reactivating an expired one) costs
+# LISTING_PRICE_EUR, paid through PAYMENT_PROVIDER.
 LISTING_PAYMENT_REQUIRED = env_bool('LISTING_PAYMENT_REQUIRED', False)
+PAYMENT_PROVIDER = os.getenv('PAYMENT_PROVIDER', 'wayforpay')  # 'wayforpay' or 'stripe'
+
+# WayForPay (merchant cabinet → Store settings). The store must accept EUR.
+WAYFORPAY_MERCHANT_ACCOUNT = os.getenv('WAYFORPAY_MERCHANT_ACCOUNT', '')
+WAYFORPAY_SECRET_KEY = os.getenv('WAYFORPAY_SECRET_KEY', '')
+WAYFORPAY_DOMAIN = os.getenv('WAYFORPAY_DOMAIN', '')  # defaults to the SITE_URL host
+WAYFORPAY_CURRENCY = os.getenv('WAYFORPAY_CURRENCY', 'EUR')
 LISTING_MAX_PHOTOS = 10
 # New and edited user listings wait for an admin to approve them.
 LISTING_MODERATION = env_bool('LISTING_MODERATION', True)
@@ -199,6 +206,11 @@ MODERATION_EMAILS = [e.strip() for e in os.getenv('MODERATION_EMAILS', '').split
 # Daily import from hollmann.international (see cars/importers/hollmann.py).
 HOLLMANN_BASE_URL = 'https://hollmann.international'
 HOLLMANN_REQUEST_DELAY = float(os.getenv('HOLLMANN_REQUEST_DELAY', 1.0))
+# Photos, description and dealer contacts (imported with Hollmann's permission).
+HOLLMANN_IMPORT_MEDIA = env_bool('HOLLMANN_IMPORT_MEDIA', True)
+HOLLMANN_MAX_PHOTOS = int(os.getenv('HOLLMANN_MAX_PHOTOS', 20))
+HOLLMANN_PHOTO_WIDTH = int(os.getenv('HOLLMANN_PHOTO_WIDTH', 1200))
+HOLLMANN_PHOTO_QUALITY = int(os.getenv('HOLLMANN_PHOTO_QUALITY', 82))
 
 
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
