@@ -1,7 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
-from .models import Car, Category, Make
+from .models import Car, Make
 
 
 class StaticSitemap(Sitemap):
@@ -17,12 +17,16 @@ class StaticSitemap(Sitemap):
 
 
 class CategorySitemap(Sitemap):
+    """Categories are engine types (petrol, diesel, hybrid, electric, gas)."""
     i18n = True
     alternates = True
     changefreq = 'daily'
 
     def items(self):
-        return Category.objects.all()
+        return list(Car.Fuel.values)
+
+    def location(self, item):
+        return reverse('cars:fuel', args=[item])
 
 
 class MakeSitemap(Sitemap):

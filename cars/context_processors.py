@@ -1,7 +1,9 @@
 from django.db.models import Count, Q
 
 from . import favorites
-from .models import Car, Category, Make
+from django.urls import reverse
+
+from .models import Car, Make
 
 
 def navigation(request):
@@ -13,7 +15,8 @@ def navigation(request):
              .filter(n__gt=0))
     favorite_ids = favorites.favorite_ids(request)
     return {
-        'nav_categories': Category.objects.all(),
+        'nav_fuels': [{'label': label, 'url': reverse('cars:fuel', args=[value])}
+                      for value, label in Car.Fuel.choices],
         'nav_makes': makes,
         'favorite_ids': favorite_ids,
     }

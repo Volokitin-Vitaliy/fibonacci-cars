@@ -292,8 +292,6 @@ UNFOLD = {
                      'badge': 'cars.dashboard.pending_badge'},
                     {'title': _('All vehicles'), 'icon': 'directions_car',
                      'link': reverse_lazy('admin:cars_car_changelist')},
-                    {'title': _('Categories'), 'icon': 'category',
-                     'link': reverse_lazy('admin:cars_category_changelist')},
                     {'title': _('Makes'), 'icon': 'sell',
                      'link': reverse_lazy('admin:cars_make_changelist')},
                 ],

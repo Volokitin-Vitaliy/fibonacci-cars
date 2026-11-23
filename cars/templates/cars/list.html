@@ -1,100 +1,89 @@
 {% extends "base.html" %}
 {% load i18n cars_tags %}
 {% block title %}{{ title }}{% endblock %}
-
-{% block extra_js %}
-<script>
-document.querySelectorAll('[data-dropdown]').forEach(function (root) {
-    var button = root.querySelector('[data-dropdown-button]');
-    var panel = root.querySelector('[data-dropdown-panel]');
-    var arrow = root.querySelector('[data-dropdown-arrow]');
-    var search = root.querySelector('[data-dropdown-search]');
-    var items = root.querySelectorAll('[data-dropdown-item]');
-    var empty = root.querySelector('[data-dropdown-empty]');
-    function setOpen(open) {
-        panel.classList.toggle('hidden', !open);
-        arrow.classList.toggle('rotate-180', open);
-        button.setAttribute('aria-expanded', open);
-        if (open && window.matchMedia('(min-width: 640px)').matches) search.focus();
-    }
-    button.addEventListener('click', function () { setOpen(panel.classList.contains('hidden')); });
-    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
-    search.addEventListener('input', function () {
-        var q = search.value.trim().toLowerCase(), shown = 0;
-        items.forEach(function (a) { var ok = a.dataset.dropdownItem.indexOf(q) !== -1; a.classList.toggle('hidden', !ok); if (ok) shown++; });
-        empty.classList.toggle('hidden', shown > 0);
-    });
-});
-</script>
-{% endblock %}
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
-        <div>
-            <h1 class="text-3xl font-bold">{{ title }}</h1>
-            <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
-        </div>
-        <form method="get" id="sort-form" class="flex flex-wrap gap-3 text-sm w-full lg:w-auto">
-            {% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' and key != 'source' and key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
-            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
-            {# Category picker: collections and manufacturers #}
-            <div class="relative w-full sm:w-auto sm:flex-1 lg:flex-none lg:w-72" data-dropdown>
-                <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false"
-                        class="w-full flex items-center justify-between gap-3 bg-[#141414] border border-neutral-700 hover:border-neutral-400 px-4 h-11 text-left">
-                    <span class="truncate"><span class="text-neutral-500 mr-1">{% trans 'Category' %}:</span> {{ title }}</span>
-                    <svg class="w-4 h-4 shrink-0 text-neutral-400 transition-transform" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
-                </button>
-                <div data-dropdown-panel class="hidden absolute z-30 left-0 right-0 sm:right-auto sm:w-[28rem] mt-2 bg-[#111] border border-neutral-800 shadow-2xl shadow-black/60">
-                    <div class="p-2 border-b border-neutral-800">
-                        <input type="search" data-dropdown-search placeholder="{% trans 'Find a make' %}" autocomplete="off"
-                               class="w-full bg-[#0b0b0b] border border-neutral-800 focus:border-neutral-500 outline-none px-3 py-2 text-sm">
-                    </div>
-                    <div class="max-h-[60vh] overflow-y-auto py-2">
-                        <div data-dropdown-group class="px-2">
-                            <div class="px-2 pt-1 pb-2 text-[11px] uppercase tracking-[0.25em] text-neutral-500">{% trans 'Collections' %}</div>
-                            <a href="{% url 'cars:list' %}{{ keep_qs }}" class="flex items-center justify-between px-2 py-2 hover:bg-white/5 {% if not category and not make and not is_new %}text-white{% else %}text-neutral-300{% endif %}">{% trans 'All Vehicles' %}{% if not category and not make and not is_new %}<span>✓</span>{% endif %}</a>
-                            <a href="{% url 'cars:new' %}{{ keep_qs }}" class="flex items-center justify-between px-2 py-2 hover:bg-white/5 {% if is_new %}text-white{% else %}text-neutral-300{% endif %}">{% trans 'New Offers' %}{% if is_new %}<span>✓</span>{% endif %}</a>
-                            {% for c in nav_categories %}
-                            <a href="{{ c.get_absolute_url }}{{ keep_qs }}" class="flex items-center justify-between px-2 py-2 hover:bg-white/5 {% if category == c %}text-white{% else %}text-neutral-300{% endif %}">{{ c.name }}{% if category == c %}<span>✓</span>{% endif %}</a>
-                            {% endfor %}
-                        </div>
-                        <div class="px-2 mt-2 pt-2 border-t border-neutral-800">
-                            <div class="px-2 pt-1 pb-2 text-[11px] uppercase tracking-[0.25em] text-neutral-500">{% trans 'Manufacturers' %}</div>
-                            <div class="grid sm:grid-cols-2">
-                                {% for m in nav_makes %}
-                                <a href="{{ m.get_absolute_url }}{{ keep_qs }}" data-dropdown-item="{{ m.name|lower }}" class="flex items-center justify-between gap-2 px-2 py-2 hover:bg-white/5 {% if make == m %}text-white{% else %}text-neutral-300{% endif %}"><span class="truncate">{{ m.name }}</span><span class="text-xs text-neutral-600">{% if make == m %}✓{% else %}{{ m.n }}{% endif %}</span></a>
-                                {% endfor %}
-                            </div>
-                            <div data-dropdown-empty class="hidden px-2 py-3 text-sm text-neutral-500">{% trans 'Nothing found' %}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <select name="source" onchange="this.form.submit()" class="flex-1 basis-0 sm:basis-auto sm:flex-none min-w-0 h-11 bg-[#141414] border border-neutral-800 px-3">
-                <option value="">{% trans 'All sellers' %}</option>
-                <option value="user" {% if source == 'user' %}selected{% endif %}>{% trans 'Private listings' %}</option>
-                <option value="hollmann" {% if source == 'hollmann' %}selected{% endif %}>hollmann.international</option>
-            </select>
-            <select name="sort" onchange="this.form.submit()" class="flex-1 basis-0 sm:basis-auto sm:flex-none min-w-0 h-11 bg-[#141414] border border-neutral-800 px-3">
-                <option value="name-ascending" {% if sort == 'name-ascending' %}selected{% endif %}>↑ {% trans 'Name' %}</option>
-                <option value="name-descending" {% if sort == 'name-descending' %}selected{% endif %}>↓ {% trans 'Name' %}</option>
-                <option value="date-ascending" {% if sort == 'date-ascending' %}selected{% endif %}>↑ {% trans 'Date' %}</option>
-                <option value="date-descending" {% if sort == 'date-descending' %}selected{% endif %}>↓ {% trans 'Date' %}</option>
-                <option value="price-ascending" {% if sort == 'price-ascending' %}selected{% endif %}>↑ {% trans 'Price' %}</option>
-                <option value="price-descending" {% if sort == 'price-descending' %}selected{% endif %}>↓ {% trans 'Price' %}</option>
-            </select>
-            <noscript><button class="btn btn-outline !py-2">{% trans 'Apply' %}</button></noscript>
-        </form>
+    <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold">{{ title }}</h1>
+        <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
     </div>
 
+    {# Pickers: category (engine type), make, seller, sort #}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm mb-4">
+        <div class="relative" data-dropdown>
+            <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="picker {% if fuel %}picker-set{% endif %}">
+                <span class="min-w-0"><span class="picker-label">{% trans 'Category' %}</span><span class="block truncate">{{ fuel_label }}</span></span>
+                <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </button>
+            <div data-dropdown-panel class="picker-panel hidden w-full sm:w-72">
+                <div class="py-2">
+                    {% for o in fuel_options %}
+                    <a href="{{ o.href }}" class="picker-option {% if o.active %}is-active{% endif %} {% if not o.count and not o.active %}opacity-40{% endif %}">
+                        <span class="truncate">{{ o.label }}</span>
+                        <span class="text-xs text-neutral-500">{% if o.active %}✓{% else %}{{ o.count }}{% endif %}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="relative" data-dropdown>
+            <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="picker {% if make %}picker-set{% endif %}">
+                <span class="min-w-0"><span class="picker-label">{% trans 'Make' %}</span><span class="block truncate">{% if make %}{{ make.name }}{% else %}{% trans 'All makes' %}{% endif %}</span></span>
+                <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </button>
+            <div data-dropdown-panel class="picker-panel picker-panel-right hidden">
+                <div class="p-2 border-b border-neutral-800">
+                    <input type="search" data-dropdown-search placeholder="{% trans 'Find a make' %}" autocomplete="off"
+                           class="w-full bg-[#0b0b0b] border border-neutral-800 focus:border-neutral-500 outline-none px-3 py-2 text-sm">
+                </div>
+                <div class="max-h-[55vh] overflow-y-auto py-2">
+                    <a href="{{ all_makes_href }}" class="picker-option {% if not make %}is-active{% endif %}"><span>{% trans 'All makes' %}</span>{% if not make %}<span class="text-xs">✓</span>{% endif %}</a>
+                    {% for o in make_options %}
+                    <a href="{{ o.href }}" data-dropdown-item="{{ o.label|lower }}" class="picker-option {% if o.active %}is-active{% endif %}">
+                        <span class="truncate">{{ o.label }}</span>
+                        <span class="text-xs text-neutral-500">{% if o.active %}✓{% else %}{{ o.count }}{% endif %}</span>
+                    </a>
+                    {% endfor %}
+                    <div data-dropdown-empty class="hidden px-4 py-3 text-sm text-neutral-500">{% trans 'Nothing found' %}</div>
+                </div>
+            </div>
+        </div>
+
+        <form method="get" class="contents">
+            {% for key, value in hidden_params.items %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+            <label class="picker relative">
+                <span class="min-w-0 w-full"><span class="picker-label">{% trans 'Seller' %}</span>
+                    <select name="source" onchange="this.form.submit()" class="picker-select">
+                        <option value="">{% trans 'All sellers' %}</option>
+                        <option value="user" {% if source == 'user' %}selected{% endif %}>{% trans 'Private listings' %}</option>
+                        <option value="hollmann" {% if source == 'hollmann' %}selected{% endif %}>hollmann.international</option>
+                    </select>
+                </span>
+                <svg class="picker-arrow pointer-events-none" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </label>
+            <label class="picker relative">
+                <span class="min-w-0 w-full"><span class="picker-label">{% trans 'Sort' %}</span>
+                    <select name="sort" onchange="this.form.submit()" class="picker-select">
+                        <option value="date-descending" {% if sort == 'date-descending' %}selected{% endif %}>{% trans 'Newest first' %}</option>
+                        <option value="date-ascending" {% if sort == 'date-ascending' %}selected{% endif %}>{% trans 'Oldest first' %}</option>
+                        <option value="price-ascending" {% if sort == 'price-ascending' %}selected{% endif %}>{% trans 'Price: low to high' %}</option>
+                        <option value="price-descending" {% if sort == 'price-descending' %}selected{% endif %}>{% trans 'Price: high to low' %}</option>
+                    </select>
+                </span>
+                <svg class="picker-arrow pointer-events-none" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </label>
+            <noscript><button class="btn btn-outline">{% trans 'Apply' %}</button></noscript>
+        </form>
+    </div>
 
     {# Filters: always open on desktop, collapsible on phones #}
     <div class="mb-10">
         <input type="checkbox" id="filters-toggle" class="peer hidden" {% if filters.active_count %}checked{% endif %}>
         <label for="filters-toggle" class="lg:hidden btn btn-outline w-full cursor-pointer">{% trans 'Filters' %}{% if filters.active_count %} ({{ filters.active_count }}){% endif %}</label>
-        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 lg:mt-0 grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+            {% if fuel %}<input type="hidden" name="fuel" value="{{ fuel }}">{% endif %}
+            {% if make %}<input type="hidden" name="make" value="{{ make.slug }}">{% endif %}
             {% if source %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
             <input type="hidden" name="sort" value="{{ sort }}">
             {% for field in filters %}
@@ -105,7 +94,7 @@ document.querySelectorAll('[data-dropdown]').forEach(function (root) {
             {% endfor %}
             <div class="col-span-2 lg:col-span-1 flex gap-2">
                 <button type="submit" class="btn btn-primary flex-1 !px-3">{% trans 'Apply' %}</button>
-                {% if filters.active_count %}<a href="{{ request.path }}{% if query %}?q={{ query|urlencode }}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
+                {% if filters.active_count or fuel or make or source %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
             </div>
         </form>
     </div>
@@ -124,4 +113,52 @@ document.querySelectorAll('[data-dropdown]').forEach(function (root) {
     </nav>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .picker { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; height: 3.5rem;
+              padding: 0 .9rem; background: #141414; border: 1px solid #2a2a2a; text-align: left; cursor: pointer; transition: border-color .2s; }
+    .picker:hover, .picker:focus-within { border-color: #737373; }
+    .picker-set { border-color: #e5e5e5; }
+    .picker-label { display: block; font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; color: #737373; margin-bottom: .1rem; }
+    .picker-arrow { width: 1rem; height: 1rem; flex-shrink: 0; color: #a3a3a3; transition: transform .2s; }
+    .picker-select { width: 100%; background: transparent; border: 0; outline: none; padding: 0; color: #f5f5f5; appearance: none; -webkit-appearance: none; cursor: pointer; }
+    .picker-select option { background: #141414; }
+    .picker-panel { position: absolute; z-index: 30; top: 100%; left: 0; margin-top: .5rem; background: #111; border: 1px solid #262626; box-shadow: 0 25px 50px -12px rgba(0,0,0,.7); }
+    /* On phones the make list sits in the right column: open it towards the left, two columns wide. */
+    .picker-panel-right { left: auto; right: 0; width: calc(200% + .75rem); }
+    @media (min-width: 640px) { .picker-panel-right { left: 0; right: auto; width: 20rem; } }
+    .picker-option { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem 1rem; color: #d4d4d4; }
+    .picker-option:hover { background: rgba(255,255,255,.05); color: #fff; }
+    .picker-option.is-active { color: #fff; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('[data-dropdown]').forEach(function (root) {
+    var button = root.querySelector('[data-dropdown-button]');
+    var panel = root.querySelector('[data-dropdown-panel]');
+    var arrow = root.querySelector('[data-dropdown-arrow]');
+    var search = root.querySelector('[data-dropdown-search]');
+    var items = root.querySelectorAll('[data-dropdown-item]');
+    var empty = root.querySelector('[data-dropdown-empty]');
+    function setOpen(open) {
+        if (open) document.querySelectorAll('[data-dropdown-panel]').forEach(function (p) { if (p !== panel) p.classList.add('hidden'); });
+        panel.classList.toggle('hidden', !open);
+        arrow.classList.toggle('rotate-180', open);
+        button.setAttribute('aria-expanded', open);
+        if (open && search && window.matchMedia('(min-width: 640px)').matches) search.focus();
+    }
+    button.addEventListener('click', function () { setOpen(panel.classList.contains('hidden')); });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    if (search) search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase(), shown = 0;
+        items.forEach(function (a) { var ok = a.dataset.dropdownItem.indexOf(q) !== -1; a.classList.toggle('hidden', !ok); if (ok) shown++; });
+        empty.classList.toggle('hidden', shown > 0);
+    });
+});
+</script>
 {% endblock %}

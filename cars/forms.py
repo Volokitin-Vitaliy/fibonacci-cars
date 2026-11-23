@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
-from .models import Car, Category, Make
+from .models import Car, Make
 
 phone_validator = RegexValidator(
     r'^\+?[\d\s()\-]{6,25}$',
@@ -31,9 +31,6 @@ class MultipleImageField(forms.ImageField):
 
 
 class CarForm(forms.ModelForm):
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(), label=_('Category'),
-        empty_label=_('Choose a category'))
     photos = MultipleImageField(
         label=_('Photos'), required=False,
         help_text=_('Up to %(n)s images.') % {'n': settings.LISTING_MAX_PHOTOS})
@@ -47,8 +44,8 @@ class CarForm(forms.ModelForm):
 
     class Meta:
         model = Car
-        fields = ('make', 'model', 'category', 'description', 'year', 'mileage_km',
-                  'fuel', 'transmission', 'power_hp', 'color', 'price', 'currency',
+        fields = ('make', 'model', 'fuel', 'description', 'year', 'mileage_km',
+                  'transmission', 'power_hp', 'color', 'price', 'currency',
                   'contact_name', 'contact_phone', 'contact_whatsapp', 'contact_telegram')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
@@ -62,12 +59,12 @@ class CarForm(forms.ModelForm):
         self.fields['make'].label = _('Make')
         self.fields['model'].label = _('Model / title')
         self.fields['contact_name'].required = True
-        for name in ('fuel', 'transmission'):
-            self.fields[name].choices = [('', '—')] + list(self.fields[name].choices)[1:]
+        self.fields['fuel'].required = True
+        self.fields['fuel'].label = _('Category')
+        self.fields['fuel'].choices = [('', _('Choose a category'))] + list(Car.Fuel.choices)
+        self.fields['transmission'].choices = [('', '—')] + list(self.fields['transmission'].choices)[1:]
         self.fields['year'].widget.attrs.update(min=1900, max=date.today().year + 1)
         self.fields['price'].widget.attrs.update(min=1, step='1')
-        if self.instance.pk:
-            self.fields['category'].initial = self.instance.categories.first()
 
     def clean_year(self):
         year = self.cleaned_data.get('year')
@@ -104,7 +101,6 @@ class CarForm(forms.ModelForm):
     def save(self, commit=True):
         car = super().save(commit=commit)
         if commit:
-            car.categories.set([self.cleaned_data['category']])
             start = car.photos.count()
             for i, image in enumerate(self.cleaned_data.get('photos') or []):
                 car.photos.create(image=image, position=start + i)

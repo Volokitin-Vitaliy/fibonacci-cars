@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 13:33+0000\n"
+"POT-Creation-Date: 2026-11-23 14:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -330,20 +330,20 @@ msgstr "Смотреть все"
 msgid "Category"
 msgstr "Категория"
 
+msgid "Make"
+msgstr "Марка"
+
+msgid "All makes"
+msgstr "Все марки"
+
 msgid "Find a make"
 msgstr "Найти марку"
 
-msgid "Collections"
-msgstr "Коллекции"
-
-msgid "All Vehicles"
-msgstr "Все автомобили"
-
-msgid "Manufacturers"
-msgstr "Марки"
-
 msgid "Nothing found"
 msgstr "Ничего не найдено"
+
+msgid "Seller"
+msgstr "Продавец"
 
 msgid "All sellers"
 msgstr "Все продавцы"
@@ -351,11 +351,20 @@ msgstr "Все продавцы"
 msgid "Private listings"
 msgstr "Частные объявления"
 
-msgid "Name"
-msgstr "Название"
+msgid "Sort"
+msgstr "Сортировка"
 
-msgid "Date"
-msgstr "Дата"
+msgid "Newest first"
+msgstr "Сначала новые"
+
+msgid "Oldest first"
+msgstr "Сначала старые"
+
+msgid "Price: low to high"
+msgstr "Сначала дешевле"
+
+msgid "Price: high to low"
+msgstr "Сначала дороже"
 
 msgid "Apply"
 msgstr "Применить"
@@ -423,6 +432,15 @@ msgstr "Эксклюзивные автомобили на продажу: тю�
 
 msgid "Vehicles"
 msgstr "Автомобили"
+
+msgid "Categories"
+msgstr "Категории"
+
+msgid "All Vehicles"
+msgstr "Все автомобили"
+
+msgid "Manufacturers"
+msgstr "Марки"
 
 msgid "Sell your car"
 msgstr "Продать автомобиль"
@@ -562,9 +580,6 @@ msgstr "Платежей: %(n)s"
 msgid "Enter a valid phone number, for example +49 151 1234567."
 msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
 
-msgid "Choose a category"
-msgstr "Выберите категорию"
-
 #, python-format
 msgid "Up to %(n)s images."
 msgstr "До %(n)s изображений."
@@ -578,11 +593,11 @@ msgstr "@username или номер телефона"
 msgid "Choose a make"
 msgstr "Выберите марку"
 
-msgid "Make"
-msgstr "Марка"
-
 msgid "Model / title"
 msgstr "Модель / название"
+
+msgid "Choose a category"
+msgstr "Выберите категорию"
 
 msgid "Enter a year between 1900 and next year."
 msgstr "Укажите год от 1900 до следующего года."
@@ -612,18 +627,6 @@ msgstr "Год до"
 msgid "Mileage up to, km"
 msgstr "Пробег до, км"
 
-msgid "name (English)"
-msgstr "название (английский)"
-
-msgid "name (Russian)"
-msgstr "название (русский)"
-
-msgid "category"
-msgstr "категория"
-
-msgid "categories"
-msgstr "категории"
-
 msgid "name"
 msgstr "название"
 
@@ -639,8 +642,8 @@ msgstr "Объявление пользователя"
 msgid "Approved"
 msgstr "Одобрено"
 
-msgid "Petrol"
-msgstr "Бензин"
+msgid "Combustion (petrol)"
+msgstr "ДВС (бензин)"
 
 msgid "Diesel"
 msgstr "Дизель"
@@ -651,8 +654,8 @@ msgstr "Гибрид"
 msgid "Electric"
 msgstr "Электро"
 
-msgid "Other"
-msgstr "Другое"
+msgid "Gas (LPG/CNG)"
+msgstr "Газ (ГБО)"
 
 msgid "Automatic"
 msgstr "Автомат"
@@ -678,8 +681,8 @@ msgstr "год"
 msgid "mileage, km"
 msgstr "пробег, км"
 
-msgid "fuel"
-msgstr "топливо"
+msgid "category"
+msgstr "категория"
 
 msgid "transmission"
 msgstr "коробка передач"
@@ -746,9 +749,6 @@ msgstr "Год"
 
 msgid "Mileage"
 msgstr "Пробег"
-
-msgid "Fuel"
-msgstr "Топливо"
 
 msgid "Transmission"
 msgstr "Коробка передач"
@@ -903,6 +903,9 @@ msgstr "Электродвигатель"
 msgid "Plugin Hybrid (Petrol/Electricity)"
 msgstr "Подключаемый гибрид (бензин/электро)"
 
+msgid "All categories"
+msgstr "Все категории"
+
 msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
 msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
 
@@ -968,9 +971,6 @@ msgstr "Объявления"
 
 msgid "All vehicles"
 msgstr "Все автомобили"
-
-msgid "Categories"
-msgstr "Категории"
 
 msgid "Makes"
 msgstr "Марки"

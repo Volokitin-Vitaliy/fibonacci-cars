@@ -11,9 +11,9 @@ from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 
-from cars.importers.hollmann import (HollmannImporter, parse_detail, parse_offers,
+from cars.importers.hollmann import (HollmannImporter, detect_fuel, parse_detail, parse_offers,
                                      parse_price, specs_to_fields)
-from cars.models import Car, Category, Favorite, ListingPeriod, Make, Payment
+from cars.models import Car, Favorite, ListingPeriod, Make, Payment
 from cars import payments, services
 from cars.services import expire_listings, send_expiry_reminders
 from users.models import CustomUser
@@ -73,6 +73,14 @@ class ParserTests(TestCase):
             'fuel': 'petrol', 'color': 'Obsidian Black',
         })
 
+    def test_detect_fuel(self):
+        self.assertEqual(detect_fuel('Plugin Hybrid (Petrol/Electricity)'), 'hybrid')
+        self.assertEqual(detect_fuel('Electric Motor (Electricity)'), 'electric')
+        self.assertEqual(detect_fuel('Combustion Engine (Diesel)'), 'diesel')
+        self.assertEqual(detect_fuel('Combustion Engine (Petrol)'), 'petrol')
+        self.assertEqual(detect_fuel('Combustion Engine (LPG)'), 'gas')
+        self.assertEqual(detect_fuel(''), '')
+
 
 class FakeResponse:
     def __init__(self, text):
@@ -100,7 +108,6 @@ class ImporterTests(TestCase):
         pages = {
             'vehicles/': listing_page(offer_html('T1', 'Porsche', '911 GT3', '200,000.00', '168,000.00'),
                                       offer_html('T2', 'Brand New Make', 'X', '50,000.00', '42,000.00')),
-            'vehicle-collection/2/': listing_page(offer_html('T1', 'Porsche', '911 GT3', '1', '1')),
             'new/': listing_page(offer_html('T2', 'Brand New Make', 'X', '1', '1')),
             'vehicle/T1/': DETAIL,
         }
@@ -111,7 +118,7 @@ class ImporterTests(TestCase):
         self.assertEqual(t1.make.name, 'Porsche')
         self.assertEqual(t1.price, Decimal('200000.00'))
         self.assertEqual(t1.power_hp, 472)
-        self.assertEqual(list(t1.categories.values_list('slug', flat=True)), ['armoured'])
+        self.assertEqual(t1.fuel, 'petrol')
         self.assertTrue(Car.objects.get(external_id='T2').is_new)
         self.assertTrue(Make.objects.filter(name='Brand New Make').exists())
 
@@ -186,9 +193,8 @@ class ListingLifecycleTests(TestCase):
         self.assertFalse(car.is_listing_active)
 
     def test_create_listing_from_cabinet(self):
-        category = Category.objects.get(slug='electric')
         response = self.client.post(reverse('cars:add'), {
-            'make': Make.get_by_name('Tesla').pk, 'model': 'Model S Plaid', 'category': category.pk,
+            'make': Make.get_by_name('Tesla').pk, 'model': 'Model S Plaid',
             'description': 'Like new', 'year': 2023, 'mileage_km': 12000, 'fuel': 'electric',
             'transmission': 'automatic', 'power_hp': 1020, 'color': 'White', 'price': '79000',
             'currency': 'USD', 'contact_name': 'Ivan Petrov', 'contact_phone': '+49 151 0000001',
@@ -206,7 +212,7 @@ class ListingLifecycleTests(TestCase):
         car.refresh_from_db()
         self.assertTrue(car.is_listing_active)
         self.assertEqual(car.days_left, 30)
-        self.assertEqual(list(car.categories.all()), [category])
+        self.assertEqual(car.fuel, 'electric')
         self.assertEqual(car.photos.count(), 2)
         page = self.client.get(car.get_absolute_url())
         self.assertContains(page, '$79,000')
@@ -215,7 +221,7 @@ class ListingLifecycleTests(TestCase):
     def test_contact_name_and_phone_are_required(self):
         response = self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'A6', 'price': '1000', 'currency': 'EUR',
-            'category': Category.objects.first().pk,
+            'fuel': 'petrol',
         })
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Car.objects.filter(model='A6').exists())
@@ -301,7 +307,7 @@ class LanguageTests(TestCase):
         self.assertEqual(response['Location'], '/ru/vehicles/')
         page = self.client.get('/ru/vehicles/')
         self.assertContains(page, 'Все автомобили')
-        self.assertContains(page, 'Бронированные')
+        self.assertContains(page, 'Дизель')
 
 
 class RegistrationTests(TestCase):
@@ -369,7 +375,7 @@ class ContactTests(TestCase):
 
     def post(self, **contacts):
         data = {'make': Make.get_by_name('Audi').pk, 'model': 'Q8', 'price': '1000', 'currency': 'EUR',
-                'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+                'fuel': 'petrol', 'contact_name': 'Ivan',
                 'contact_phone': '+49 151 0000001'}
         data.update(contacts)
         return self.client.post(reverse('cars:add'), data)
@@ -414,12 +420,46 @@ class LayoutTests(TestCase):
         self.assertNotContains(page, 'p-6 h-32')  # collection tiles are gone from the home page
         self.assertContains(page, 'img/logo-256.png')
 
-    def test_catalog_category_dropdown(self):
-        make_listing(make_user())
-        page = self.client.get(reverse('cars:list'), {'sort': 'price-ascending'})
-        self.assertContains(page, 'data-dropdown')
-        self.assertContains(page, '/en/vehicle-collection/armoured/?sort=price-ascending')
-        self.assertContains(page, '/en/manufacturer/bmw/?sort=price-ascending')
+    def test_category_and_make_are_separate_and_combine(self):
+        owner = make_user()
+        bmw_diesel = make_listing(owner, fuel='diesel')
+        bmw_petrol = make_listing(owner, fuel='petrol')
+        audi_diesel = Car.objects.create(source=Car.Source.USER, owner=owner, make=Make.get_by_name('Audi'),
+                                         model='A6', price=Decimal('50000'), fuel='diesel',
+                                         contact_name='Ivan', contact_phone='+49 151 0000001')
+        audi_diesel.activate()
+
+        def ids(url, **params):
+            return {c.pk for c in self.client.get(url, params).context['page']}
+
+        self.assertEqual(ids(reverse('cars:list'), fuel='diesel'), {bmw_diesel.pk, audi_diesel.pk})
+        self.assertEqual(ids(reverse('cars:list'), make='bmw'), {bmw_diesel.pk, bmw_petrol.pk})
+        self.assertEqual(ids(reverse('cars:list'), fuel='diesel', make='bmw'), {bmw_diesel.pk})
+        self.assertEqual(ids(reverse('cars:fuel', args=['diesel'])), {bmw_diesel.pk, audi_diesel.pk})
+        self.assertEqual(ids(reverse('cars:make', args=['audi'])), {audi_diesel.pk})
+        self.assertEqual(self.client.get(reverse('cars:fuel', args=['tuning'])).status_code, 404)
+
+        page = self.client.get(reverse('cars:list'), {'fuel': 'diesel', 'sort': 'price-ascending'})
+        # The make picker keeps the category and the sort, and counts within the category.
+        self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;sort=price-ascending&amp;make=bmw')
+        makes = {o['label']: o['count'] for o in page.context['make_options']}
+        self.assertEqual(makes, {'Audi': 1, 'BMW': 1})
+        fuels = {o['value']: o['count'] for o in page.context['fuel_options']}
+        self.assertEqual((fuels['diesel'], fuels['petrol'], fuels['gas']), (2, 1, 0))
+
+    def test_sort_by_date_and_price_only(self):
+        page = self.client.get(reverse('cars:list'))
+        self.assertNotContains(page, 'name-ascending')
+        self.assertContains(page, 'price-ascending')
+        self.assertEqual(self.client.get(reverse('cars:list'), {'sort': 'name-ascending'}).context['sort'],
+                         'date-descending')
+
+    def test_categories_are_engine_types(self):
+        page = self.client.get(reverse('cars:list'))
+        labels = [o['label'] for o in page.context['fuel_options']][1:]
+        self.assertEqual(labels, ['Combustion (petrol)', 'Diesel', 'Hybrid', 'Electric', 'Gas (LPG/CNG)'])
+        self.assertNotContains(page, 'Armoured')
+        self.assertNotContains(page, 'Oldtimer')
 
     def test_favicon(self):
         page = self.client.get(reverse('cars:home'))
@@ -440,7 +480,7 @@ class ModerationTests(TestCase):
     def create(self):
         self.client.post(reverse('cars:add'), {
             'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR',
-            'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+            'fuel': 'petrol', 'contact_name': 'Ivan',
             'contact_phone': '+49 151 0000001',
         })
         return Car.objects.get(model='RS6')
@@ -481,7 +521,7 @@ class ModerationTests(TestCase):
         until = car.active_until
         self.client.post(reverse('cars:edit', args=[car.pk]), {
             'make': car.make.pk, 'model': 'M5 Competition', 'price': '95000', 'currency': 'EUR',
-            'category': Category.objects.first().pk, 'contact_name': 'Ivan',
+            'fuel': 'petrol', 'contact_name': 'Ivan',
             'contact_phone': '+49 151 0000001',
         })
         car.refresh_from_db()
@@ -655,7 +695,7 @@ class SeoTests(TestCase):
         self.assertContains(robots, 'Sitemap: http://testserver/sitemap.xml')
         self.assertContains(robots, 'Disallow: /en/cabinet/')
         sitemap = self.client.get('/sitemap.xml')
-        self.assertContains(sitemap, '/ru/vehicle-collection/armoured/')
+        self.assertContains(sitemap, '/ru/category/diesel/')
         self.assertContains(sitemap, '/en/vehicles/')
 
     def test_user_language_follows_the_site(self):

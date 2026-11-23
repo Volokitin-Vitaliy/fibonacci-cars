@@ -12,7 +12,7 @@
             </a>
         </li>
         <li>
-            <a href="{% url 'cars:list' %}" class="bn-item {% if app == 'cars' and name in 'list new category make detail' %}bn-active{% endif %}">
+            <a href="{% url 'cars:list' %}" class="bn-item {% if app == 'cars' and name in 'list new fuel make detail' %}bn-active{% endif %}">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14M6.5 17v2M17.5 17v2M3 13l2-5.5A2 2 0 0 1 6.9 6h10.2a2 2 0 0 1 1.9 1.5L21 13v4H3z"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></svg>
                 <span>{% trans 'Vehicles' %}</span>
             </a>
@@ -55,8 +55,16 @@
         .bn-item { flex-direction: row; height: 2.75rem; gap: .5rem; padding: 0 1.1rem; border-radius: 999px; font-size: .8rem; }
         .bn-item svg { width: 1.2rem; height: 1.2rem; }
         .bn-active { background: rgba(255,255,255,.08); }
-        .bn-sell svg { width: 1.7rem; height: 1.7rem; padding: .25rem; margin: 0; box-shadow: none; }
         .bn-item > .relative { margin-right: .4rem; }
+        /* "Sell": a bright pill with the logo's blue glow */
+        .bn-sell { margin: 0 .35rem; padding: 0 1.4rem 0 1.1rem; height: 2.75rem; color: #0b0b0b; font-weight: 600;
+                   letter-spacing: .06em; text-transform: uppercase; font-size: .75rem;
+                   background: linear-gradient(180deg, #ffffff 0%, #dcdcdc 100%);
+                   box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 6px 22px -4px rgba(37,99,235,.65), inset 0 1px 0 #fff;
+                   transition: transform .2s, box-shadow .2s; }
+        .bn-sell:hover, .bn-sell.bn-active { color: #0b0b0b; background: linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%);
+                   transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255,255,255,.5), 0 10px 30px -4px rgba(59,130,246,.85), inset 0 1px 0 #fff; }
+        .bn-sell svg { width: 1.1rem; height: 1.1rem; padding: 0; margin: 0; background: none; box-shadow: none; color: #0b0b0b; stroke-width: 2.4; }
     }
 </style>
 {% endwith %}

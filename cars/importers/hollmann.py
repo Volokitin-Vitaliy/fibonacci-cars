@@ -1,7 +1,7 @@
 """Daily import of the vehicle list from hollmann.international.
 
-Only factual data is imported: make, model, prices, collections and the
-specification table, together with a link to the original offer. Photos,
+Only factual data is imported: make, model, prices and the specification
+table, together with a link to the original offer. Photos,
 descriptions and staff contacts are not copied.
 """
 
@@ -17,20 +17,11 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from cars.models import Car, Category, ImportRun, Make
+from cars.models import Car, ImportRun, Make
 
 logger = logging.getLogger(__name__)
 
 USER_AGENT = 'FibonacciCarsBot/1.0 (daily vehicle index)'
-
-# Collections on hollmann.international and their Russian names.
-COLLECTIONS = [
-    # (hollmann id, slug, English name, Russian name)
-    (1, 'customized', 'Customized', 'Тюнинг'),
-    (2, 'armoured', 'Armoured', 'Бронированные'),
-    (3, 'oldtimer', 'Oldtimer', 'Олдтаймеры'),
-    (4, 'electric', 'Electric', 'Электромобили'),
-]
 
 PRICE_RE = re.compile(r'([€$])\s*([\d.,]+)')
 
@@ -57,7 +48,7 @@ def clean_cell(cell):
 
 
 def parse_offers(html, base_url):
-    """Parse a listing page (/vehicles/, /vehicle-collection/N/, /new/)."""
+    """Parse a listing page (/vehicles/, /new/)."""
     soup = BeautifulSoup(html, 'html.parser')
     offers = []
     for card in soup.select('a.offer'):
@@ -110,6 +101,23 @@ def parse_detail(html):
     return specs
 
 
+def detect_fuel(drive):
+    """'Plugin Hybrid (Petrol/Electricity)' -> hybrid, 'Electric Motor' -> electric.
+    Hybrids are checked first: their description also mentions electricity."""
+    drive = drive.lower()
+    if 'hybrid' in drive:
+        return Car.Fuel.HYBRID
+    if 'electric' in drive:
+        return Car.Fuel.ELECTRIC
+    if any(word in drive for word in ('lpg', 'cng', 'gas', 'autogas')):
+        return Car.Fuel.GAS
+    if 'diesel' in drive:
+        return Car.Fuel.DIESEL
+    if 'petrol' in drive or 'gasoline' in drive or 'combustion' in drive:
+        return Car.Fuel.PETROL
+    return ''
+
+
 def specs_to_fields(specs):
     """Extract the short characteristics used for cards and filters."""
     data = dict(specs)
@@ -125,11 +133,9 @@ def specs_to_fields(specs):
         fields['transmission'] = Car.Transmission.AUTOMATIC
     elif 'manual' in transmission:
         fields['transmission'] = Car.Transmission.MANUAL
-    drive = data.get('Drive', '').lower()
-    for key in ('electric', 'hybrid', 'diesel', 'petrol'):
-        if key in drive:
-            fields['fuel'] = key
-            break
+    fuel = detect_fuel(data.get('Drive', ''))
+    if fuel:
+        fields['fuel'] = fuel
     registration = re.search(r'(19|20)\d{2}', data.get('First Registration', ''))
     if registration:
         fields['year'] = int(registration.group(0))
@@ -159,17 +165,6 @@ class HollmannImporter:
             time.sleep(self.delay)
         return response.text
 
-    def ensure_categories(self):
-        categories = {}
-        for position, (hid, slug, name_en, name_ru) in enumerate(COLLECTIONS):
-            category, _ = Category.objects.update_or_create(
-                slug=slug,
-                defaults={'name_en': name_en, 'name_ru': name_ru,
-                          'hollmann_id': hid, 'position': position},
-            )
-            categories[hid] = category
-        return categories
-
     def run(self):
         run = ImportRun.objects.create(source=Car.Source.HOLLMANN)
         try:
@@ -184,15 +179,11 @@ class HollmannImporter:
         return run
 
     def _run(self, run):
-        categories = self.ensure_categories()
-
         offers = parse_offers(self.get('vehicles/'), self.base_url)
         if not offers:
             raise RuntimeError('No vehicles found on the listing page; the site layout may have changed.')
         self.log(f'Found {len(offers)} vehicles')
 
-        collection_ids = {hid: parse_offer_ids(self.get(f'vehicle-collection/{hid}/'))
-                          for hid in categories}
         new_ids = parse_offer_ids(self.get('new/'))
 
         now = timezone.now()
@@ -227,8 +218,6 @@ class HollmannImporter:
                     defaults.update(specs_to_fields(specs))
                 car, created = Car.objects.update_or_create(
                     source=Car.Source.HOLLMANN, external_id=ext_id, defaults=defaults)
-                car.categories.set([cat for hid, cat in categories.items()
-                                    if ext_id in collection_ids[hid]])
             if created:
                 run.created += 1
             else:

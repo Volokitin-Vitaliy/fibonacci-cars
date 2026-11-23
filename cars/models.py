@@ -9,7 +9,6 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
 
 
@@ -19,33 +18,6 @@ def to_eur(amount, currency):
     if currency == 'USD':
         return (Decimal(amount) * Decimal(str(settings.USD_TO_EUR_RATE))).quantize(Decimal('0.01'))
     return amount
-
-
-class Category(models.Model):
-    """A vehicle collection, mirroring hollmann.international's collections
-    (Customized, Armoured, Oldtimer, Electric)."""
-
-    slug = models.SlugField(unique=True)
-    name_en = models.CharField(_('name (English)'), max_length=100)
-    name_ru = models.CharField(_('name (Russian)'), max_length=100)
-    # Collection id on hollmann.international (/vehicle-collection/<id>/).
-    hollmann_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
-    position = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ('position', 'name_en')
-        verbose_name = _('category')
-        verbose_name_plural = _('categories')
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def name(self):
-        return self.name_ru if get_language() == 'ru' and self.name_ru else self.name_en
-
-    def get_absolute_url(self):
-        return reverse('cars:category', args=[self.slug])
 
 
 class Make(models.Model):
@@ -120,11 +92,12 @@ class Car(models.Model):
         USD = 'USD', '$ USD'
 
     class Fuel(models.TextChoices):
-        PETROL = 'petrol', _('Petrol')
+        # The site's vehicle categories.
+        PETROL = 'petrol', _('Combustion (petrol)')
         DIESEL = 'diesel', _('Diesel')
         HYBRID = 'hybrid', _('Hybrid')
         ELECTRIC = 'electric', _('Electric')
-        OTHER = 'other', _('Other')
+        GAS = 'gas', _('Gas (LPG/CNG)')
 
     class Transmission(models.TextChoices):
         AUTOMATIC = 'automatic', _('Automatic')
@@ -137,14 +110,13 @@ class Car(models.Model):
     make = models.ForeignKey(Make, on_delete=models.PROTECT, related_name='cars',
                              verbose_name=_('make'))
     model = models.CharField(_('model / title'), max_length=200)
-    categories = models.ManyToManyField(Category, blank=True, related_name='cars',
-                                        verbose_name=_('categories'))
     description = models.TextField(_('description'), blank=True)
 
     # Short characteristics (user listings fill these in).
     year = models.PositiveIntegerField(_('year'), null=True, blank=True)
     mileage_km = models.PositiveIntegerField(_('mileage, km'), null=True, blank=True)
-    fuel = models.CharField(_('fuel'), max_length=20, choices=Fuel.choices, blank=True)
+    fuel = models.CharField(_('category'), max_length=20, choices=Fuel.choices, blank=True,
+                            db_index=True)
     transmission = models.CharField(_('transmission'), max_length=20,
                                     choices=Transmission.choices, blank=True)
     power_hp = models.PositiveIntegerField(_('power, hp'), null=True, blank=True)
@@ -215,6 +187,9 @@ class Car(models.Model):
 
     def get_absolute_url(self):
         return reverse('cars:detail', args=[self.pk])
+
+    def get_fuel_url(self):
+        return reverse('cars:fuel', args=[self.fuel]) if self.fuel else ''
 
     @property
     def is_pending(self):
@@ -293,7 +268,7 @@ class Car(models.Model):
         if self.mileage_km is not None:
             rows.append((_('Mileage'), f'{self.mileage_km:,} km'.replace(',', ' ')))
         if self.fuel:
-            rows.append((_('Fuel'), self.get_fuel_display()))
+            rows.append((_('Category'), self.get_fuel_display()))
         if self.transmission:
             rows.append((_('Transmission'), self.get_transmission_display()))
         if self.power_hp:

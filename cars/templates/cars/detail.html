@@ -58,7 +58,7 @@
             <a href="{{ car.make.get_absolute_url }}" class="text-sm uppercase tracking-[0.3em] text-neutral-500 hover:text-white">{{ car.make.name }}</a>
             <h1 class="text-3xl sm:text-4xl font-bold mt-2">{{ car.model }}</h1>
             <div class="flex flex-wrap gap-2 mt-4">
-                {% for c in car.categories.all %}<a href="{{ c.get_absolute_url }}" class="text-xs uppercase tracking-widest border border-neutral-800 px-2 py-1 text-neutral-400 hover:text-white">{{ c.name }}</a>{% endfor %}
+                {% if car.fuel %}<a href="{{ car.get_fuel_url }}" class="text-xs uppercase tracking-widest border border-neutral-800 px-2 py-1 text-neutral-400 hover:text-white">{{ car.get_fuel_display }}</a>{% endif %}
             </div>
         </div>
         <div class="lg:text-right">

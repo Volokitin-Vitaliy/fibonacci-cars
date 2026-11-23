@@ -2,11 +2,11 @@
 
 Django marketplace for exclusive vehicles, in English and Russian.
 
-- **Catalog** with the structure of hollmann.international: All Vehicles, New Offers,
-  collections (Customized, Armoured, Oldtimer, Electric) and manufacturers, sorting by
-  name / date / price, and a vehicle page with gallery, gross/net price, details table,
-  description and contacts.
-- **Daily import** from hollmann.international: make, model, prices, collections and the
+- **Catalog**: All Vehicles and New Offers with two separate pickers that can be combined:
+  **category** (engine type: combustion/petrol, diesel, hybrid, electric, gas) and
+  **make**; sorting by date or price; a vehicle page with gallery, gross/net price,
+  details table, description and contacts.
+- **Daily import** from hollmann.international: make, model, prices, engine type and the
   specification table, with a link to the original offer. Photos, descriptions and staff
   contacts are not copied.
 - **User accounts** (full name, email, country; or one click with Google / Apple) with a

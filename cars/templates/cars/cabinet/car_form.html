@@ -14,7 +14,7 @@
         <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Vehicle' %}</legend>
         <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.make %}
-            {% include "includes/field.html" with field=form.category %}
+            {% include "includes/field.html" with field=form.fuel %}
         </div>
         {% include "includes/field.html" with field=form.model %}
         {% include "includes/field.html" with field=form.description %}
@@ -26,7 +26,6 @@
             {% include "includes/field.html" with field=form.year %}
             {% include "includes/field.html" with field=form.mileage_km %}
             {% include "includes/field.html" with field=form.power_hp %}
-            {% include "includes/field.html" with field=form.fuel %}
             {% include "includes/field.html" with field=form.transmission %}
             {% include "includes/field.html" with field=form.color %}
         </div>

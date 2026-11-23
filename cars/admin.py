@@ -4,14 +4,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
 from . import services
-from .models import Car, CarPhoto, Category, Favorite, ImportRun, ListingPeriod, Make, Payment
-
-
-@admin.register(Category)
-class CategoryAdmin(ModelAdmin):
-    list_display = ('name_en', 'name_ru', 'slug', 'hollmann_id', 'position')
-    list_editable = ('position',)
-    prepopulated_fields = {'slug': ('name_en',)}
+from .models import Car, CarPhoto, Favorite, ImportRun, ListingPeriod, Make, Payment
 
 
 @admin.register(Make)
@@ -51,11 +44,10 @@ class CarAdmin(ModelAdmin):
                     'status_badge', 'active_until', 'owner', 'created_at')
     list_display_links = ('title_with_make',)
     list_filter = (ModerationFilter, 'source', 'status', 'is_published', 'is_new',
-                   'categories', 'make')
+                   'fuel', 'make')
     search_fields = ('model', 'make__name', 'external_id', 'owner__email', 'contact_phone')
     autocomplete_fields = ('make',)
     raw_id_fields = ('owner',)
-    filter_horizontal = ('categories',)
     inlines = (CarPhotoInline, ListingPeriodInline)
     actions = ('approve_selected', 'reject_selected')
     list_per_page = 50
@@ -64,8 +56,8 @@ class CarAdmin(ModelAdmin):
                        'created_at', 'updated_at')
     fieldsets = (
         (_('Moderation'), {'fields': ('moderation', 'rejection_reason')}),
-        (_('Vehicle'), {'fields': ('make', 'model', 'categories', 'description')}),
-        (_('Characteristics'), {'fields': (('year', 'mileage_km'), ('fuel', 'transmission'),
+        (_('Vehicle'), {'fields': (('make', 'fuel'), 'model', 'description')}),
+        (_('Characteristics'), {'fields': (('year', 'mileage_km'), 'transmission',
                                            ('power_hp', 'color'), 'specs')}),
         (_('Price'), {'fields': (('price', 'currency'), 'price_net', 'price_eur')}),
         (_('Contacts'), {'fields': ('owner', 'contact_name', 'contact_phone',

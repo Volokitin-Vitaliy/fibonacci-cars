@@ -65,15 +65,15 @@
 
         <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
             <div class="has-dropdown relative">
-                <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new category make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
+                <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new fuel make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
                 <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
                     <div class="w-[42rem] bg-[#111] border border-neutral-800 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
                         <div>
-                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Collections' %}</div>
+                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Categories' %}</div>
                             <ul class="space-y-2 text-sm">
                                 <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
                                 <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
-                                {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}" class="hover:text-neutral-400">{{ c.name }}</a></li>{% endfor %}
+                                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:text-neutral-400">{{ c.label }}</a></li>{% endfor %}
                             </ul>
                         </div>
                         <div class="col-span-2">
@@ -110,7 +110,7 @@
     <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 py-2 text-sm uppercase tracking-wider divide-y divide-neutral-900 max-h-[calc(100vh-4rem)] overflow-y-auto">
         <a href="{% url 'cars:list' %}" class="block py-3">{% trans 'All Vehicles' %}</a>
         <a href="{% url 'cars:new' %}" class="block py-3">{% trans 'New Offers' %}</a>
-        {% for c in nav_categories %}<a href="{{ c.get_absolute_url }}" class="block py-3">{{ c.name }}</a>{% endfor %}
+        {% for c in nav_fuels %}<a href="{{ c.url }}" class="block py-3">{{ c.label }}</a>{% endfor %}
         <a href="{% url 'cars:add' %}" class="block py-3">{% trans 'Sell your car' %}</a>
         <a href="{% url 'cars:favorites' %}" class="block py-3">{% trans 'Favorites' %} (<span data-fav-count>{{ favorite_ids|length }}</span>)</a>
         {% if user.is_authenticated %}
@@ -149,7 +149,7 @@
             <ul class="space-y-2">
                 <li><a href="{% url 'cars:list' %}" class="hover:text-neutral-400">{% trans 'All Vehicles' %}</a></li>
                 <li><a href="{% url 'cars:new' %}" class="hover:text-neutral-400">{% trans 'New Offers' %}</a></li>
-                {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}" class="hover:text-neutral-400">{{ c.name }}</a></li>{% endfor %}
+                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:text-neutral-400">{{ c.label }}</a></li>{% endfor %}
             </ul>
         </div>
         <div>
