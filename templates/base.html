@@ -10,64 +10,135 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
-    <meta name="theme-color" content="#0b0b0b">
+    <meta name="theme-color" content="#08080a">
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}">
+    <script>document.documentElement.classList.add('js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        :root { color-scheme: dark; }
-        body { font-family: 'Inter', sans-serif; background: #0b0b0b; color: #f5f5f5; }
-        h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
-        fieldset { min-width: 0; }
-        /* The logo has a black background: blend it into the dark page. */
-        .logo-mark { mix-blend-mode: lighten; }
-        .form-field input[type=file] { max-width: 100%; }
-
-        /* Form controls */
-        .form-field label { display: block; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #a3a3a3; margin-bottom: .4rem; }
-        .form-field input[type=text], .form-field input[type=email], .form-field input[type=password],
-        .form-field input[type=number], .form-field input[type=tel], .form-field select, .form-field textarea {
-            width: 100%; background: #141414; border: 1px solid #333; color: #f5f5f5;
-            padding: .7rem .85rem; font-size: .95rem; outline: none; transition: border-color .2s;
+        /* ---- Design tokens: black & white with the logo's blue as the accent ---- */
+        :root {
+            color-scheme: dark;
+            --bg: #08080a; --surface: #111113; --surface-2: #17171a;
+            --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.16);
+            --text: #f5f5f5; --muted: #a3a3a3; --faint: #6b6b6b;
+            --accent: #3b82f6; --accent-2: #60a5fa; --accent-glow: rgba(59,130,246,.45);
+            --radius: 18px;
         }
-        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: #f5f5f5; }
-        .form-field input[type=file] { color: #a3a3a3; font-size: .9rem; }
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+        body::before { /* soft blue light at the top of every page */
+            content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+            background: radial-gradient(60rem 30rem at 50% -10rem, rgba(37,99,235,.12), transparent 70%);
+        }
+        body::after { /* film grain */
+            content: ''; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .035; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        ::selection { background: var(--accent); color: #fff; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        h1, h2, h3 { overflow-wrap: break-word; }
+        h1 { hyphens: auto; }
+        .font-display { font-family: 'Unbounded', 'Inter', sans-serif; letter-spacing: -.01em; }
+        main h1 { font-family: 'Unbounded', 'Inter', sans-serif; font-weight: 600; letter-spacing: -.01em; }
+        fieldset { min-width: 0; }
+        .logo-mark { filter: drop-shadow(0 0 12px rgba(59,130,246,.25)); }
+        .text-accent { color: var(--accent-2); }
+
+        /* ---- Surfaces ---- */
+        .glass { background: rgba(20,20,23,.55); -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--line); }
+        .panel { background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01)); border: 1px solid var(--line); border-radius: var(--radius); }
+        .ring-gradient { position: relative; }
+        .ring-gradient::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+            background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.04) 40%, rgba(59,130,246,.45));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+        .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; border-radius: 999px; font-size: .68rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+        .chip-accent { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
+        .chip-glass { background: rgba(0,0,0,.55); color: #e5e5e5; border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+        .chip-ok { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
+        .chip-warn { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+
+        /* ---- Forms ---- */
+        .form-field label { display: block; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .45rem; }
+        .form-field input[type=text], .form-field input[type=email], .form-field input[type=password],
+        .form-field input[type=number], .form-field input[type=tel], .form-field input[type=search], .form-field select, .form-field textarea {
+            width: 100%; background: rgba(255,255,255,.03); border: 1px solid var(--line-strong); color: var(--text); border-radius: 12px;
+            padding: .75rem .9rem; font-size: .95rem; outline: none; transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .form-field input:hover, .form-field select:hover, .form-field textarea:hover { border-color: rgba(255,255,255,.28); }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,.18); background: rgba(255,255,255,.05); }
+        .form-field input[type=file] { color: var(--muted); font-size: .9rem; max-width: 100%; }
+        .form-field input[type=file]::file-selector-button { background: #f5f5f5; color: #0b0b0b; border: 0; border-radius: 999px; padding: .5rem 1rem; margin-right: .75rem; font-weight: 600; cursor: pointer; }
         .form-field .errorlist { color: #f87171; font-size: .8rem; margin-top: .35rem; }
-        .form-field .help { color: #737373; font-size: .8rem; margin-top: .35rem; }
-        .form-field ul.radio, .form-field div.radio { display: flex; gap: 1.5rem; }
-        .form-field input[type=radio] { accent-color: #f5f5f5; margin-right: .4rem; }
+        .form-field .help { color: var(--faint); font-size: .8rem; margin-top: .35rem; }
+        .form-field input[type=radio], .form-field input[type=checkbox] { accent-color: var(--accent); margin-right: .45rem; }
         .form-field .radio-row { display: flex; gap: 1.5rem; padding-top: .4rem; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.5rem; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; transition: background .2s, color .2s, border-color .2s; }
+        /* ---- Buttons ---- */
+        .btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .8rem 1.6rem; border-radius: 999px;
+               font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; transition: background .2s, color .2s, border-color .2s, box-shadow .25s, transform .2s; }
         .btn-primary { background: #f5f5f5; color: #0b0b0b; }
-        .btn-primary:hover { background: #d4d4d4; }
-        .btn-outline { border: 1px solid #404040; color: #f5f5f5; }
-        .btn-outline:hover { border-color: #f5f5f5; }
-        .btn-danger { border: 1px solid #7f1d1d; color: #fca5a5; }
-        .btn-danger:hover { background: #7f1d1d; color: #fff; }
+        .btn-primary:hover { background: #fff; box-shadow: 0 10px 30px -10px rgba(255,255,255,.45), 0 0 0 1px rgba(255,255,255,.5); transform: translateY(-1px); }
+        .btn-primary::after { /* light that follows the cursor */
+            content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s; pointer-events: none;
+            background: radial-gradient(10rem circle at var(--mx, 50%) var(--my, 50%), rgba(59,130,246,.28), transparent 60%); }
+        .btn-primary:hover::after { opacity: 1; }
+        .btn-outline { border: 1px solid var(--line-strong); color: var(--text); background: rgba(255,255,255,.02); }
+        .btn-outline:hover { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.06); }
+        .btn-danger { border: 1px solid rgba(239,68,68,.45); color: #fca5a5; }
+        .btn-danger:hover { background: rgba(239,68,68,.2); color: #fff; }
 
-        .nav-link { position: relative; }
-        .nav-link::after { content: ''; position: absolute; left: 0; bottom: -4px; width: 0; height: 1px; background: #f5f5f5; transition: width .25s; }
+        .nav-link { position: relative; color: #d4d4d4; transition: color .2s; }
+        .nav-link:hover, .nav-link.active { color: #fff; }
+        .nav-link::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 0; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .25s; }
         .nav-link:hover::after, .nav-link.active::after { width: 100%; }
-
         .dropdown { display: none; }
         .has-dropdown:hover .dropdown, .has-dropdown:focus-within .dropdown { display: block; }
+
+        /* ---- Header: more solid once the page is scrolled ---- */
+        .site-header { background: rgba(8,8,10,.6); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); border-bottom: 1px solid transparent; transition: background .3s, border-color .3s; }
+        .site-header.is-scrolled { background: rgba(8,8,10,.88); border-bottom-color: var(--line); }
+
+        /* ---- Page loading bar ---- */
+        #page-progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 70; opacity: 0; background: linear-gradient(90deg, var(--accent), #93c5fd); box-shadow: 0 0 12px var(--accent-glow); transition: width .6s ease, opacity .3s; }
+        #page-progress.is-active { opacity: 1; width: 75%; transition: width 6s cubic-bezier(.1,.7,.1,1), opacity .2s; }
+
+        /* ---- Reveal on scroll ---- */
+        .js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+        .js [data-reveal].is-visible { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+
+        /* ---- Images fade in over a shimmer ---- */
+        .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
+        @keyframes shimmer { to { background-position: -150% 0; } }
+        .js img.fade-in { opacity: 0; transition: opacity .5s ease; }
+        .js img.fade-in.is-loaded { opacity: 1; }
+
+        /* ---- Horizontal scrollers ---- */
+        .scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .scroller::-webkit-scrollbar { display: none; }
+        .scroller > * { scroll-snap-align: start; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-24">
-<header class="sticky top-0 z-40 bg-[#0b0b0b]/95 backdrop-blur border-b border-neutral-900">
+<div id="page-progress" aria-hidden="true"></div>
+<header class="site-header sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
         <a href="{% url 'cars:home' %}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
             <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-9 h-9 sm:w-10 sm:h-10">
-            <span class="text-base sm:text-xl font-bold tracking-[0.2em] sm:tracking-[0.3em]">FIBONACCI</span>
+            <span class="font-display text-[0.8rem] min-[360px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.14em] min-[360px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
         </a>
 
         <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
             <div class="has-dropdown relative">
                 <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new fuel make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
                 <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
-                    <div class="w-[42rem] bg-[#111] border border-neutral-800 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
+                    <div class="w-[42rem] glass rounded-2xl shadow-2xl shadow-black/60 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
                         <div>
                             <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Categories' %}</div>
                             <ul class="space-y-2 text-sm">
@@ -139,12 +210,12 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="border-t border-neutral-900 mt-24">
+<footer class="border-t border-white/5 mt-28">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 sm:grid-cols-3 text-sm">
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
-                <span class="text-lg font-bold tracking-[0.3em]">FIBONACCI</span>
+                <span class="font-display text-lg font-semibold tracking-[0.3em]">FIBONACCI</span>
             </div>
             <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
         </div>
@@ -204,6 +275,65 @@ document.addEventListener('submit', function (e) {
         })
         .catch(function () { form.submit(); });
 });
+</script>
+<script>
+(function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Header gets more solid once the page is scrolled.
+    var header = document.querySelector('.site-header');
+    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    onScroll(); window.addEventListener('scroll', onScroll, {passive: true});
+
+    // Thin loading bar while the next page loads.
+    var bar = document.getElementById('page-progress');
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest('a[href]');
+        if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
+        var url = new URL(a.href, location.href);
+        if (url.origin !== location.origin || url.hash && url.pathname === location.pathname) return;
+        bar.classList.add('is-active');
+    });
+    document.addEventListener('submit', function (e) { if (!e.target.matches('[data-favorite-form]')) bar.classList.add('is-active'); });
+    window.addEventListener('pageshow', function () { bar.classList.remove('is-active'); });
+
+    // Reveal blocks and count numbers up when they scroll into view.
+    var countUp = function (el) {
+        var target = parseFloat(el.dataset.count), suffix = el.dataset.suffix || '', start = null;
+        if (reduce || !target) { el.textContent = (el.dataset.count) + suffix; return; }
+        var step = function (t) { if (!start) start = t; var p = Math.min((t - start) / 1200, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))).toLocaleString() + suffix;
+            if (p < 1) requestAnimationFrame(step); };
+        requestAnimationFrame(step);
+    };
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (!en.isIntersecting) return;
+                en.target.classList.add('is-visible');
+                if (en.target.dataset.count) countUp(en.target);
+                io.unobserve(en.target);
+            });
+        }, {rootMargin: '0px 0px -8% 0px'});
+        document.querySelectorAll('[data-reveal], [data-count]').forEach(function (el) { io.observe(el); });
+    } else {
+        document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('is-visible'); });
+    }
+
+    // Photos fade in when loaded.
+    document.querySelectorAll('img.fade-in').forEach(function (img) {
+        var done = function () { img.classList.add('is-loaded'); };
+        if (img.complete) done(); else { img.addEventListener('load', done); img.addEventListener('error', done); }
+    });
+
+    // Light that follows the cursor on primary buttons.
+    document.addEventListener('pointermove', function (e) {
+        var b = e.target.closest && e.target.closest('.btn-primary');
+        if (!b) return;
+        var r = b.getBoundingClientRect();
+        b.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        b.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+})();
 </script>
 {% block extra_js %}{% endblock %}
 </body>

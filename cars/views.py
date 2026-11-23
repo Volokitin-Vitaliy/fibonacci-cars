@@ -38,9 +38,22 @@ def choose_language(request):
 
 
 def home(request):
-    new_offers = list(with_cover(Car.objects.new_offers()).order_by('-created_at')[:8])
-    latest = [] if new_offers else with_cover(Car.objects.visible()).order_by('-created_at')[:8]
-    return render(request, 'cars/home.html', {'new_offers': new_offers, 'latest': latest})
+    from . import partnership
+
+    visible = Car.objects.visible()
+    new_offers = list(with_cover(Car.objects.new_offers()).order_by('-created_at')[:10])
+    latest = [] if new_offers else list(with_cover(visible).order_by('-created_at')[:10])
+    # Hero: the most impressive cars that have photos.
+    hero_cars = list(with_cover(visible.filter(photos__isnull=False).distinct())
+                     .order_by('-price_eur')[:5])
+    top_makes = (Make.objects.annotate(n=Count('cars', filter=Q(cars__in=visible)))
+                 .filter(n__gt=0).order_by('-n', 'name')[:8])
+    return render(request, 'cars/home.html', {
+        'new_offers': new_offers, 'latest': latest, 'hero_cars': hero_cars,
+        'top_makes': top_makes,
+        'stats': {'vehicles': visible.count(), 'makes': Make.objects.filter(cars__in=visible).distinct().count()},
+        'social': [l for l in partnership.LINKS if not l[3]], 'followers': partnership.FOLLOWERS,
+    })
 
 
 def car_list(request, make_slug=None, fuel=None, new=False):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 15:06+0000\n"
+"POT-Creation-Date: 2026-11-23 15:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -202,23 +202,8 @@ msgstr "Активировать за €%(listing_price)s"
 msgid "Activate for %(duration)s days"
 msgstr "Активировать на %(duration)s дней"
 
-msgid "Previous"
-msgstr "Назад"
-
-msgid "Next"
-msgstr "Вперёд"
-
-msgid "View photos on hollmann.international"
-msgstr "Смотреть фото на hollmann.international"
-
-msgid "No photos yet"
-msgstr "Фотографий пока нет"
-
-msgid "Photos: Hollmann International"
-msgstr "Фото: Hollmann International"
-
-msgid "Close"
-msgstr "Закрыть"
+msgid "Vehicles"
+msgstr "Автомобили"
 
 msgid "This listing is waiting for moderator approval and is only visible to you."
 msgstr "Объявление ждёт проверки модератором и видно только вам."
@@ -229,11 +214,53 @@ msgstr "Объявление неактивно и видно только ва�
 msgid "Activate"
 msgstr "Активировать"
 
-msgid "Gross"
-msgstr "Брутто"
+msgid "Open fullscreen"
+msgstr "Открыть на весь экран"
 
-msgid "Net (Export)"
-msgstr "Нетто (экспорт)"
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Вперёд"
+
+msgid "Photo"
+msgstr "Фото"
+
+msgid "Photos: Hollmann International"
+msgstr "Фото: Hollmann International"
+
+msgid "View photos on hollmann.international"
+msgstr "Смотреть фото на hollmann.international"
+
+msgid "No photos yet"
+msgstr "Фотографий пока нет"
+
+msgid "Year"
+msgstr "Год"
+
+msgid "Mileage"
+msgstr "Пробег"
+
+msgid "Power"
+msgstr "Мощность"
+
+msgid "hp"
+msgstr "л.с."
+
+msgid "Category"
+msgstr "Категория"
+
+msgid "Transmission"
+msgstr "Коробка передач"
+
+msgid "Accident"
+msgstr "ДТП"
+
+msgid "After an accident"
+msgstr "После ДТП"
+
+msgid "No accidents"
+msgstr "Без ДТП"
 
 msgid "Details"
 msgstr "Характеристики"
@@ -257,6 +284,21 @@ msgstr "Полное описание, комплектация и фотогр�
 
 msgid "Open the original offer"
 msgstr "Открыть оригинальное предложение"
+
+msgid "New"
+msgstr "Новое"
+
+msgid "Net (Export)"
+msgstr "Нетто (экспорт)"
+
+msgid "Gross"
+msgstr "Брутто"
+
+msgid "All contacts"
+msgstr "Все контакты"
+
+msgid "Call"
+msgstr "Позвонить"
 
 msgid "Interested in this vehicle?"
 msgstr "Заинтересовал автомобиль?"
@@ -286,6 +328,9 @@ msgstr "Свяжитесь с продавцом напрямую:"
 
 msgid "Contact person"
 msgstr "Контактное лицо"
+
+msgid "Close"
+msgstr "Закрыть"
 
 #, python-format
 msgid "More from %(make)s"
@@ -358,6 +403,21 @@ msgstr "Выбрать авто"
 msgid "Sell a car"
 msgstr "Продать авто"
 
+msgid "vehicles available"
+msgstr "автомобилей в наличии"
+
+msgid "makes"
+msgstr "марки"
+
+msgid "followers"
+msgstr "подписчиков"
+
+msgid "export worldwide"
+msgstr "экспорт по всему миру"
+
+msgid "Just arrived"
+msgstr "Только что поступили"
+
 msgid "New Offers"
 msgstr "Новые предложения"
 
@@ -370,8 +430,54 @@ msgstr "Автомобилей пока нет."
 msgid "View all"
 msgstr "Смотреть все"
 
-msgid "Category"
-msgstr "Категория"
+msgid "Manufacturers"
+msgstr "Марки"
+
+msgid "Popular makes"
+msgstr "Популярные марки"
+
+msgid "Why us"
+msgstr "Почему мы"
+
+msgid "Trusted dealers"
+msgstr "Проверенные дилеры"
+
+msgid "Vehicles from Hollmann International and checked sellers."
+msgstr "Автомобили от Hollmann International и проверенных продавцов."
+
+msgid "Export worldwide"
+msgstr "Экспорт по всему миру"
+
+msgid "Net export prices and delivery to any country."
+msgstr "Экспортные цены нетто и доставка в любую страну."
+
+msgid "Direct contact"
+msgstr "Прямой контакт"
+
+msgid "Phone, WhatsApp and Telegram of the seller — no middlemen."
+msgstr "Телефон, WhatsApp и Telegram продавца — без посредников."
+
+msgid "Sell in minutes"
+msgstr "Продажа за минуты"
+
+msgid "Publish your car, we review it and show it to buyers."
+msgstr "Разместите автомобиль — мы проверим и покажем его покупателям."
+
+msgid "people follow FIBONACCI — cars, deliveries and reviews every day."
+msgstr "человек следят за FIBONACCI — автомобили, доставки и обзоры каждый день."
+
+msgid "Sell your car to buyers worldwide"
+msgstr "Продайте автомобиль покупателям по всему миру"
+
+msgid "Add photos, a price and your contacts — the listing goes live after a quick review."
+msgstr "Добавьте фото, цену и контакты — объявление появится после быстрой проверки."
+
+#, python-format
+msgid "%(n)s vehicle"
+msgid_plural "%(n)s vehicles"
+msgstr[0] "%(n)s автомобиль"
+msgstr[1] "%(n)s автомобиля"
+msgstr[2] "%(n)s автомобилей"
 
 msgid "Make"
 msgstr "Марка"
@@ -384,9 +490,6 @@ msgstr "Найти марку"
 
 msgid "Nothing found"
 msgstr "Ничего не найдено"
-
-msgid "Accident"
-msgstr "ДТП"
 
 msgid "Seller"
 msgstr "Продавец"
@@ -405,13 +508,6 @@ msgstr "Сбросить фильтры"
 
 msgid "No vehicles found."
 msgstr "Ничего не найдено."
-
-#, python-format
-msgid "%(n)s vehicle"
-msgid_plural "%(n)s vehicles"
-msgstr[0] "%(n)s автомобиль"
-msgstr[1] "%(n)s автомобиля"
-msgstr[2] "%(n)s автомобилей"
 
 msgid "Partnership"
 msgstr "Сотрудничество"
@@ -484,17 +580,11 @@ msgstr "Новые пользователи"
 msgid "Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles."
 msgstr "Эксклюзивные автомобили на продажу: тюнинг, бронированные, олдтаймеры и электромобили."
 
-msgid "Vehicles"
-msgstr "Автомобили"
-
 msgid "Categories"
 msgstr "Категории"
 
 msgid "All Vehicles"
 msgstr "Все автомобили"
-
-msgid "Manufacturers"
-msgstr "Марки"
 
 msgid "Sell your car"
 msgstr "Продать автомобиль"
@@ -522,15 +612,6 @@ msgstr "Продать"
 
 msgid "Profile"
 msgstr "Профиль"
-
-msgid "hp"
-msgstr "л.с."
-
-msgid "After an accident"
-msgstr "После ДТП"
-
-msgid "No accidents"
-msgstr "Без ДТП"
 
 msgid "Remove from favorites"
 msgstr "Убрать из избранного"
@@ -699,9 +780,6 @@ msgstr "название"
 msgid "make"
 msgstr "марка"
 
-msgid "makes"
-msgstr "марки"
-
 msgid "User listing"
 msgstr "Объявление пользователя"
 
@@ -818,18 +896,6 @@ msgstr "автомобиль"
 
 msgid "vehicles"
 msgstr "автомобили"
-
-msgid "Year"
-msgstr "Год"
-
-msgid "Mileage"
-msgstr "Пробег"
-
-msgid "Transmission"
-msgstr "Коробка передач"
-
-msgid "Power"
-msgstr "Мощность"
 
 msgid "Color"
 msgstr "Цвет"

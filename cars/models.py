@@ -215,6 +215,17 @@ class Car(models.Model):
         return self.source == self.Source.HOLLMANN
 
     @property
+    def is_new_offer(self):
+        if self.is_imported:
+            return self.is_new
+        return bool(self.activated_at and self.activated_at >= timezone.now() - timedelta(days=14))
+
+    @property
+    def main_price(self):
+        """Dealers show the net export price first; private sellers one price."""
+        return self.price_net or self.price
+
+    @property
     def is_listing_active(self):
         """For user listings: active and the paid/free month is not over."""
         return (self.status == self.Status.ACTIVE and self.active_until is not None
