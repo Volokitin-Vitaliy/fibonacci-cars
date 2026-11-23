@@ -37,12 +37,13 @@ class AccountFieldsMixin(ProfileFieldsMixin):
 
 class RegistrationForm(ProfileFieldsMixin, UserCreationForm):
     email = forms.EmailField(label=_('Email'), max_length=254)
+    middle_name = None  # not asked at sign-up
 
     class Meta:
         model = User
-        fields = ('last_name', 'first_name', 'middle_name', 'email', 'country')
+        fields = ('last_name', 'first_name', 'email', 'country')
 
-    field_order = ('last_name', 'first_name', 'middle_name', 'email', 'country',
+    field_order = ('last_name', 'first_name', 'email', 'country',
                    'password1', 'password2')
 
     def clean_email(self):

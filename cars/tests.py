@@ -375,14 +375,16 @@ class RegistrationTests(TestCase):
 
     def test_register_with_profile_fields(self):
         response = self.client.post(reverse('users:register'), {
-            'last_name': 'Petrov', 'first_name': 'Ivan', 'middle_name': 'Sergeevich',
+            'last_name': 'Petrov', 'first_name': 'Ivan',
             'email': 'Ivan@Example.com', 'country': 'RU',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
         })
         self.assertRedirects(response, reverse('cars:my_cars'))
         user = CustomUser.objects.get(email='ivan@example.com')
         self.assertEqual((user.phone, user.country.code), (None, 'RU'))
-        self.assertEqual(user.full_name, 'Petrov Ivan Sergeevich')
+        self.assertEqual(user.full_name, 'Petrov Ivan')
+        from users.forms import RegistrationForm
+        self.assertNotIn('middle_name', RegistrationForm().fields)
 
     def test_phone_is_not_asked_at_signup(self):
         page = self.client.get(reverse('users:register'))

@@ -8,10 +8,9 @@
     {% url "cars:my_cars" as next_url %}{% include "includes/social_login.html" with next_url=next|default:next_url %}
     <form method="post" class="space-y-5">
         {% csrf_token %}
-        <div class="grid sm:grid-cols-3 gap-5">
+        <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.last_name %}
             {% include "includes/field.html" with field=form.first_name %}
-            {% include "includes/field.html" with field=form.middle_name %}
         </div>
         <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.email %}

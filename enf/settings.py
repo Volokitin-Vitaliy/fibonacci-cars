@@ -21,14 +21,24 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = env_bool('DEBUG', True)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'domen.com', 'www.domen.com']
+# The public address of the site, e.g. https://fibonacci.cars (set in .env).
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000').rstrip('/')
+_site_host = SITE_URL.split('://', 1)[-1].split('/', 1)[0].split(':', 1)[0]
+_hosts = {'127.0.0.1', 'localhost', _site_host}
+if _site_host and not _site_host.startswith('www.') and _site_host not in ('127.0.0.1', 'localhost'):
+    _hosts.add('www.' + _site_host)
+_hosts.update(h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip())
+ALLOWED_HOSTS = sorted(_hosts)
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000'] + [
+    f'https://{h}' for h in ALLOWED_HOSTS if h not in ('127.0.0.1', 'localhost')]
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'https://domen.com',
-    'https://www.domen.com',
-]
+# Behind nginx: trust its X-Forwarded-Proto so Django knows the site is on HTTPS
+# (needed for absolute URLs such as WayForPay's return and callback addresses).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if not DEBUG:
+    # nginx redirects http -> https; browsers should then stay on https.
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
 # Secure cookies only work over HTTPS; keep them on in production and off
 # for local development over plain http.
@@ -188,7 +198,6 @@ USD_TO_EUR_RATE = float(os.getenv('USD_TO_EUR_RATE', 0.92))
 
 
 # Email. Without EMAIL_HOST, emails are printed to the console.
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000').rstrip('/')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'FIBONACCI <no-reply@localhost>')
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
 if EMAIL_HOST:

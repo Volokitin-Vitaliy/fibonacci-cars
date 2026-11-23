@@ -177,25 +177,11 @@ python manage.py compilemessages
 
 ## Docker / production
 
-Fill `.env`:
+Step-by-step server setup (VPS, domain, HTTPS, backups): **[deploy/README.md](deploy/README.md)**.
+Template for the server's `.env`: [deploy/env.example](deploy/env.example).
 
-```ini
-SECRET_KEY=...
-DEBUG=False
-POSTGRES_DB=enfdb
-POSTGRES_USER=enfdb
-POSTGRES_PASSWORD=enfdb
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-```
-
-```bash
-docker-compose up --build -d
-docker-compose exec web python manage.py collectstatic --no-input
-docker-compose exec web python manage.py createsuperuser
-```
-
-Services: `db` (PostgreSQL), `web` (gunicorn), `scheduler` (daily jobs), `nginx`.
+Services: `db` (PostgreSQL 16), `web` (gunicorn), `scheduler` (daily jobs), `nginx` (HTTPS,
+static and media files), `certbot` (certificate renewal).
 
 ## Tests
 
