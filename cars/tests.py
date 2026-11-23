@@ -416,6 +416,7 @@ class LayoutTests(TestCase):
         page = self.client.get(reverse('cars:home'))
         self.assertContains(page, 'Choose a car')
         self.assertContains(page, 'Sell a car')
+        self.assertContains(page, 'Cars worldwide.')
         self.assertContains(page, 'View all')
         self.assertNotContains(page, 'p-6 h-32')  # collection tiles are gone from the home page
         self.assertContains(page, 'img/logo-256.png')
@@ -492,6 +493,7 @@ class LayoutTests(TestCase):
                     reverse('cars:favorites'), reverse('cars:partnership')):
             self.assertIn(url, menu)
         self.assertLess(menu.index(reverse('cars:favorites')), menu.index(reverse('cars:partnership')))
+        self.assertLess(menu.index(reverse('users:register')), menu.index(reverse('cars:partnership')))
         partnership = self.client.get(reverse('cars:partnership'))
         for link in ('https://t.me/fibonaccicars', 'https://www.tiktok.com/@fibonacci_io',
                      'https://www.instagram.com/fibonacci_io', 'https://t.me/fibonacci_io',
