@@ -53,6 +53,21 @@ class RegistrationForm(ProfileFieldsMixin, UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(label=_('Email'), widget=forms.EmailInput(attrs={'autofocus': True}))
 
+    def clean(self):
+        try:
+            return super().clean()
+        except forms.ValidationError:
+            # Right password, but the email is not confirmed yet: say so instead of
+            # "incorrect password" (this reveals nothing to someone without the password).
+            email, password = self.cleaned_data.get('username'), self.cleaned_data.get('password')
+            user = User.objects.filter(email__iexact=email or '').first()
+            if user and user.awaits_verification and password and user.check_password(password):
+                self.unverified_email = user.email
+                raise forms.ValidationError(
+                    _('Please confirm your email first: open the link we sent to %(email)s.')
+                    % {'email': user.email}, code='unverified')
+            raise
+
 
 class AccountForm(AccountFieldsMixin, forms.ModelForm):
     class Meta:

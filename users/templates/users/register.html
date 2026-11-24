@@ -20,6 +20,8 @@
             {% include "includes/field.html" with field=form.password1 %}
             {% include "includes/field.html" with field=form.password2 %}
         </div>
+        {% if form.non_field_errors %}<div class="rounded-xl border border-red-900 text-red-300 px-4 py-3 text-sm">{{ form.non_field_errors.0 }}</div>{% endif %}
+        {% include "includes/captcha.html" %}
         <button type="submit" class="btn btn-primary w-full">{% trans 'Create an account' %}</button>
     </form>
     <p class="text-sm text-neutral-400 mt-8 text-center">{% trans 'Already registered?' %} <a href="{% url 'users:login' %}" class="text-white underline">{% trans 'Log in' %}</a></p>

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Count, Q
 
 from . import favorites
@@ -7,7 +8,7 @@ from .models import Car, Make
 
 
 def navigation(request):
-    if request.path.startswith('/admin/'):
+    if request.path.startswith('/' + settings.ADMIN_URL):
         return {}
     visible = Car.objects.visible()
     makes = (Make.objects
@@ -19,4 +20,5 @@ def navigation(request):
                       for value, label in Car.Fuel.choices],
         'nav_makes': makes,
         'favorite_ids': favorite_ids,
+        'TURNSTILE_SITE_KEY': settings.TURNSTILE_SITE_KEY if settings.TURNSTILE_SECRET_KEY else '',
     }

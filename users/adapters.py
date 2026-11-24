@@ -27,4 +27,19 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         if user.email:
             user.email = user.email.lower()
         user.language = (get_language() or 'en')[:2]
+        user.email_verified = True  # Google / Apple confirm the address
         return user
+
+    def pre_social_login(self, request, sociallogin):
+        """Google / Apple sign-in with the address of an account that was never confirmed.
+
+        Whoever signed up with this address could not prove they own it, so the
+        Google / Apple owner takes the account over: it becomes active, and its
+        password is wiped so the earlier sign-up can no longer log in.
+        """
+        user = sociallogin.user
+        if user.pk and user.awaits_verification:
+            user.is_active = True
+            user.email_verified = True
+            user.set_unusable_password()
+            user.save(update_fields=['is_active', 'email_verified', 'password'])

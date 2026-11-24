@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.shortcuts import redirect
 
-EXEMPT_PREFIXES = ('/admin/', '/static/', '/media/', '/i18n/', '/choose-language/',
+EXEMPT_PREFIXES = ('/' + settings.ADMIN_URL, '/static/', '/media/', '/i18n/', '/choose-language/',
                    '/payments/', '/accounts/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
 
 # Search engines and link previews must see the page itself, not the picker.

@@ -9,7 +9,10 @@
     <form method="post" class="space-y-5">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
-        {% if form.non_field_errors %}<div class="border border-red-900 text-red-300 px-4 py-3 text-sm">{% trans 'Incorrect email or password.' %}</div>{% endif %}
+        {% if form.unverified_email %}
+        <div class="rounded-xl border border-amber-700/60 bg-amber-500/10 text-amber-200 px-4 py-3 text-sm">{{ form.non_field_errors.0 }}
+            <a href="{% url 'users:verify_sent' %}" class="block mt-2 underline text-white">{% trans 'Send the link again' %}</a></div>
+        {% elif form.non_field_errors %}<div class="rounded-xl border border-red-900 text-red-300 px-4 py-3 text-sm">{% if 'locked' in form.non_field_errors.as_text %}{{ form.non_field_errors.0 }}{% else %}{% trans 'Incorrect email or password.' %}{% endif %}</div>{% endif %}
         {% include "includes/field.html" with field=form.username %}
         {% include "includes/field.html" with field=form.password %}
         <button type="submit" class="btn btn-primary w-full">{% trans 'Log in' %}</button>

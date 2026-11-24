@@ -38,6 +38,9 @@ class CustomUser(AbstractUser):
     # Language of the site the user last used; emails are sent in it.
     language = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES,
                                 default='en')
+    # Set when the owner clicks the link in the sign-up email (or signs in with Google /
+    # Apple, which confirm the address). New sign-ups stay inactive until then.
+    email_verified = models.BooleanField(_('email verified'), default=False)
 
     username = None
 
@@ -52,6 +55,11 @@ class CustomUser(AbstractUser):
     @property
     def full_name(self):
         return ' '.join(p for p in (self.last_name, self.first_name, self.middle_name) if p)
+
+    @property
+    def awaits_verification(self):
+        """Signed up with email and password but has not clicked the link yet."""
+        return not self.is_active and not self.email_verified
 
     def clean(self):
         super().clean()

@@ -69,6 +69,7 @@
         </div>
     </fieldset>
 
+    {% if not car %}{% include "includes/captcha.html" %}{% endif %}
     <div class="flex flex-col sm:flex-row gap-3">
         <button type="submit" class="btn btn-primary">{% if car %}{% trans 'Save changes' %}{% elif payment_required %}{% blocktrans with price=listing_price %}Continue to payment · €{{ price }}{% endblocktrans %}{% else %}{% trans 'Publish listing' %}{% endif %}</button>
         <a href="{% url 'cars:my_cars' %}" class="btn btn-outline">{% trans 'Cancel' %}</a>

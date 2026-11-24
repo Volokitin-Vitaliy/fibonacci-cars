@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from decimal import Decimal
 from io import BytesIO
@@ -380,12 +381,101 @@ class RegistrationTests(TestCase):
             'email': 'Ivan@Example.com', 'country': 'DE',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
         })
-        self.assertRedirects(response, reverse('cars:my_cars'))
+        self.assertRedirects(response, reverse('users:verify_sent'))
         user = CustomUser.objects.get(email='ivan@example.com')
         self.assertEqual((user.phone, user.country.code), (None, 'DE'))
         self.assertEqual(user.full_name, 'Petrov Ivan')
         from users.forms import RegistrationForm
         self.assertNotIn('middle_name', RegistrationForm().fields)
+
+    def test_email_must_be_confirmed(self):
+        from django.core import mail
+        self.client.post(reverse('users:register'), {
+            'last_name': 'Petrov', 'first_name': 'Ivan', 'email': 'ivan@example.com', 'country': 'DE',
+            'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
+        })
+        user = CustomUser.objects.get(email='ivan@example.com')
+        self.assertTrue(user.awaits_verification)
+        self.assertNotIn('_auth_user_id', self.client.session)
+        self.assertEqual(len(mail.outbox), 1)
+        # Logging in before confirming explains what to do.
+        page = self.client.post(reverse('users:login'), {'username': 'ivan@example.com',
+                                                        'password': 'Sup3r-secret-pw'})
+        self.assertContains(page, 'Please confirm your email first')
+        wrong = self.client.post(reverse('users:login'), {'username': 'ivan@example.com',
+                                                         'password': 'wrong-password'})
+        self.assertNotContains(wrong, 'Please confirm your email first')
+        # The link activates the account and signs in; it works only once.
+        link = re.search(r'https?://\S+/verify/\S+/', mail.outbox[0].body).group(0)
+        path = link.split('testserver', 1)[1]
+        self.assertRedirects(self.client.get(path), reverse('cars:my_cars'))
+        user.refresh_from_db()
+        self.assertTrue(user.is_active and user.email_verified)
+        self.client.logout()
+        self.client.cookies.load(LANG)
+        again = self.client.get(path)
+        self.assertEqual(again.status_code, 400, again.get("Location"))
+
+    def test_resend_link_is_limited(self):
+        from django.core import mail
+        from django.core.cache import cache
+        cache.clear()
+        user = CustomUser.objects.create_user('p@example.com', 'P', 'Q', 'Sup3r-secret-pw', is_active=False)
+        for _ in range(3):
+            self.client.post(reverse('users:verify_sent'), {'email': 'p@example.com'})
+        self.client.post(reverse('users:verify_sent'), {'email': 'nobody@example.com'})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [user.email])
+
+    def test_login_is_locked_after_five_wrong_passwords(self):
+        CustomUser.objects.create_user('lock@example.com', 'L', 'K', 'Right-pass-123', email_verified=True)
+        for _ in range(5):
+            self.client.post(reverse('users:login'), {'username': 'lock@example.com', 'password': 'nope'})
+        page = self.client.post(reverse('users:login'), {'username': 'lock@example.com',
+                                                        'password': 'Right-pass-123'})
+        self.assertEqual(page.status_code, 429)
+        self.assertContains(page, 'Too many attempts', status_code=429)
+        self.assertNotIn('_auth_user_id', self.client.session)
+        # Another account from the same address is not affected.
+        CustomUser.objects.create_user('ok@example.com', 'O', 'K', 'Right-pass-123', email_verified=True)
+        ok = self.client.post(reverse('users:login'), {'username': 'ok@example.com', 'password': 'Right-pass-123'})
+        self.assertEqual(ok.status_code, 302)
+
+    @override_settings(TURNSTILE_SITE_KEY='site-key', TURNSTILE_SECRET_KEY='secret')
+    def test_captcha_blocks_bots_at_signup(self):
+        data = {'last_name': 'Bot', 'first_name': 'Bot', 'email': 'bot@example.com', 'country': 'DE',
+                'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw'}
+        page = self.client.get(reverse('users:register'))
+        self.assertContains(page, 'data-sitekey="site-key"')
+        response = self.client.post(reverse('users:register'), data)  # no token
+        self.assertContains(response, 'not a robot')
+        self.assertFalse(CustomUser.objects.filter(email='bot@example.com').exists())
+        with mock.patch('users.captcha.requests.post') as post:
+            post.return_value.json.return_value = {'success': False}
+            self.client.post(reverse('users:register'), {**data, 'cf-turnstile-response': 'fake'})
+            self.assertFalse(CustomUser.objects.filter(email='bot@example.com').exists())
+            post.return_value.json.return_value = {'success': True}
+            response = self.client.post(reverse('users:register'), {**data, 'cf-turnstile-response': 'ok'})
+            self.assertRedirects(response, reverse('users:verify_sent'))
+            self.assertEqual(post.call_args.kwargs['data']['secret'], 'secret')
+
+    def test_robots_does_not_reveal_admin(self):
+        self.assertNotContains(self.client.get('/robots.txt'), 'admin')
+
+    def test_social_login_takes_over_unconfirmed_account(self):
+        from users.adapters import SocialAccountAdapter
+        user = CustomUser.objects.create_user('v@example.com', 'V', 'W', 'attacker-pw-123', is_active=False)
+        login = mock.Mock(user=user)
+        SocialAccountAdapter().pre_social_login(None, login)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active and user.email_verified)
+        self.assertFalse(user.check_password('attacker-pw-123'))
+        # A confirmed account that an admin switched off stays off.
+        banned = CustomUser.objects.create_user('b@example.com', 'B', 'C', 'pw-12345678', is_active=False,
+                                                email_verified=True)
+        SocialAccountAdapter().pre_social_login(None, mock.Mock(user=banned))
+        banned.refresh_from_db()
+        self.assertFalse(banned.is_active)
 
     def test_russia_is_not_offered(self):
         page = self.client.get(reverse('users:register'))

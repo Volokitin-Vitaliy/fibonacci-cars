@@ -12,6 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django_countries.fields import Country
 
+from users import captcha
+
 from . import favorites, payments, services
 from .forms import CarFilterForm, CarForm
 from .models import Car, CarPhoto, Favorite, Make, Payment
@@ -205,7 +207,7 @@ def car_create(request):
     initial = {'contact_name': request.user.full_name, 'contact_phone': phone,
                'contact_whatsapp': phone, 'country': str(request.user.country or '')}
     form = CarForm(request.POST or None, request.FILES or None, initial=initial)
-    if request.method == 'POST' and form.is_valid():
+    if request.method == 'POST' and form.is_valid() and captcha.check(request, form):
         form.instance.owner = request.user
         form.instance.source = Car.Source.USER
         form.instance.status = Car.Status.INACTIVE
@@ -381,7 +383,6 @@ def wayforpay_done(request):
 def robots_txt(request):
     lines = [
         'User-agent: *',
-        'Disallow: /admin/',
         'Disallow: /choose-language/',
         'Disallow: /en/cabinet/',
         'Disallow: /ru/cabinet/',

@@ -4,6 +4,7 @@ Django settings for the FIBONACCI car marketplace.
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
@@ -19,7 +20,11 @@ def env_bool(name, default=False):
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = env_bool('DEBUG', True)
+# Off unless .env says DEBUG=True (local development only).
+DEBUG = env_bool('DEBUG', False)
+
+# Address of the admin. Set a hard-to-guess one in production, e.g. ADMIN_URL=office-7f3k2/
+ADMIN_URL = os.getenv('ADMIN_URL', 'admin/').strip('/') + '/'
 
 # The public address of the site, e.g. https://fibonacci.cars (set in .env).
 SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000').rstrip('/')
@@ -47,6 +52,23 @@ SESSION_COOKIE_SECURE = env_bool('SECURE_COOKIES', not DEBUG)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+
+# Brute-force protection (django-axes): after 5 wrong passwords for one email from one
+# address, logging in is blocked for 15 minutes. Works for the site and the admin.
+# Cloudflare Turnstile bot check on sign-up and the listing form (off without keys).
+TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
+TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
+
+AXES_FAILURE_LIMIT = int(os.getenv('AXES_FAILURE_LIMIT', 5))
+AXES_COOLOFF_TIME = timedelta(minutes=int(os.getenv('AXES_COOLOFF_MINUTES', 15)))
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_USERNAME_FORM_FIELD = 'username'  # the email field on the site and admin login forms
+AXES_LOCKOUT_TEMPLATE = 'users/locked.html'
+# nginx puts the visitor's real address in X-Real-IP (the app is not reachable directly).
+AXES_IPWARE_META_PRECEDENCE_ORDER = ['HTTP_X_REAL_IP', 'REMOTE_ADDR']
 
 
 INSTALLED_APPS = [
@@ -70,6 +92,7 @@ INSTALLED_APPS = [
 
     'users',
     'cars',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +106,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'axes.middleware.AxesMiddleware',  # must be last
 ]
 
 ROOT_URLCONF = 'enf.urls'
@@ -139,6 +163,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.CustomUser'
 AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # must be first
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
