@@ -256,6 +256,16 @@ fieldset { min-width: 0; }
         .bn-sell svg { width: 1.1rem; height: 1.1rem; padding: 0; margin: 0; background: none; box-shadow: none; color: #0b0b0b; stroke-width: 2.4; }
     }
 
+/* ---- Offer to switch language (first visit) ---- */
+.lang-offer { position: fixed; z-index: 70; left: 50%; transform: translateX(-50%); top: 4.75rem; width: max-content; max-width: calc(100vw - 2rem); padding: .55rem .6rem .55rem 1.1rem; border-radius: 999px; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 16px 40px rgba(0,0,0,.55); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font-size: .85rem; color: #e5e5e5; animation: popIn .25s ease-out; }
+.lang-offer-go { padding: .4rem .9rem; border-radius: 999px; background: #fff; color: #0a0a0a; font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+.lang-offer-close { width: 2rem; height: 2rem; border-radius: 999px; color: var(--muted); font-size: 1.1rem; }
+.lang-offer-close:hover { color: #fff; background: rgba(255,255,255,.08); }
+
+/* ---- Vehicle page: contact bar on phones ---- */
+.contact-bar { position: fixed; z-index: 39; left: .75rem; right: .75rem; bottom: calc(4.9rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .6rem .6rem 1rem; border-radius: 1.1rem; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: translateY(140%); opacity: 0; transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .2s; pointer-events: none; }
+.contact-bar.is-visible { transform: none; opacity: 1; pointer-events: auto; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

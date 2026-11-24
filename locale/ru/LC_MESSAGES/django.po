@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-24 09:58+0000\n"
+"POT-Creation-Date: 2026-11-24 11:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -202,6 +202,9 @@ msgstr "Активировать за €%(listing_price)s"
 msgid "Activate for %(duration)s days"
 msgstr "Активировать на %(duration)s дней"
 
+msgid "hp"
+msgstr "л.с."
+
 msgid "Vehicles"
 msgstr "Автомобили"
 
@@ -246,9 +249,6 @@ msgstr "Пробег"
 
 msgid "Power"
 msgstr "Мощность"
-
-msgid "hp"
-msgstr "л.с."
 
 msgid "Category"
 msgstr "Категория"
@@ -338,16 +338,25 @@ msgstr "Вам может понравиться"
 msgid "Similar vehicles"
 msgstr "Похожие автомобили"
 
+msgid "Your listing is approved"
+msgstr "Ваше объявление одобрено"
+
 msgid "Activate it in your cabinet to publish it:"
 msgstr "Активируйте его в кабинете, чтобы опубликовать:"
 
-#, python-format
-msgid "Hello %(name)s,"
-msgstr "Здравствуйте, %(name)s!"
+msgid "View the listing"
+msgstr "Открыть объявление"
+
+msgid "Open the cabinet"
+msgstr "Открыть кабинет"
 
 #, python-format
 msgid "Your listing \"%(car)s\" has been approved."
 msgstr "Ваше объявление «%(car)s» одобрено."
+
+#, python-format
+msgid "Hello %(name)s,"
+msgstr "Здравствуйте, %(name)s!"
 
 #, python-format
 msgid "It is now visible on the site until %(date)s."
@@ -357,19 +366,25 @@ msgstr "Теперь оно опубликовано на сайте до %(date
 msgid "Your listing \"%(car)s\" has been approved"
 msgstr "Объявление «%(car)s» одобрено"
 
+msgid "Your listing expires soon"
+msgstr "Срок объявления скоро закончится"
+
 msgid "After that it will be hidden from the site until you activate it again in your cabinet:"
 msgstr "После этого оно будет скрыто с сайта, пока вы снова не активируете его в кабинете:"
-
-msgid "Your listing:"
-msgstr "Ваше объявление:"
 
 #, python-format
 msgid "Your listing \"%(car)s\" on FIBONACCI will be deactivated on %(date)s."
 msgstr "Ваше объявление «%(car)s» на FIBONACCI будет деактивировано %(date)s."
 
+msgid "Your listing:"
+msgstr "Ваше объявление:"
+
 #, python-format
 msgid "Your listing \"%(car)s\" expires soon"
 msgstr "Срок объявления «%(car)s» скоро закончится"
+
+msgid "The listing was not approved"
+msgstr "Объявление не одобрено"
 
 msgid "You can edit the listing and submit it again in your cabinet:"
 msgstr "Вы можете исправить объявление и отправить его повторно в кабинете:"
@@ -552,6 +567,21 @@ msgstr "Оплатить позже"
 msgid "Listing for %(days)s days"
 msgstr "Размещение на %(days)s дней"
 
+msgid "Page not found"
+msgstr "Страница не найдена"
+
+msgid "This page has moved or the car was sold"
+msgstr "Страница переехала или автомобиль уже продан"
+
+msgid "Try the search or browse the collection: new cars arrive every day."
+msgstr "Воспользуйтесь поиском или загляните в каталог: новые автомобили появляются каждый день."
+
+msgid "All Vehicles"
+msgstr "Все автомобили"
+
+msgid "Back to the home page"
+msgstr "На главную"
+
 msgid "Dashboard"
 msgstr "Обзор"
 
@@ -600,14 +630,17 @@ msgstr "Эксклюзивные автомобили на продажу: тю�
 msgid "Categories"
 msgstr "Категории"
 
-msgid "All Vehicles"
-msgstr "Все автомобили"
-
 msgid "Sell your car"
 msgstr "Продать автомобиль"
 
 msgid "Menu"
 msgstr "Меню"
+
+msgid "Show all results"
+msgstr "Показать все результаты"
+
+msgid "Nothing found. Try another make or model."
+msgstr "Ничего не найдено. Попробуйте другую марку или модель."
 
 msgid "Make, model or year"
 msgstr "Марка, модель или год"
@@ -618,11 +651,8 @@ msgstr "Эксклюзивные автомобили от проверенны�
 msgid "Account"
 msgstr "Аккаунт"
 
-msgid "Show all results"
-msgstr "Показать все результаты"
-
-msgid "Nothing found. Try another make or model."
-msgstr "Ничего не найдено. Попробуйте другую марку или модель."
+msgid "Exclusive cars worldwide."
+msgstr "Эксклюзивные автомобили по всему миру."
 
 msgid "Main menu"
 msgstr "Главное меню"
@@ -657,8 +687,27 @@ msgstr "или по email"
 msgid "Save"
 msgstr "Сохранить"
 
+msgid "Confirm your new email"
+msgstr "Подтвердите новую почту"
+
+msgid "Confirm email"
+msgstr "Подтвердить почту"
+
+msgid "If you did not ask for this, just ignore this email: your address stays the same."
+msgstr "Если вы этого не запрашивали, просто проигнорируйте письмо: адрес останется прежним."
+
+#, python-format
+msgid "To use %(new_email)s for your FIBONACCI account, open this link:"
+msgstr "Чтобы использовать %(new_email)s для аккаунта FIBONACCI, откройте ссылку:"
+
+msgid "Confirm your new email for FIBONACCI"
+msgstr "Подтвердите новую почту для FIBONACCI"
+
 msgid "Please confirm your email address to activate your FIBONACCI account:"
 msgstr "Подтвердите адрес электронной почты, чтобы активировать аккаунт FIBONACCI:"
+
+msgid "Confirm your email"
+msgstr "Подтвердите почту"
 
 msgid "If you did not sign up, just ignore this email."
 msgstr "Если вы не регистрировались, просто проигнорируйте это письмо."
@@ -675,9 +724,6 @@ msgid ""
 msgstr ""
 "Для вашей безопасности вход в этот аккаунт приостановлен на 15 минут после нескольких неверных "
 "паролей. Попробуйте позже."
-
-msgid "Back to the home page"
-msgstr "На главную"
 
 msgid "Manage your listings and favorites."
 msgstr "Управляйте объявлениями и избранным."
@@ -709,9 +755,6 @@ msgstr ""
 
 msgid "Send a new link"
 msgstr "Отправить новую ссылку"
-
-msgid "Confirm your email"
-msgstr "Подтвердите почту"
 
 msgid "Open the link from the email we sent you to activate your account."
 msgstr "Откройте ссылку из письма, которое мы отправили, чтобы активировать аккаунт."
@@ -838,6 +881,9 @@ msgstr "Укажите Telegram в виде @name или номер телефо
 
 msgid "The price must be greater than zero."
 msgstr "Цена должна быть больше нуля."
+
+msgid "Add at least one photo of the car."
+msgstr "Добавьте хотя бы одно фото автомобиля."
 
 #, python-format
 msgid "A listing can have at most %(n)s photos."
@@ -1164,6 +1210,10 @@ msgstr "Сначала дороже"
 msgid "Search: %(query)s"
 msgstr "Поиск: %(query)s"
 
+#, python-format
+msgid "Hello! I am interested in %(car)s%(year)s%(price)s on FIBONACCI: %(url)s"
+msgstr "Здравствуйте! Меня интересует %(car)s%(year)s%(price)s на FIBONACCI: %(url)s"
+
 msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
 msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
 
@@ -1307,6 +1357,16 @@ msgstr "Если этот адрес ожидает подтверждения, 
 
 msgid "Your email is confirmed. Welcome to FIBONACCI!"
 msgstr "Почта подтверждена. Добро пожаловать в FIBONACCI!"
+
+#, python-format
+msgid "Your email has been changed to %(email)s."
+msgstr "Почта изменена на %(email)s."
+
+#, python-format
+msgid "To change your email, open the link we sent to %(email)s. Until then your current address stays."
+msgstr ""
+"Чтобы сменить почту, откройте ссылку, которую мы отправили на %(email)s. До этого остаётся "
+"текущий адрес."
 
 msgid "Your details have been saved."
 msgstr "Данные сохранены."

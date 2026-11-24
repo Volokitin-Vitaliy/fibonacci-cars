@@ -3,8 +3,8 @@
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+
+from enf import mail
 from django.urls import reverse
 from django.utils import translation
 
@@ -16,15 +16,7 @@ def absolute(path):
 
 
 def _send(template, to, language, context):
-    with translation.override(language or settings.LANGUAGE_CODE):
-        subject = render_to_string(f'cars/email/{template}_subject.txt', context).strip()
-        body = render_to_string(f'cars/email/{template}.txt', context)
-    try:
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, to)
-        return True
-    except Exception:  # an email problem must not break the request or the job
-        logger.exception('Could not send %s email to %s', template, to)
-        return False
+    return mail.send(f'cars/email/{template}', to, language, context)
 
 
 def _owner_context(car, language):

@@ -96,8 +96,8 @@ def account(request):
         user.save()
         if new_email != current_email.lower():
             verification.send_change_link(request, user, new_email)
-            messages.info(request, _('To change your email, open the link we sent to %(email)s. '
-                                     'Until then your current address stays.') % {'email': new_email})
+            notice = _('To change your email, open the link we sent to %(email)s. Until then your current address stays.')  # noqa: E501
+            messages.info(request, notice % {'email': new_email})
         else:
             messages.success(request, _('Your details have been saved.'))
         return redirect('users:account')

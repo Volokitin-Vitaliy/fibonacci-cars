@@ -356,12 +356,21 @@ class FavoriteTests(TestCase):
 
 
 class LanguageTests(TestCase):
-    def test_first_visit_shows_language_choice(self):
-        response = self.client.get('/en/vehicles/')
-        self.assertRedirects(response, '/choose-language/?next=%2Fen%2Fvehicles%2F',
-                             fetch_redirect_response=False)
-        page = self.client.get(response['Location'])
-        self.assertContains(page, 'Русский')
+    def test_first_visit_opens_the_page_in_browser_language(self):
+        # No picker: the bare address follows the browser, the language is remembered.
+        response = self.client.get('/', HTTP_ACCEPT_LANGUAGE='ru-RU,ru;q=0.9,en;q=0.8')
+        self.assertEqual(response['Location'], '/ru/')
+        page = self.client.get('/ru/', HTTP_ACCEPT_LANGUAGE='ru-RU,ru;q=0.9')
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(page.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'ru')
+        self.assertNotContains(page, 'data-lang-offer')
+
+    def test_link_in_other_language_offers_a_switch_once(self):
+        page = self.client.get('/en/vehicles/', HTTP_ACCEPT_LANGUAGE='ru,en;q=0.5')
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, 'Этот сайт есть на русском')
+        again = self.client.get('/en/vehicles/', HTTP_ACCEPT_LANGUAGE='ru,en;q=0.5')
+        self.assertNotContains(again, 'data-lang-offer')
 
     def test_choosing_russian_translates_the_site(self):
         response = self.client.post('/i18n/setlang/', {'language': 'ru', 'next': '/en/vehicles/'})
@@ -1047,9 +1056,9 @@ class SeoTests(TestCase):
         self.assertContains(page, 'Все автомобили')
         self.assertContains(page, 'hreflang="en" href="http://testserver/en/vehicles/"')
 
-    def test_people_still_get_the_picker(self):
+    def test_people_open_the_page_directly(self):
         page = self.client.get('/ru/vehicles/', HTTP_USER_AGENT='Mozilla/5.0 (iPhone) Safari')
-        self.assertEqual(page.status_code, 302)
+        self.assertEqual(page.status_code, 200)
 
     def test_robots_and_sitemap(self):
         make_listing(make_user())
@@ -1188,3 +1197,34 @@ class DeepFixTests(TestCase):
         page = self.client.get('/en/no-such-page/')
         self.assertEqual(page.status_code, 404)
         self.assertContains(page, 'car was sold', status_code=404)
+
+
+class StructuredDataTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+
+    def ld(self, page):
+        import json as _json
+        blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', page.content.decode(), re.S)
+        return [item for b in blocks for item in (_json.loads(b) if b.strip().startswith('[') else [_json.loads(b)])]
+
+    def test_home_has_organization_and_site_search(self):
+        types = [d['@type'] for d in self.ld(self.client.get(reverse('cars:home')))]
+        self.assertIn(['Organization', 'AutoDealer'], types)
+        self.assertIn('WebSite', types)
+
+    def test_vehicle_page_has_car_offer_and_preview_tags(self):
+        from django.utils import translation
+        car = make_listing(make_user(), year=2021, mileage_km=1200)
+        car.model = 'M5 </script><script>alert(1)</script>'
+        car.save()
+        with translation.override('en'):
+            page = self.client.get(car.get_absolute_url())
+        data = self.ld(page)
+        car_ld = next(d for d in data if d['@type'] == 'Car')
+        self.assertEqual(car_ld['offers']['priceCurrency'], 'EUR')
+        self.assertEqual(car_ld['vehicleModelDate'], '2021')
+        self.assertIn('BreadcrumbList', [d['@type'] for d in data])
+        self.assertNotIn('<script>alert(1)', page.content.decode())  # escaped inside JSON-LD
+        self.assertContains(page, 'property="og:type" content="product"')
+        self.assertEqual(page.content.decode().count('property="og:image"'), 1)

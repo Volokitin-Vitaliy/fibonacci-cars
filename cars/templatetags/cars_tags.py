@@ -1,4 +1,7 @@
+import json
+
 from django import template
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext, gettext_noop
 
 register = template.Library()
@@ -49,6 +52,14 @@ SPEC_TERMS = [
 def spec(value):
     """Translate a known spec label or value, leave anything else as is."""
     return gettext(value) if value else value
+
+
+@register.simple_tag
+def json_ld(data):
+    """<script type="application/ld+json"> with the data, safe to embed in HTML."""
+    text = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+    text = text.replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    return mark_safe(f'<script type="application/ld+json">{text}</script>')
 
 
 @register.filter

@@ -1,13 +1,12 @@
 import re
-from urllib.parse import urlencode
 
 from django.conf import settings
-from django.shortcuts import redirect
+from django.utils import translation
 
 EXEMPT_PREFIXES = ('/' + settings.ADMIN_URL, '/static/', '/media/', '/i18n/', '/choose-language/',
                    '/payments/', '/accounts/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
 
-# Search engines and link previews must see the page itself, not the picker.
+# Search engines and link previews get the page as it is, without language offers.
 BOT_RE = re.compile(
     r'bot|crawl|spider|slurp|yandex|bingpreview|facebookexternalhit|embedly|'
     r'whatsapp|telegram|skype|vkshare|pinterest|lighthouse|headlesschrome-seo',
@@ -19,21 +18,30 @@ def is_bot(request):
 
 
 class LanguageChoiceMiddleware:
-    """On the first visit, whatever page is opened, show the language picker
-    before anything else. The choice is stored in the language cookie.
-    Bots skip the picker and get the language from the URL (/en/, /ru/)."""
+    """The site opens straight away in the visitor's language: links to /en/ or /ru/
+    keep their language, and the bare address (/) follows the browser's language
+    (LocaleMiddleware). On the first visit the language is remembered in the language
+    cookie, and if the browser prefers the other language a small offer to switch is
+    shown (request.suggest_language)."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if (request.method == 'GET'
-                and settings.LANGUAGE_COOKIE_NAME not in request.COOKIES
-                and not request.path.startswith(EXEMPT_PREFIXES)
-                and not request.headers.get('HX-Request')
-                and not is_bot(request)):
-            return redirect('/choose-language/?' + urlencode({'next': request.get_full_path()}))
+        first_visit = (request.method == 'GET'
+                       and settings.LANGUAGE_COOKIE_NAME not in request.COOKIES
+                       and not request.path.startswith(EXEMPT_PREFIXES)
+                       and not is_bot(request))
+        if first_visit:
+            preferred = translation.get_language_from_request(request)  # browser language
+            from_path = translation.get_language_from_path(request.path_info)
+            if from_path and preferred != from_path:
+                request.suggest_language = preferred
         response = self.get_response(request)
+        if first_visit and response.status_code == 200 and getattr(request, 'LANGUAGE_CODE', None):
+            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.LANGUAGE_CODE,
+                                max_age=60 * 60 * 24 * 365, samesite='Lax',
+                                secure=settings.SESSION_COOKIE_SECURE)
         self.remember_language(request)
         return response
 

@@ -1,4 +1,5 @@
 import json
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib import messages
@@ -17,9 +18,9 @@ from django_countries.fields import Country
 
 from users import captcha
 
-from . import favorites, payments, search, services
+from . import favorites, payments, search, seo, services
 from .forms import CarFilterForm, CarForm
-from .models import Car, CarPhoto, Favorite, Make, Payment
+from .models import Car, CarPhoto, Make, Payment
 
 SORTS = {
     'date-descending': ('-created_at',),
@@ -55,6 +56,7 @@ def home(request):
     top_makes = (Make.objects.annotate(n=Count('cars', filter=Q(cars__in=visible)))
                  .filter(n__gt=0).order_by('-n', 'name')[:8])
     return render(request, 'cars/home.html', {
+        'structured_data': seo.site_data(request),
         'new_offers': new_offers, 'latest': latest, 'hero_cars': hero_cars,
         'top_makes': top_makes,
         'stats': {'vehicles': visible.count(), 'makes': Make.objects.filter(cars__in=visible).distinct().count()},
@@ -210,10 +212,17 @@ def similar_cars(car, limit=8):
 def car_detail(request, pk):
     car = get_object_or_404(with_cover(Car.objects.all()), pk=pk)
     is_owner = request.user.is_authenticated and car.owner_id == request.user.id
-    if not Car.objects.visible().filter(pk=pk).exists() and not is_owner:
+    is_public = Car.objects.visible().filter(pk=pk).exists()
+    if not is_public and not is_owner:
         raise Http404
     photos = list(car.photos.all())
+    price = f'{car.currency_symbol}{car.main_price:,.0f}' if car.main_price else ''
+    message = _('Hello! I am interested in %(car)s%(year)s%(price)s on FIBONACCI: %(url)s') % {
+        'car': f'{car.make.name} {car.model}', 'year': f', {car.year}' if car.year else '',
+        'price': f', {price}' if price else '', 'url': request.build_absolute_uri(car.get_absolute_url())}
     return render(request, 'cars/detail.html', {
+        'structured_data': seo.car_data(request, car, photos) if is_public else None,
+        'wa_query': 'text=' + quote(message, safe=''),
         'car': car, 'photos': photos, 'similar': similar_cars(car),
         'photo_urls_json': json.dumps([p.large_url for p in photos]),
         'photo_main_json': json.dumps([p.url_for(1600) for p in photos]),

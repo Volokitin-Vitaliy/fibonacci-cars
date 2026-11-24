@@ -11,7 +11,16 @@
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
     <meta name="theme-color" content="#08080a">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}">
+    {# Link previews (WhatsApp, Telegram, Facebook, X) #}
+    <meta property="og:site_name" content="FIBONACCI">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}FIBONACCI — {% trans 'Cars worldwide.' %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:locale" content="{% if LANG == 'ru' %}ru_RU{% else %}en_US{% endif %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}{% endblock %}">
+    <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
+    {% if structured_data %}{% json_ld structured_data %}{% endif %}
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,6 +120,18 @@
     </div>
 </div>
 
+{% if request.suggest_language %}{# first visit, browser prefers the other language #}
+<div class="lang-offer" data-lang-offer role="region" aria-label="Language">
+    <form action="{% url 'set_language' %}" method="post" class="flex items-center gap-3">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="hidden" name="language" value="{{ request.suggest_language }}">
+        <span>{% if request.suggest_language == 'ru' %}Этот сайт есть на русском{% else %}This site is available in English{% endif %}</span>
+        <button type="submit" class="lang-offer-go">{% if request.suggest_language == 'ru' %}Открыть{% else %}Switch{% endif %}</button>
+        <button type="button" class="lang-offer-close" aria-label="Close" onclick="this.closest('[data-lang-offer]').remove()">×</button>
+    </form>
+</div>
+{% endif %}
 {% if messages %}
 <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-2">
     {% for message in messages %}
