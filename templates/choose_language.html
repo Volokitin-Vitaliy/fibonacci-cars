@@ -1,0 +1,33 @@
+{% load i18n static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIBONACCI · Choose language / Выберите язык</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md text-center">
+        <img src="{% static 'img/logo-256.png' %}" alt="" width="128" height="128" class="mx-auto w-28 h-28 sm:w-32 sm:h-32 mb-6">
+        <div class="text-2xl sm:text-3xl font-bold tracking-[0.4em] mb-12">FIBONACCI</div>
+        <p class="text-neutral-400 mb-1">Please choose your language</p>
+        <p class="text-neutral-400 mb-10">Пожалуйста, выберите язык</p>
+        <form action="{% url 'set_language' %}" method="post" class="grid grid-cols-2 gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" name="language" value="en" class="border border-neutral-700 hover:border-white hover:bg-white hover:text-black transition-colors py-6">
+                <span class="block text-2xl font-semibold tracking-widest">EN</span>
+                <span class="block text-sm text-current opacity-70 mt-1">English</span>
+            </button>
+            <button type="submit" name="language" value="ru" class="border border-neutral-700 hover:border-white hover:bg-white hover:text-black transition-colors py-6">
+                <span class="block text-2xl font-semibold tracking-widest">RU</span>
+                <span class="block text-sm text-current opacity-70 mt-1">Русский</span>
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,119 +1,81 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import get_user_model, authenticate
-from django.utils.html import strip_tags
-from django.core.validators import RegexValidator
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.utils.translation import gettext_lazy as _
 
+from cars.forms import country_choices, phone_validator
 
 User = get_user_model()
 
 
-class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True, max_length=254, widget=forms.EmailInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'EMAIL'}))
-    first_name = forms.CharField(required=True, max_length=50, widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'FIRST NAME'}))
-    last_name = forms.CharField(required=True, max_length=50, widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'LAST NAME'}))
-    password1 = forms.CharField(
-        required=True,
-        widget=forms.PasswordInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'PASSWORD'})
-    )
-    password2 = forms.CharField(
-        required=True,
-        widget=forms.PasswordInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'CONFIRM PASSWORD'})
-    )
+class ProfileFieldsMixin(forms.Form):
+    first_name = forms.CharField(label=_('First name'), max_length=50)
+    last_name = forms.CharField(label=_('Last name'), max_length=50)
+    middle_name = forms.CharField(label=_('Middle name'), max_length=50, required=False)
+    country = forms.ChoiceField(label=_('Country'), choices=country_choices)
 
 
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'password1', 'password2')
+class AccountFieldsMixin(ProfileFieldsMixin):
+    phone = forms.CharField(label=_('Phone'), max_length=30, validators=[phone_validator],
+                            required=False)
+    country = forms.ChoiceField(label=_('Country'), choices=country_choices, required=False)
 
-    
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('This email is already in use.')
-        return email
-    
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.username = None
-        if commit:
-            user.save()
-        return user
-    
-
-class CustomUserLoginForm(AuthenticationForm):
-    username = forms.CharField(label="Email", widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'EMAIL'}))
-    password = forms.CharField(
-        label="Password",
-        widget=forms.PasswordInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'PASSWORD'})
-    )
-
-     
-    def clean(self):
-        email = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
-
-        if email and password:
-            self.user_cache = authenticate(self.request, email=email, password=password)
-            if self.user_cache is None:
-                raise forms.ValidationError('Invalid email or password.')
-            elif not self.user_cache.is_active:
-                raise forms.ValidationError('This account is inactive.')
-        return self.cleaned_data
+    def clean_phone(self):
+        phone = ' '.join(self.cleaned_data['phone'].split())
+        if not phone:
+            return None
+        taken = User.objects.filter(phone=phone)
+        if self.instance and self.instance.pk:
+            taken = taken.exclude(pk=self.instance.pk)
+        if taken.exists():
+            raise forms.ValidationError(_('This phone number is already registered.'))
+        return phone
 
 
-class CustomUserUpdateForm(forms.ModelForm):
-    phone = forms.CharField(
-        required=False,
-        validators=[RegexValidator(r'^\+?1?\d{9,15}$', "Enter a valid phone number.")],
-        widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'PHONE NUMBER'})
-    )
-    first_name = forms.CharField(
-        required=True,
-        max_length=50,
-        widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'FIRST NAME'})
-    )
-    last_name = forms.CharField(
-        required=True,
-        max_length=50,
-        widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'LAST NAME'})
-    )
-    email = forms.EmailField(
-        required=False,
-        widget=forms.EmailInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'EMAIL'})
-    )
-
+class RegistrationForm(ProfileFieldsMixin, UserCreationForm):
+    email = forms.EmailField(label=_('Email'), max_length=254)
+    middle_name = None  # not asked at sign-up
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'company', 
-                  'address1', 'address2', 'city', 'country',
-                  'province', 'postal_code', 'phone')
-        widgets = {
-            'company': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'COMPANY'}),
-            'address1': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'ADDRESS LINE 1'}),
-            'address2': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'ADDRESS LINE 2'}),
-            'city': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'CITY'}),
-            'country': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'COUNTRY'}),
-            'province': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'PROVINCE'}),
-            'postal_code': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'POSTAL CODE'}),
-        }
-        
-    
+        fields = ('last_name', 'first_name', 'email', 'country')
+
+    field_order = ('last_name', 'first_name', 'email', 'country',
+                   'password1', 'password2')
+
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email=email).exclude(id=self.instance.id).exists():
-            raise forms.ValidationError('This email is alredy in use.')
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_('This email is already in use.'))
         return email
-    
+
+
+class LoginForm(AuthenticationForm):
+    username = forms.EmailField(label=_('Email'), widget=forms.EmailInput(attrs={'autofocus': True}))
 
     def clean(self):
-        cleaned_data = super().clean()
-        if not cleaned_data.get('email'):
-            cleaned_data['email'] = self.instance.email
-        for field in ['company', 'address1', 'address2', 'city', 'country',
-                      'province', 'postal_code', 'phone']:
-            if cleaned_data.get(field):
-                cleaned_data[field] = strip_tags(cleaned_data[field])
-        return cleaned_data
+        try:
+            return super().clean()
+        except forms.ValidationError:
+            # Right password, but the email is not confirmed yet: say so instead of
+            # "incorrect password" (this reveals nothing to someone without the password).
+            email, password = self.cleaned_data.get('username'), self.cleaned_data.get('password')
+            user = User.objects.filter(email__iexact=email or '').first()
+            if user and user.awaits_verification and password and user.check_password(password):
+                self.unverified_email = user.email
+                raise forms.ValidationError(
+                    _('Please confirm your email first: open the link we sent to %(email)s.')
+                    % {'email': user.email}, code='unverified')
+            raise
+
+
+class AccountForm(AccountFieldsMixin, forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('last_name', 'first_name', 'middle_name', 'email', 'phone', 'country')
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(_('This email is already in use.'))
+        return email

@@ -1,0 +1,6 @@
+A listing is waiting for review:
+
+{{ car }} — {{ car.currency_symbol }}{{ car.price }}
+Seller: {{ car.owner.email }}, {{ car.contact_name }}, {{ car.contact_phone }}
+
+Review it in the admin: {{ admin_url }}

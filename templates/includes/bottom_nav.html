@@ -1,0 +1,44 @@
+{% load i18n %}{% with name=request.resolver_match.url_name app=request.resolver_match.app_name %}
+{# Floating bottom menu: a full-width bar on phones, a centred pill on desktop. #}
+<nav aria-label="{% trans 'Main menu' %}"
+     class="fixed z-40 inset-x-0 bottom-0 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:bottom-5
+            bg-black/95 lg:bg-black/80 backdrop-blur-xl border-t border-neutral-800 lg:border lg:rounded-full lg:shadow-2xl lg:shadow-black/70"
+     style="padding-bottom: env(safe-area-inset-bottom);">
+    <ul class="grid grid-cols-5 lg:flex lg:items-center lg:gap-1 lg:px-2 lg:py-2">
+        <li>
+            <a href="{% url 'cars:home' %}" class="bn-item {% if app == 'cars' and name == 'home' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+                <span>{% trans 'Home' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:list' %}" class="bn-item {% if app == 'cars' and name in 'list new fuel make detail' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14M6.5 17v2M17.5 17v2M3 13l2-5.5A2 2 0 0 1 6.9 6h10.2a2 2 0 0 1 1.9 1.5L21 13v4H3z"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></svg>
+                <span>{% trans 'Vehicles' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:add' %}" class="bn-item bn-sell {% if app == 'cars' and name == 'add' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                <span>{% trans 'Sell' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'cars:favorites' %}" class="bn-item {% if app == 'cars' and name == 'favorites' %}bn-active{% endif %}">
+                <span class="relative">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-9A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5c-2.2 4.6-9.2 9-9.2 9z"/></svg>
+                    <b data-fav-count data-fav-badge class="bn-badge {% if not favorite_ids %}hidden{% endif %}">{{ favorite_ids|length }}</b>
+                </span>
+                <span>{% trans 'Favorites' %}</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% if user.is_authenticated %}{% url 'cars:my_cars' %}{% else %}{% url 'users:login' %}{% endif %}"
+               class="bn-item {% if app == 'cars' and name in 'my_cars edit' or app == 'users' %}bn-active{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <span>{% if user.is_authenticated %}{% trans 'Profile' %}{% else %}{% trans 'Log in' %}{% endif %}</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endwith %}

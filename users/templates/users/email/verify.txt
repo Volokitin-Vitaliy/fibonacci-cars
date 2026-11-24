@@ -1,0 +1,8 @@
+{% load i18n %}{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}
+
+{% trans 'Please confirm your email address to activate your FIBONACCI account:' %}
+{{ link }}
+
+{% trans 'If you did not sign up, just ignore this email.' %}
+
+FIBONACCI

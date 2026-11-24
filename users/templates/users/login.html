@@ -1,83 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Log in' %}{% endblock %}
 {% block content %}
-<style>
-    .dotted-input {
-        border: none;
-        border-bottom: 2px dotted #d1d5db;
-        background: transparent;
-        outline: none;
-        transition: border-color 0.3s ease;
-    }
-    .dotted-input:focus {
-        border-bottom-color: #374151;
-    }
-    .dotted-input::placeholder {
-        color: #6b7280;
-        font-weight: 500;
-    }
-</style>
-
-<div class="min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold text-gray-900 mb-8 text-center tracking-wide">
-            LOG IN
-        </h1>
-        
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="text-red-500 text-sm text-center">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        
-        <form id="loginForm" method="post" class="space-y-6" 
-              hx-post="{% url 'users:login' %}" 
-              hx-target="#main-content">
-            {% csrf_token %}
-            
-            <div>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="text-red-500 text-xs mt-1">{{ form.username.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div>
-                {{ form.password }}
-                {% if form.password.errors %}
-                    <div class="text-red-500 text-xs mt-1">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4 pt-4">
-                <button 
-                    type="submit"
-                    class="bg-black hover:bg-gray-500 text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
-                >
-                    LOG IN
-                </button>
-                <a 
-                    href="{% url 'users:register' %}"
-                    hx-get="{% url 'users:register' %}"
-                    hx-target="#main-content"
-                    hx-push-url="true"
-                    class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide text-center"
-                >
-                    CREATE AN ACCOUNT
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.querySelectorAll('.dotted-input').forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-    });
-</script>
+<section class="max-w-md mx-auto px-4 py-20">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-2">{% trans 'Log in' %}</h1>
+    <p class="text-neutral-400 mb-10">{% trans 'Manage your listings and favorites.' %}</p>
+    {% url "cars:my_cars" as next_url %}{% include "includes/social_login.html" with next_url=next|default:next_url %}
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if form.unverified_email %}
+        <div class="rounded-xl border border-amber-700/60 bg-amber-500/10 text-amber-200 px-4 py-3 text-sm">{{ form.non_field_errors.0 }}
+            <a href="{% url 'users:verify_sent' %}" class="block mt-2 underline text-white">{% trans 'Send the link again' %}</a></div>
+        {% elif form.non_field_errors %}<div class="rounded-xl border border-red-900 text-red-300 px-4 py-3 text-sm">{% if 'locked' in form.non_field_errors.as_text %}{{ form.non_field_errors.0 }}{% else %}{% trans 'Incorrect email or password.' %}{% endif %}</div>{% endif %}
+        {% include "includes/field.html" with field=form.username %}
+        {% include "includes/field.html" with field=form.password %}
+        <button type="submit" class="btn btn-primary w-full">{% trans 'Log in' %}</button>
+    </form>
+    <p class="text-sm text-neutral-400 mt-8 text-center">{% trans 'No account yet?' %} <a href="{% url 'users:register' %}" class="text-white underline">{% trans 'Create an account' %}</a></p>
+</section>
 {% endblock %}

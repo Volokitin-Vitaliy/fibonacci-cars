@@ -1,0 +1,4 @@
+{% if TURNSTILE_SITE_KEY %}{# Cloudflare Turnstile: usually invisible, sometimes asks for one click #}
+<div class="cf-turnstile" data-sitekey="{{ TURNSTILE_SITE_KEY }}" data-theme="dark" data-language="{{ LANGUAGE_CODE|default:'en' }}"></div>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}

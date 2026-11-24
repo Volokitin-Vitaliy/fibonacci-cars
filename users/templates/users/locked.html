@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Too many attempts' %}{% endblock %}
+{% block content %}
+<section class="max-w-md mx-auto px-4 py-20 text-center">
+    <div class="mx-auto w-16 h-16 rounded-full border border-white/15 grid place-items-center mb-8">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4">{% trans 'Too many attempts' %}</h1>
+    <p class="text-neutral-400 leading-relaxed">{% trans 'For your security, logging in to this account is paused for 15 minutes after several wrong passwords. Please try again later.' %}</p>
+    <a href="{% url 'cars:home' %}" class="btn btn-outline mt-10">{% trans 'Back to the home page' %}</a>
+</section>
+{% endblock %}

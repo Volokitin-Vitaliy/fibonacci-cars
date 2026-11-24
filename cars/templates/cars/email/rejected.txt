@@ -1,0 +1,10 @@
+{% load i18n %}{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}
+
+{% blocktrans with car=car %}Unfortunately, your listing "{{ car }}" was not approved.{% endblocktrans %}
+{% if car.rejection_reason %}
+{% trans 'Reason:' %} {{ car.rejection_reason }}
+{% endif %}
+{% trans 'You can edit the listing and submit it again in your cabinet:' %}
+{{ cabinet_url }}
+
+FIBONACCI

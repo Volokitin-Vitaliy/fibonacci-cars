@@ -1,0 +1,74 @@
+{% extends "cars/cabinet/base.html" %}
+{% load i18n cars_tags %}
+{% block title %}{% trans 'My listings' %}{% endblock %}
+{% block cabinet %}
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <h2 class="text-xl font-semibold">{% trans 'My listings' %}</h2>
+    <a href="{% url 'cars:add' %}" class="btn btn-primary">+ {% trans 'Add a vehicle' %}</a>
+</div>
+<p class="text-sm text-neutral-400 mb-8 max-w-2xl">
+    {% if moderation %}{% trans 'New and edited listings are published after a moderator approves them.' %} {% endif %}{% blocktrans %}Each listing is published for {{ duration }} days. When the period ends, the listing is deactivated and hidden until you activate it again.{% endblocktrans %}
+    {% if payment_required %}{% blocktrans %}A listing costs €{{ listing_price }} for {{ duration }} days; it is paid when you submit it and when you reactivate it.{% endblocktrans %}{% else %}{% trans 'Listings are free for now.' %}{% endif %}
+</p>
+
+<div class="space-y-4">
+{% for car in cars %}
+    <div class="panel p-4 flex flex-col sm:flex-row gap-5" data-reveal>
+        <a href="{{ car.get_absolute_url }}" class="sm:w-48 shrink-0 aspect-[4/3] bg-[#141414] block overflow-hidden rounded-xl">
+            {% with cover=car.cover %}{% if cover %}<img src="{{ cover.small_url }}" alt="" loading="lazy" class="w-full h-full object-cover">{% else %}<div class="w-full h-full flex items-center justify-center text-neutral-600 text-sm uppercase tracking-widest">{{ car.make.name }}</div>{% endif %}{% endwith %}
+        </a>
+        <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <div class="text-xs uppercase tracking-widest text-neutral-500">{{ car.make.name }}</div>
+                    <a href="{{ car.get_absolute_url }}" class="font-semibold text-lg hover:underline">{{ car.model }}</a>
+                    <div class="mt-1">{{ car.currency_symbol }}{{ car.price|money }}</div>
+                </div>
+                {% if car.moderation == 'awaiting_payment' %}
+                <span class="text-xs uppercase tracking-widest border border-blue-800 text-blue-300 px-2 py-1">{% trans 'Awaiting payment' %}</span>
+                {% elif car.is_pending %}
+                <span class="text-xs uppercase tracking-widest border border-amber-800 text-amber-300 px-2 py-1">{% trans 'Pending review' %}</span>
+                {% elif car.is_rejected %}
+                <span class="text-xs uppercase tracking-widest border border-red-900 text-red-300 px-2 py-1">{% trans 'Rejected' %}</span>
+                {% elif car.is_listing_active %}
+                <span class="text-xs uppercase tracking-widest border border-emerald-800 text-emerald-400 px-2 py-1">{% trans 'Active' %}</span>
+                {% else %}
+                <span class="text-xs uppercase tracking-widest border border-neutral-700 text-neutral-400 px-2 py-1">{% trans 'Inactive' %}</span>
+                {% endif %}
+            </div>
+            {% if car.moderation == 'awaiting_payment' %}
+            <div class="text-sm text-blue-300/90 mt-3">{% blocktrans %}Pay €{{ listing_price }} to send the listing for review. The paid {{ duration }} days start when it is approved.{% endblocktrans %}</div>
+            {% elif car.is_pending %}
+            <div class="text-sm text-amber-300/90 mt-3">{% trans 'The listing is being reviewed by a moderator. We will email you once it is approved.' %}</div>
+            {% elif car.is_rejected %}
+            <div class="text-sm text-red-300 mt-3">{% trans 'The listing was not approved.' %}{% if car.rejection_reason %} {% trans 'Reason:' %} {{ car.rejection_reason }}{% endif %} {% trans 'Edit it to submit it again.' %}</div>
+            {% endif %}
+            <div class="text-sm text-neutral-400 mt-3">
+                {% if car.is_listing_active %}
+                    {% blocktrans with date=car.active_until|date:"d.m.Y" count days=car.days_left %}Active until {{ date }} ({{ days }} day left){% plural %}Active until {{ date }} ({{ days }} days left){% endblocktrans %}
+                {% elif car.active_until %}
+                    {% blocktrans with date=car.active_until|date:"d.m.Y" %}Expired or deactivated on {{ date }}{% endblocktrans %}
+                {% endif %}
+                · {% blocktrans count n=car.favorited_by.count %}{{ n }} like{% plural %}{{ n }} likes{% endblocktrans %}
+            </div>
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-4">
+                {% if car.is_listing_active %}
+                <form method="post" action="{% url 'cars:deactivate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-outline !py-2 !px-4 w-full">{% trans 'Deactivate' %}</button></form>
+                {% elif car.moderation == 'awaiting_payment' %}
+                <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% blocktrans %}Pay €{{ listing_price }}{% endblocktrans %}</button></form>
+                {% elif car.is_approved %}
+                <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% if payment_required %}{% blocktrans %}Activate for €{{ listing_price }}{% endblocktrans %}{% else %}{% blocktrans %}Activate for {{ duration }} days{% endblocktrans %}{% endif %}</button></form>
+                {% endif %}
+                <a href="{% url 'cars:edit' car.pk %}" class="btn btn-outline !py-2 !px-4 w-full sm:w-auto">{% trans 'Edit' %}</a>
+                <form method="post" action="{% url 'cars:delete' car.pk %}" data-confirm="{% trans 'Delete this listing?' %}">{% csrf_token %}<button class="btn btn-danger !py-2 !px-4 w-full">{% trans 'Delete' %}</button></form>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <div class="panel border-dashed p-12 text-center">
+        <p class="text-neutral-400">{% trans 'You have no listings yet.' %}</p>
+        <a href="{% url 'cars:add' %}" class="btn btn-primary mt-6">{% trans 'Add your first vehicle' %}</a>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

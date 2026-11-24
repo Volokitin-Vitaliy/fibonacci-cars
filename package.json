@@ -1,0 +1,12 @@
+{
+  "name": "fibonacci-cars",
+  "private": true,
+  "description": "Front-end build: compiles assets/src/site.css into assets/css/site.css (committed, so the server needs no Node).",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i assets/src/site.css -o assets/css/site.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i assets/src/site.css -o assets/css/site.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

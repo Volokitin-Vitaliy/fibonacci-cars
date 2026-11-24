@@ -1,0 +1,8 @@
+{% load i18n %}{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}
+
+{% blocktrans %}To use {{ new_email }} for your FIBONACCI account, open this link:{% endblocktrans %}
+{{ link }}
+
+{% trans 'If you did not ask for this, just ignore this email: your address stays the same.' %}
+
+FIBONACCI

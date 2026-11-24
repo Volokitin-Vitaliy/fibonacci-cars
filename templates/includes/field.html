@@ -1,0 +1,11 @@
+<div class="form-field {{ class }}">
+    {% if field.field.widget.input_type == 'radio' %}
+        <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+        <div class="radio-row">{% for radio in field %}<label class="!normal-case !tracking-normal !text-neutral-200 !text-sm !mb-0 flex items-center">{{ radio.tag }}{{ radio.choice_label }}</label>{% endfor %}</div>
+    {% else %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+        {{ field }}
+    {% endif %}
+    {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+    {{ field.errors }}
+</div>

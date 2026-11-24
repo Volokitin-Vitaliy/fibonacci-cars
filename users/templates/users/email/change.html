@@ -1,0 +1,9 @@
+{% extends "emails/base.html" %}{% load i18n %}
+{% block preheader %}{% blocktrans %}To use {{ new_email }} for your FIBONACCI account, open this link:{% endblocktrans %}{% endblock %}
+{% block body %}
+<h1 style="margin:0 0 14px;font:700 24px/1.3 Arial,Helvetica,sans-serif;color:#f5f5f5;">{% trans 'Confirm your new email' %}</h1>
+<p style="margin:0;">{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}</p>
+<p style="margin:10px 0 0;">{% blocktrans %}To use {{ new_email }} for your FIBONACCI account, open this link:{% endblocktrans %}</p>
+{% trans 'Confirm email' as label %}{% include "emails/button.html" with url=link label=label %}
+<p style="margin:22px 0 0;font-size:13px;color:#8a8a8a;">{% trans 'If you did not ask for this, just ignore this email: your address stays the same.' %}</p>
+{% endblock %}

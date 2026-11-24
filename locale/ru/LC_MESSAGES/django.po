@@ -1,0 +1,1373 @@
+# Russian translations for FIBONACCI.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the FIBONACCI project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: FIBONACCI VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-24 11:02+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || "
+"n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+msgid "Cabinet"
+msgstr "Кабинет"
+
+msgid "My listings"
+msgstr "Мои объявления"
+
+msgid "Add a vehicle"
+msgstr "Добавить автомобиль"
+
+msgid "Favorites"
+msgstr "Избранное"
+
+msgid "Account details"
+msgstr "Данные аккаунта"
+
+msgid "Log out"
+msgstr "Выйти"
+
+msgid "Edit listing"
+msgstr "Редактировать объявление"
+
+msgid "After saving, the listing is sent for review again and is hidden until it is approved."
+msgstr "После сохранения объявление снова уйдёт на модерацию и будет скрыто до одобрения."
+
+msgid "Vehicle"
+msgstr "Автомобиль"
+
+msgid "Characteristics"
+msgstr "Характеристики"
+
+msgid "Price"
+msgstr "Цена"
+
+msgid "Photos"
+msgstr "Фотографии"
+
+msgid "Remove"
+msgstr "Удалить"
+
+msgid "Contact"
+msgstr "Контакты"
+
+msgid "Save changes"
+msgstr "Сохранить изменения"
+
+msgid "Publish listing"
+msgstr "Опубликовать объявление"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+#, python-format
+msgid ""
+"Publishing a listing costs €%(price)s for %(days)s days. After saving you will be taken to the "
+"payment page; after payment the listing goes to review."
+msgstr ""
+"Размещение объявления стоит €%(price)s на %(days)s дней. После сохранения откроется страница "
+"оплаты, после оплаты объявление уйдёт на модерацию."
+
+#, python-format
+msgid "After a moderator approves your listing, it will be published for %(days)s days."
+msgstr "После одобрения модератором объявление будет опубликовано на %(days)s дней."
+
+#, python-format
+msgid "Your listing will be published right away for %(days)s days."
+msgstr "Объявление будет опубликовано сразу на %(days)s дней."
+
+#, python-format
+msgid "Continue to payment · €%(price)s"
+msgstr "Перейти к оплате · €%(price)s"
+
+msgid "You have not saved any vehicles yet. Tap ♡ on a vehicle to save it here."
+msgstr "Вы пока ничего не добавили в избранное. Нажмите ♡ на автомобиле, чтобы сохранить его здесь."
+
+msgid "Browse vehicles"
+msgstr "Смотреть автомобили"
+
+msgid "New and edited listings are published after a moderator approves them."
+msgstr "Новые и изменённые объявления публикуются после проверки модератором."
+
+msgid "Listings are free for now."
+msgstr "Пока размещение бесплатное."
+
+msgid "Awaiting payment"
+msgstr "Ожидает оплаты"
+
+msgid "Pending review"
+msgstr "На модерации"
+
+msgid "Rejected"
+msgstr "Отклонено"
+
+msgid "Active"
+msgstr "Активно"
+
+msgid "Inactive"
+msgstr "Неактивно"
+
+msgid "The listing is being reviewed by a moderator. We will email you once it is approved."
+msgstr "Объявление проверяет модератор. Мы напишем вам на почту, когда оно будет одобрено."
+
+msgid "The listing was not approved."
+msgstr "Объявление не прошло модерацию."
+
+msgid "Reason:"
+msgstr "Причина:"
+
+msgid "Edit it to submit it again."
+msgstr "Измените его, чтобы отправить повторно."
+
+msgid "Deactivate"
+msgstr "Деактивировать"
+
+msgid "Edit"
+msgstr "Изменить"
+
+msgid "Delete this listing?"
+msgstr "Удалить это объявление?"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "You have no listings yet."
+msgstr "У вас пока нет объявлений."
+
+msgid "Add your first vehicle"
+msgstr "Добавить первый автомобиль"
+
+#, python-format
+msgid ""
+"Each listing is published for %(duration)s days. When the period ends, the listing is deactivated"
+" and hidden until you activate it again."
+msgstr ""
+"Каждое объявление публикуется на %(duration)s дней. Когда срок заканчивается, объявление "
+"деактивируется и скрывается, пока вы снова его не активируете."
+
+#, python-format
+msgid ""
+"A listing costs €%(listing_price)s for %(duration)s days; it is paid when you submit it and when "
+"you reactivate it."
+msgstr ""
+"Объявление стоит €%(listing_price)s на %(duration)s дней: оплата при подаче и при повторной "
+"активации."
+
+#, python-format
+msgid ""
+"Pay €%(listing_price)s to send the listing for review. The paid %(duration)s days start when it "
+"is approved."
+msgstr ""
+"Оплатите €%(listing_price)s, чтобы отправить объявление на модерацию. Оплаченные %(duration)s "
+"дней начнутся после одобрения."
+
+#, python-format
+msgid "Active until %(date)s (%(days)s day left)"
+msgid_plural "Active until %(date)s (%(days)s days left)"
+msgstr[0] "Активно до %(date)s (остался %(days)s день)"
+msgstr[1] "Активно до %(date)s (осталось %(days)s дня)"
+msgstr[2] "Активно до %(date)s (осталось %(days)s дней)"
+
+#, python-format
+msgid "Expired or deactivated on %(date)s"
+msgstr "Срок истёк или отключено %(date)s"
+
+#, python-format
+msgid "%(n)s like"
+msgid_plural "%(n)s likes"
+msgstr[0] "%(n)s в избранном"
+msgstr[1] "%(n)s в избранном"
+msgstr[2] "%(n)s в избранном"
+
+#, python-format
+msgid "Pay €%(listing_price)s"
+msgstr "Оплатить €%(listing_price)s"
+
+#, python-format
+msgid "Activate for €%(listing_price)s"
+msgstr "Активировать за €%(listing_price)s"
+
+#, python-format
+msgid "Activate for %(duration)s days"
+msgstr "Активировать на %(duration)s дней"
+
+msgid "hp"
+msgstr "л.с."
+
+msgid "Vehicles"
+msgstr "Автомобили"
+
+msgid "This listing is waiting for moderator approval and is only visible to you."
+msgstr "Объявление ждёт проверки модератором и видно только вам."
+
+msgid "This listing is inactive and only visible to you."
+msgstr "Объявление неактивно и видно только вам."
+
+msgid "Activate"
+msgstr "Активировать"
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Вперёд"
+
+msgid "Photo"
+msgstr "Фото"
+
+msgid "Double-tap or pinch to zoom · swipe down to close"
+msgstr "Двойное касание или щипок — зум · свайп вниз — закрыть"
+
+msgid "Open fullscreen"
+msgstr "Открыть на весь экран"
+
+msgid "No photos yet"
+msgstr "Фотографий пока нет"
+
+msgid "Country"
+msgstr "Страна"
+
+msgid "Year"
+msgstr "Год"
+
+msgid "Mileage"
+msgstr "Пробег"
+
+msgid "Power"
+msgstr "Мощность"
+
+msgid "Category"
+msgstr "Категория"
+
+msgid "Transmission"
+msgstr "Коробка передач"
+
+msgid "Accident"
+msgstr "ДТП"
+
+msgid "After an accident"
+msgstr "После ДТП"
+
+msgid "No accidents"
+msgstr "Без ДТП"
+
+msgid "Details"
+msgstr "Характеристики"
+
+msgid "Offer Number"
+msgstr "Номер предложения"
+
+msgid "No details provided."
+msgstr "Характеристики не указаны."
+
+msgid "Consumption and emission values as stated by the seller."
+msgstr "Значения расхода и выбросов указаны продавцом."
+
+msgid "Description"
+msgstr "Описание"
+
+msgid ""
+"The full description, equipment list and photos of this vehicle are available on the seller’s "
+"website."
+msgstr "Полное описание, комплектация и фотографии этого автомобиля доступны на сайте продавца."
+
+msgid "Open the original offer"
+msgstr "Открыть оригинальное предложение"
+
+msgid "New"
+msgstr "Новое"
+
+msgid "Net (Export)"
+msgstr "Нетто (экспорт)"
+
+msgid "Gross"
+msgstr "Брутто"
+
+msgid "All contacts"
+msgstr "Все контакты"
+
+msgid "Call"
+msgstr "Позвонить"
+
+msgid "Interested in this vehicle?"
+msgstr "Заинтересовал автомобиль?"
+
+msgid "This vehicle is offered by Hollmann International. Our partners will help you:"
+msgstr "Этот автомобиль предлагает Hollmann International. Наши партнёры помогут вам:"
+
+msgid "Phone"
+msgstr "Телефон"
+
+msgid "Mobile"
+msgstr "Мобильный"
+
+msgid "Original offer on hollmann.international"
+msgstr "Оригинальное предложение на hollmann.international"
+
+msgid "This vehicle is offered by Hollmann International. Contact the dealer through the original offer."
+msgstr ""
+"Этот автомобиль предлагает Hollmann International. Свяжитесь с дилером через оригинальное "
+"предложение."
+
+msgid "Contact the dealer"
+msgstr "Связаться с дилером"
+
+msgid "Contact the seller directly:"
+msgstr "Свяжитесь с продавцом напрямую:"
+
+msgid "Contact person"
+msgstr "Контактное лицо"
+
+msgid "You may also like"
+msgstr "Вам может понравиться"
+
+msgid "Similar vehicles"
+msgstr "Похожие автомобили"
+
+msgid "Your listing is approved"
+msgstr "Ваше объявление одобрено"
+
+msgid "Activate it in your cabinet to publish it:"
+msgstr "Активируйте его в кабинете, чтобы опубликовать:"
+
+msgid "View the listing"
+msgstr "Открыть объявление"
+
+msgid "Open the cabinet"
+msgstr "Открыть кабинет"
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved."
+msgstr "Ваше объявление «%(car)s» одобрено."
+
+#, python-format
+msgid "Hello %(name)s,"
+msgstr "Здравствуйте, %(name)s!"
+
+#, python-format
+msgid "It is now visible on the site until %(date)s."
+msgstr "Теперь оно опубликовано на сайте до %(date)s."
+
+#, python-format
+msgid "Your listing \"%(car)s\" has been approved"
+msgstr "Объявление «%(car)s» одобрено"
+
+msgid "Your listing expires soon"
+msgstr "Срок объявления скоро закончится"
+
+msgid "After that it will be hidden from the site until you activate it again in your cabinet:"
+msgstr "После этого оно будет скрыто с сайта, пока вы снова не активируете его в кабинете:"
+
+#, python-format
+msgid "Your listing \"%(car)s\" on FIBONACCI will be deactivated on %(date)s."
+msgstr "Ваше объявление «%(car)s» на FIBONACCI будет деактивировано %(date)s."
+
+msgid "Your listing:"
+msgstr "Ваше объявление:"
+
+#, python-format
+msgid "Your listing \"%(car)s\" expires soon"
+msgstr "Срок объявления «%(car)s» скоро закончится"
+
+msgid "The listing was not approved"
+msgstr "Объявление не одобрено"
+
+msgid "You can edit the listing and submit it again in your cabinet:"
+msgstr "Вы можете исправить объявление и отправить его повторно в кабинете:"
+
+#, python-format
+msgid "Unfortunately, your listing \"%(car)s\" was not approved."
+msgstr "К сожалению, ваше объявление «%(car)s» не прошло модерацию."
+
+#, python-format
+msgid "Your listing \"%(car)s\" was not approved"
+msgstr "Объявление «%(car)s» не прошло модерацию"
+
+msgid "Your favorites are saved in this browser for 30 days. Log in to keep them on all your devices."
+msgstr ""
+"Избранное сохраняется в этом браузере на 30 дней. Войдите, чтобы оно было доступно на всех ваших "
+"устройствах."
+
+msgid "Log in"
+msgstr "Войти"
+
+msgid "Create an account"
+msgstr "Зарегистрироваться"
+
+msgid "Exclusive vehicles"
+msgstr "Эксклюзивные автомобили"
+
+msgid "Cars worldwide."
+msgstr "Автомобили по всему миру."
+
+msgid "Choose a car"
+msgstr "Выбрать авто"
+
+msgid "Sell a car"
+msgstr "Продать авто"
+
+msgid "vehicles available"
+msgstr "автомобилей в наличии"
+
+msgid "makes"
+msgstr "марки"
+
+msgid "followers"
+msgstr "подписчиков"
+
+msgid "export worldwide"
+msgstr "экспорт по всему миру"
+
+msgid "Just arrived"
+msgstr "Только что поступили"
+
+msgid "New Offers"
+msgstr "Новые предложения"
+
+msgid "Latest vehicles"
+msgstr "Последние поступления"
+
+msgid "No vehicles yet."
+msgstr "Автомобилей пока нет."
+
+msgid "View all"
+msgstr "Смотреть все"
+
+msgid "Manufacturers"
+msgstr "Марки"
+
+msgid "Popular makes"
+msgstr "Популярные марки"
+
+msgid "Why us"
+msgstr "Почему мы"
+
+msgid "Trusted dealers"
+msgstr "Проверенные дилеры"
+
+msgid "Vehicles from Hollmann International and checked sellers."
+msgstr "Автомобили от Hollmann International и проверенных продавцов."
+
+msgid "Export worldwide"
+msgstr "Экспорт по всему миру"
+
+msgid "Net export prices and delivery to any country."
+msgstr "Экспортные цены нетто и доставка в любую страну."
+
+msgid "Direct contact"
+msgstr "Прямой контакт"
+
+msgid "Phone, WhatsApp and Telegram of the seller — no middlemen."
+msgstr "Телефон, WhatsApp и Telegram продавца — без посредников."
+
+msgid "Sell in minutes"
+msgstr "Продажа за минуты"
+
+msgid "Publish your car, we review it and show it to buyers."
+msgstr "Разместите автомобиль — мы проверим и покажем его покупателям."
+
+msgid "people follow FIBONACCI — cars, deliveries and reviews every day."
+msgstr "человек следят за FIBONACCI — автомобили, доставки и обзоры каждый день."
+
+msgid "Sell your car to buyers worldwide"
+msgstr "Продайте автомобиль покупателям по всему миру"
+
+msgid "Add photos, a price and your contacts — the listing goes live after a quick review."
+msgstr "Добавьте фото, цену и контакты — объявление появится после быстрой проверки."
+
+#, python-format
+msgid "%(n)s vehicle"
+msgid_plural "%(n)s vehicles"
+msgstr[0] "%(n)s автомобиль"
+msgstr[1] "%(n)s автомобиля"
+msgstr[2] "%(n)s автомобилей"
+
+msgid "Search by make, model or year"
+msgstr "Поиск по марке, модели или году"
+
+msgid "Search"
+msgstr "Поиск"
+
+msgid "Clear search"
+msgstr "Очистить поиск"
+
+msgid "Find"
+msgstr "Найти"
+
+msgid "Make"
+msgstr "Марка"
+
+msgid "All makes"
+msgstr "Все марки"
+
+msgid "Find a make"
+msgstr "Найти марку"
+
+msgid "Nothing found"
+msgstr "Ничего не найдено"
+
+msgid "Sort"
+msgstr "Сортировка"
+
+msgid "Filters"
+msgstr "Фильтры"
+
+msgid "Any"
+msgstr "Любые"
+
+msgid "Currency"
+msgstr "Валюта"
+
+msgid "Apply"
+msgstr "Применить"
+
+msgid "Reset filters"
+msgstr "Сбросить фильтры"
+
+msgid "No vehicles found."
+msgstr "Ничего не найдено."
+
+msgid "Partnership"
+msgstr "Сотрудничество"
+
+msgid "Partnership and contacts."
+msgstr "Сотрудничество и контакты."
+
+#, python-format
+msgid "%(n)s followers"
+msgstr "%(n)s подписчиков"
+
+msgid "Payment"
+msgstr "Оплата"
+
+msgid "Go to payment"
+msgstr "Перейти к оплате"
+
+msgid "You will be redirected to the secure WayForPay payment page."
+msgstr "Вы будете перенаправлены на защищённую страницу оплаты WayForPay."
+
+msgid "Pay later"
+msgstr "Оплатить позже"
+
+#, python-format
+msgid "Listing for %(days)s days"
+msgstr "Размещение на %(days)s дней"
+
+msgid "Page not found"
+msgstr "Страница не найдена"
+
+msgid "This page has moved or the car was sold"
+msgstr "Страница переехала или автомобиль уже продан"
+
+msgid "Try the search or browse the collection: new cars arrive every day."
+msgstr "Воспользуйтесь поиском или загляните в каталог: новые автомобили появляются каждый день."
+
+msgid "All Vehicles"
+msgstr "Все автомобили"
+
+msgid "Back to the home page"
+msgstr "На главную"
+
+msgid "Dashboard"
+msgstr "Обзор"
+
+msgid "Waiting for review"
+msgstr "Ждут модерации"
+
+msgid "Review"
+msgstr "Проверить"
+
+msgid "Nothing to review. All listings are checked."
+msgstr "Проверять нечего — все объявления просмотрены."
+
+msgid "Expiring in the next 3 days"
+msgstr "Истекают в ближайшие 3 дня"
+
+msgid "No listings expire soon."
+msgstr "В ближайшие дни ничего не истекает."
+
+msgid "Hollmann import"
+msgstr "Импорт Hollmann"
+
+msgid "Last run"
+msgstr "Последний запуск"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Started"
+msgstr "Начат"
+
+msgid "New / updated"
+msgstr "Новых / обновлено"
+
+msgid "Removed from site"
+msgstr "Снято с сайта"
+
+msgid "The import has not run yet."
+msgstr "Импорт ещё не запускался."
+
+msgid "New users"
+msgstr "Новые пользователи"
+
+msgid "Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles."
+msgstr "Эксклюзивные автомобили на продажу: тюнинг, бронированные, олдтаймеры и электромобили."
+
+msgid "Categories"
+msgstr "Категории"
+
+msgid "Sell your car"
+msgstr "Продать автомобиль"
+
+msgid "Menu"
+msgstr "Меню"
+
+msgid "Show all results"
+msgstr "Показать все результаты"
+
+msgid "Nothing found. Try another make or model."
+msgstr "Ничего не найдено. Попробуйте другую марку или модель."
+
+msgid "Make, model or year"
+msgstr "Марка, модель или год"
+
+msgid "Exclusive vehicles from trusted dealers and private sellers."
+msgstr "Эксклюзивные автомобили от проверенных дилеров и частных продавцов."
+
+msgid "Account"
+msgstr "Аккаунт"
+
+msgid "Exclusive cars worldwide."
+msgstr "Эксклюзивные автомобили по всему миру."
+
+msgid "Main menu"
+msgstr "Главное меню"
+
+msgid "Home"
+msgstr "Главная"
+
+msgid "Sell"
+msgstr "Продать"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Remove from favorites"
+msgstr "Убрать из избранного"
+
+msgid "Add to favorites"
+msgstr "В избранное"
+
+msgid "In favorites"
+msgstr "В избранном"
+
+msgid "Continue with Google"
+msgstr "Войти через Google"
+
+msgid "Continue with Apple"
+msgstr "Войти через Apple"
+
+msgid "or with email"
+msgstr "или по email"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Confirm your new email"
+msgstr "Подтвердите новую почту"
+
+msgid "Confirm email"
+msgstr "Подтвердить почту"
+
+msgid "If you did not ask for this, just ignore this email: your address stays the same."
+msgstr "Если вы этого не запрашивали, просто проигнорируйте письмо: адрес останется прежним."
+
+#, python-format
+msgid "To use %(new_email)s for your FIBONACCI account, open this link:"
+msgstr "Чтобы использовать %(new_email)s для аккаунта FIBONACCI, откройте ссылку:"
+
+msgid "Confirm your new email for FIBONACCI"
+msgstr "Подтвердите новую почту для FIBONACCI"
+
+msgid "Please confirm your email address to activate your FIBONACCI account:"
+msgstr "Подтвердите адрес электронной почты, чтобы активировать аккаунт FIBONACCI:"
+
+msgid "Confirm your email"
+msgstr "Подтвердите почту"
+
+msgid "If you did not sign up, just ignore this email."
+msgstr "Если вы не регистрировались, просто проигнорируйте это письмо."
+
+msgid "Confirm your email for FIBONACCI"
+msgstr "Подтвердите почту для FIBONACCI"
+
+msgid "Too many attempts"
+msgstr "Слишком много попыток"
+
+msgid ""
+"For your security, logging in to this account is paused for 15 minutes after several wrong "
+"passwords. Please try again later."
+msgstr ""
+"Для вашей безопасности вход в этот аккаунт приостановлен на 15 минут после нескольких неверных "
+"паролей. Попробуйте позже."
+
+msgid "Manage your listings and favorites."
+msgstr "Управляйте объявлениями и избранным."
+
+msgid "Send the link again"
+msgstr "Отправить ссылку ещё раз"
+
+msgid "Incorrect email or password."
+msgstr "Неверный email или пароль."
+
+msgid "No account yet?"
+msgstr "Ещё нет аккаунта?"
+
+msgid "Sell your vehicle and save the ones you like."
+msgstr "Продавайте свой автомобиль и сохраняйте понравившиеся."
+
+msgid "Already registered?"
+msgstr "Уже зарегистрированы?"
+
+msgid "Link is not valid"
+msgstr "Ссылка недействительна"
+
+msgid ""
+"The confirmation link has expired or was already used. Request a new one or log in if your "
+"account is already active."
+msgstr ""
+"Срок действия ссылки истёк, или она уже была использована. Запросите новую или войдите, если "
+"аккаунт уже активен."
+
+msgid "Send a new link"
+msgstr "Отправить новую ссылку"
+
+msgid "Open the link from the email we sent you to activate your account."
+msgstr "Откройте ссылку из письма, которое мы отправили, чтобы активировать аккаунт."
+
+msgid "No email? Check the spam folder or send it again."
+msgstr "Письма нет? Проверьте папку «Спам» или отправьте ещё раз."
+
+msgid "Email"
+msgstr "Email"
+
+#, python-format
+msgid ""
+"We have sent a link to <span class=\"text-white\">%(email)s</span>. Open it to activate your "
+"account."
+msgstr ""
+"Мы отправили ссылку на <span class=\"text-white\">%(email)s</span>. Откройте её, чтобы "
+"активировать аккаунт."
+
+msgid "moderation"
+msgstr "модерация"
+
+msgid "Moderation"
+msgstr "Модерация"
+
+msgid "Contacts"
+msgstr "Контакты"
+
+msgid "Publication"
+msgstr "Публикация"
+
+msgid "Import"
+msgstr "Импорт"
+
+msgid "Source"
+msgstr "Источник"
+
+msgid "Private"
+msgstr "Частное"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Removed"
+msgstr "Снято"
+
+msgid "Approve selected listings"
+msgstr "Одобрить выбранные объявления"
+
+#, python-format
+msgid "Approved: %(n)s"
+msgstr "Одобрено: %(n)s"
+
+msgid "Reject selected listings"
+msgstr "Отклонить выбранные объявления"
+
+#, python-format
+msgid "Rejected: %(n)s. To give a reason, open the listing and fill in \"rejection reason\"."
+msgstr ""
+"Отклонено: %(n)s. Чтобы указать причину, откройте объявление и заполните поле «причина "
+"отклонения»."
+
+msgid "Active private listings"
+msgstr "Активные частные объявления"
+
+msgid "Vehicles from Hollmann"
+msgstr "Автомобили Hollmann"
+
+msgid "Users"
+msgstr "Пользователи"
+
+#, python-format
+msgid "+%(n)s this week"
+msgstr "+%(n)s за неделю"
+
+msgid "Saved to favorites"
+msgstr "Добавлений в избранное"
+
+msgid "Paid, €"
+msgstr "Оплачено, €"
+
+#, python-format
+msgid "%(n)s payments"
+msgstr "Платежей: %(n)s"
+
+msgid "Enter a valid phone number, for example +49 151 1234567."
+msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
+
+#, python-format
+msgid "Up to %(n)s images."
+msgstr "До %(n)s изображений."
+
+msgid "Was the car in an accident?"
+msgstr "Был ли автомобиль в ДТП?"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "Number with country code, e.g. +49 151 1234567"
+msgstr "Номер с кодом страны, например +7 999 123-45-67"
+
+msgid "@username or phone number"
+msgstr "@username или номер телефона"
+
+msgid "Country where the car is"
+msgstr "Страна, где находится автомобиль"
+
+msgid "Choose a make"
+msgstr "Выберите марку"
+
+msgid "Model / title"
+msgstr "Модель / название"
+
+msgid "Choose a category"
+msgstr "Выберите категорию"
+
+msgid "Enter a year between 1900 and next year."
+msgstr "Укажите год от 1900 до следующего года."
+
+msgid "Enter a Telegram username like @name or a phone number."
+msgstr "Укажите Telegram в виде @name или номер телефона."
+
+msgid "The price must be greater than zero."
+msgstr "Цена должна быть больше нуля."
+
+msgid "Add at least one photo of the car."
+msgstr "Добавьте хотя бы одно фото автомобиля."
+
+#, python-format
+msgid "A listing can have at most %(n)s photos."
+msgstr "В объявлении может быть не больше %(n)s фотографий."
+
+msgid "From"
+msgstr "От"
+
+msgid "To"
+msgstr "До"
+
+msgid "Year from"
+msgstr "Год от"
+
+msgid "Year to"
+msgstr "Год до"
+
+#, python-format
+msgid "from %(price)s"
+msgstr "от %(price)s"
+
+#, python-format
+msgid "up to %(price)s"
+msgstr "до %(price)s"
+
+msgid "name"
+msgstr "название"
+
+msgid "make"
+msgstr "марка"
+
+msgid "User listing"
+msgstr "Объявление пользователя"
+
+msgid "Approved"
+msgstr "Одобрено"
+
+msgid "Combustion (petrol)"
+msgstr "ДВС (бензин)"
+
+msgid "Diesel"
+msgstr "Дизель"
+
+msgid "Hybrid"
+msgstr "Гибрид"
+
+msgid "Electric"
+msgstr "Электро"
+
+msgid "Gas (LPG/CNG)"
+msgstr "Газ (ГБО)"
+
+msgid "Automatic"
+msgstr "Автомат"
+
+msgid "Manual"
+msgstr "Механика"
+
+msgid "source"
+msgstr "источник"
+
+msgid "owner"
+msgstr "владелец"
+
+msgid "model / title"
+msgstr "модель / название"
+
+msgid "description"
+msgstr "описание"
+
+msgid "description (HTML)"
+msgstr "описание (HTML)"
+
+msgid "dealer contacts"
+msgstr "контакты дилера"
+
+msgid "year"
+msgstr "год"
+
+msgid "mileage, km"
+msgstr "пробег, км"
+
+msgid "category"
+msgstr "категория"
+
+msgid "transmission"
+msgstr "коробка передач"
+
+msgid "power, hp"
+msgstr "мощность, л.с."
+
+msgid "color"
+msgstr "цвет"
+
+msgid "accident damage"
+msgstr "был в ДТП"
+
+msgid "country"
+msgstr "страна"
+
+msgid "price"
+msgstr "цена"
+
+msgid "currency"
+msgstr "валюта"
+
+msgid "net price"
+msgstr "цена нетто"
+
+msgid "contact person"
+msgstr "контактное лицо"
+
+msgid "contact phone"
+msgstr "контактный телефон"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Telegram"
+msgstr "Telegram"
+
+msgid "status"
+msgstr "статус"
+
+msgid "activated at"
+msgstr "активировано"
+
+msgid "active until"
+msgstr "активно до"
+
+msgid "rejection reason"
+msgstr "причина отклонения"
+
+msgid "published"
+msgstr "опубликовано"
+
+msgid "new offer"
+msgstr "новое предложение"
+
+msgid "created"
+msgstr "создано"
+
+msgid "updated"
+msgstr "обновлено"
+
+msgid "vehicle"
+msgstr "автомобиль"
+
+msgid "vehicles"
+msgstr "автомобили"
+
+msgid "Color"
+msgstr "Цвет"
+
+msgid "Accident damage"
+msgstr "ДТП"
+
+msgid "Yes, after an accident"
+msgstr "Да, был в ДТП"
+
+msgid "Pending"
+msgstr "Ожидает"
+
+msgid "Paid"
+msgstr "Оплачено"
+
+msgid "Failed"
+msgstr "Ошибка"
+
+msgid "Upholstery"
+msgstr "Салон"
+
+msgid "Seats"
+msgstr "Мест"
+
+msgid "Drive"
+msgstr "Двигатель"
+
+msgid "Capacity"
+msgstr "Объём двигателя"
+
+msgid "Power (kW)"
+msgstr "Мощность (кВт)"
+
+msgid "Power (PS)"
+msgstr "Мощность (л.с.)"
+
+msgid "Emission Standard"
+msgstr "Экологический класс"
+
+msgid "Energy Consumption (combined)"
+msgstr "Расход энергии (смешанный)"
+
+msgid "Fuel Consumption (combined)"
+msgstr "Расход топлива (смешанный)"
+
+msgid "Fuel Consumption (City)"
+msgstr "Расход топлива (город)"
+
+msgid "Fuel Consumption (Suburban)"
+msgstr "Расход топлива (пригород)"
+
+msgid "Fuel Consumption (Rural)"
+msgstr "Расход топлива (загород)"
+
+msgid "Fuel Consumption (Highway)"
+msgstr "Расход топлива (трасса)"
+
+msgid "CO₂ Emissions (combined)"
+msgstr "Выбросы CO₂ (смешанный)"
+
+msgid "CO₂ Class based on CO₂ Emissions (combined)"
+msgstr "Класс CO₂ по выбросам (смешанный)"
+
+msgid "German Vehicle Tax (yearly)"
+msgstr "Транспортный налог в Германии (в год)"
+
+msgid "First Registration"
+msgstr "Первая регистрация"
+
+msgid "Electric Range"
+msgstr "Запас хода на электротяге"
+
+msgid "Battery Capacity"
+msgstr "Ёмкость батареи"
+
+msgid "Combustion Engine (Petrol)"
+msgstr "ДВС (бензин)"
+
+msgid "Combustion Engine (Diesel)"
+msgstr "ДВС (дизель)"
+
+msgid "Hybrid (Petrol/Electric)"
+msgstr "Гибрид (бензин/электро)"
+
+msgid "Hybrid (Diesel/Electric)"
+msgstr "Гибрид (дизель/электро)"
+
+msgid "Plug-in Hybrid"
+msgstr "Подключаемый гибрид"
+
+msgid "Previous Owners"
+msgstr "Предыдущих владельцев"
+
+msgid "Electric Range (EAER)"
+msgstr "Запас хода на электротяге (EAER)"
+
+msgid "Electric Range (max.)"
+msgstr "Запас хода на электротяге (макс.)"
+
+msgid "Electricity Consumption (combined)"
+msgstr "Расход электроэнергии (смешанный)"
+
+msgid "Electricity Consumption (City)"
+msgstr "Расход электроэнергии (город)"
+
+msgid "Electricity Consumption (Suburban)"
+msgstr "Расход электроэнергии (пригород)"
+
+msgid "Electricity Consumption (Rural)"
+msgstr "Расход электроэнергии (загород)"
+
+msgid "Electricity Consumption (Highway)"
+msgstr "Расход электроэнергии (трасса)"
+
+msgid "Electricity Consumption (weighted, combined)"
+msgstr "Расход электроэнергии (взвешенный, смешанный)"
+
+msgid "Fuel Consumption (weighted, combined)"
+msgstr "Расход топлива (взвешенный, смешанный)"
+
+msgid "Fuel Consumption with a Discharged Battery (combined)"
+msgstr "Расход топлива при разряженной батарее (смешанный)"
+
+msgid "Fuel Consumption with a Discharged Battery (City)"
+msgstr "Расход топлива при разряженной батарее (город)"
+
+msgid "Fuel Consumption with a Discharged Battery (Suburban)"
+msgstr "Расход топлива при разряженной батарее (пригород)"
+
+msgid "Fuel Consumption with a Discharged Battery (Rural)"
+msgstr "Расход топлива при разряженной батарее (загород)"
+
+msgid "Fuel Consumption with a Discharged Battery (Highway)"
+msgstr "Расход топлива при разряженной батарее (трасса)"
+
+msgid "CO₂ Emissions (weighted, combined)"
+msgstr "Выбросы CO₂ (взвешенные, смешанный)"
+
+msgid "CO₂ Class based on CO₂ Emissions (weighted, combined)"
+msgstr "Класс CO₂ по выбросам (взвешенные, смешанный)"
+
+msgid "CO₂ Emissions with a Discharged Battery"
+msgstr "Выбросы CO₂ при разряженной батарее"
+
+msgid "CO₂ Class based on CO₂ Emissions with a Discharged Battery"
+msgstr "Класс CO₂ при разряженной батарее"
+
+msgid "Electric Motor (Electricity)"
+msgstr "Электродвигатель"
+
+msgid "Plugin Hybrid (Petrol/Electricity)"
+msgstr "Подключаемый гибрид (бензин/электро)"
+
+msgid "All categories"
+msgstr "Все категории"
+
+msgid "All countries"
+msgstr "Все страны"
+
+msgid "Newest first"
+msgstr "Сначала новые"
+
+msgid "Oldest first"
+msgstr "Сначала старые"
+
+msgid "Price: low to high"
+msgstr "Сначала дешевле"
+
+msgid "Price: high to low"
+msgstr "Сначала дороже"
+
+#, python-format
+msgid "Search: %(query)s"
+msgstr "Поиск: %(query)s"
+
+#, python-format
+msgid "Hello! I am interested in %(car)s%(year)s%(price)s on FIBONACCI: %(url)s"
+msgstr "Здравствуйте! Меня интересует %(car)s%(year)s%(price)s на FIBONACCI: %(url)s"
+
+msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
+msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
+
+#, python-format
+msgid "Your listing is published for %(days)s days."
+msgstr "Ваше объявление опубликовано на %(days)s дней."
+
+msgid "Listing updated."
+msgstr "Объявление обновлено."
+
+msgid "Listing updated and sent for review."
+msgstr "Объявление обновлено и отправлено на модерацию."
+
+msgid "Listing deleted."
+msgstr "Объявление удалено."
+
+msgid "This listing is already active."
+msgstr "Это объявление уже активно."
+
+msgid "The listing can be activated after it has been approved."
+msgstr "Объявление можно активировать после одобрения модератором."
+
+#, python-format
+msgid "Listing activated for %(days)s days."
+msgstr "Объявление активировано на %(days)s дней."
+
+msgid "Listing deactivated."
+msgstr "Объявление деактивировано."
+
+msgid "Online payment is not available yet. Your listing is saved."
+msgstr "Онлайн-оплата пока недоступна. Объявление сохранено."
+
+msgid "The payment could not be started. Please try again later."
+msgstr "Не удалось начать оплату. Попробуйте позже."
+
+msgid "We could not confirm the payment."
+msgstr "Не удалось подтвердить оплату."
+
+#, python-format
+msgid "Payment received. Your listing is active for %(days)s days."
+msgstr "Оплата получена. Объявление активно на %(days)s дней."
+
+msgid ""
+"Payment received. Your listing has been sent for review; the paid month starts when it is "
+"approved."
+msgstr "Оплата получена. Объявление отправлено на модерацию, оплаченный месяц начнётся после одобрения."
+
+msgid "The payment was not completed. You can try again from your cabinet."
+msgstr "Оплата не прошла. Вы можете попробовать снова в кабинете."
+
+msgid "We are waiting for the payment confirmation. Your listing will be activated in a moment."
+msgstr "Ждём подтверждения оплаты. Объявление будет активировано через несколько секунд."
+
+msgid "English"
+msgstr "Английский"
+
+msgid "Russian"
+msgstr "Русский"
+
+msgid "Admin panel"
+msgstr "Панель управления"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Open the site"
+msgstr "Открыть сайт"
+
+msgid "Listings"
+msgstr "Объявления"
+
+msgid "All vehicles"
+msgstr "Все автомобили"
+
+msgid "Makes"
+msgstr "Марки"
+
+msgid "People"
+msgstr "Люди"
+
+msgid "Google / Apple accounts"
+msgstr "Входы через Google / Apple"
+
+msgid "Money"
+msgstr "Деньги"
+
+msgid "Payments"
+msgstr "Платежи"
+
+msgid "System"
+msgstr "Система"
+
+msgid "Groups"
+msgstr "Группы"
+
+msgid "Please confirm that you are not a robot and try again."
+msgstr "Подтвердите, что вы не робот, и попробуйте снова."
+
+msgid "First name"
+msgstr "Имя"
+
+msgid "Last name"
+msgstr "Фамилия"
+
+msgid "Middle name"
+msgstr "Отчество"
+
+msgid "This phone number is already registered."
+msgstr "Этот номер телефона уже зарегистрирован."
+
+msgid "This email is already in use."
+msgstr "Этот email уже используется."
+
+#, python-format
+msgid "Please confirm your email first: open the link we sent to %(email)s."
+msgstr "Сначала подтвердите почту: откройте ссылку, которую мы отправили на %(email)s."
+
+msgid "email"
+msgstr "email"
+
+msgid "first name"
+msgstr "имя"
+
+msgid "last name"
+msgstr "фамилия"
+
+msgid "middle name"
+msgstr "отчество"
+
+msgid "phone"
+msgstr "телефон"
+
+msgid "language"
+msgstr "язык"
+
+msgid "email verified"
+msgstr "почта подтверждена"
+
+msgid "If this address is waiting for confirmation, we have sent the link again."
+msgstr "Если этот адрес ожидает подтверждения, мы отправили ссылку ещё раз."
+
+msgid "Your email is confirmed. Welcome to FIBONACCI!"
+msgstr "Почта подтверждена. Добро пожаловать в FIBONACCI!"
+
+#, python-format
+msgid "Your email has been changed to %(email)s."
+msgstr "Почта изменена на %(email)s."
+
+#, python-format
+msgid "To change your email, open the link we sent to %(email)s. Until then your current address stays."
+msgstr ""
+"Чтобы сменить почту, откройте ссылку, которую мы отправили на %(email)s. До этого остаётся "
+"текущий адрес."
+
+msgid "Your details have been saved."
+msgstr "Данные сохранены."
+

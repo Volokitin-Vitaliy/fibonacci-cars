@@ -1,16 +1,15 @@
 from django.urls import path
+
 from . import views
 
 app_name = 'users'
 
 urlpatterns = [
     path('register/', views.register, name='register'),
-    path('login/', views.login_view, name='login'),
-    path('profile/', views.profile_view, name='profile'),
-    path('account-details/', views.account_details, name='account_details'),
-    path('edit-account-details/', views.edit_account_details, name='edit_account_details'),
-    path('update-account-details/', views.update_account_details, name='update_account_details'),
+    path('verify/', views.verify_sent, name='verify_sent'),
+    path('verify/<uidb64>/<token>/', views.verify_email, name='verify_email'),
+    path('email/<str:token>/', views.confirm_email_change, name='confirm_email_change'),
+    path('login/', views.EmailLoginView.as_view(), name='login'),
     path('logout/', views.logout, name='logout'),
-    path('order-history/', views.order_history, name='order_history'),
-    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('account/', views.account, name='account'),
 ]

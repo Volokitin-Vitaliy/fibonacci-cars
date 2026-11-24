@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Favorites' %}{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-2xl sm:text-3xl font-bold">{% trans 'Favorites' %}</h1>
+    <div class="mt-4 mb-10 border border-neutral-800 px-4 py-3 text-sm text-neutral-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <span>{% trans 'Your favorites are saved in this browser for 30 days. Log in to keep them on all your devices.' %}</span>
+        <span class="flex gap-2 shrink-0">
+            <a href="{% url 'users:login' %}?next={{ request.path|urlencode }}" class="btn btn-primary !py-2 !px-4">{% trans 'Log in' %}</a>
+            <a href="{% url 'users:register' %}" class="btn btn-outline !py-2 !px-4">{% trans 'Create an account' %}</a>
+        </span>
+    </div>
+    <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for car in cars %}{% include "includes/car_card.html" %}
+        {% empty %}
+        <div class="col-span-full panel border-dashed p-12 text-center">
+            <p class="text-neutral-400">{% trans 'You have not saved any vehicles yet. Tap ♡ on a vehicle to save it here.' %}</p>
+            <a href="{% url 'cars:list' %}" class="btn btn-primary mt-6">{% trans 'Browse vehicles' %}</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

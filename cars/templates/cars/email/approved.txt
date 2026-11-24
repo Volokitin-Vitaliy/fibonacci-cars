@@ -1,0 +1,8 @@
+{% load i18n %}{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}
+
+{% blocktrans with car=car %}Your listing "{{ car }}" has been approved.{% endblocktrans %}
+{% if car.is_listing_active %}{% blocktrans with date=car.active_until|date:"d.m.Y" %}It is now visible on the site until {{ date }}.{% endblocktrans %}
+{{ car_url }}{% else %}{% trans 'Activate it in your cabinet to publish it:' %}
+{{ cabinet_url }}{% endif %}
+
+FIBONACCI

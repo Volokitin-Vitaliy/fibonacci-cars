@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n cars_tags %}
+{% block title %}{% trans 'Payment' %}{% endblock %}
+{% block content %}
+<section class="max-w-md mx-auto px-4 py-20 text-center">
+    <h1 class="text-2xl font-bold">{% trans 'Payment' %}</h1>
+    <p class="text-neutral-400 mt-3">{{ car.make.name }} {{ car.model }}</p>
+    <p class="text-3xl font-semibold mt-6">€{{ amount|money }}</p>
+    <p class="text-sm text-neutral-500 mt-2">{% blocktrans with days=duration|default:30 %}Listing for {{ days }} days{% endblocktrans %}</p>
+    <form id="pay-form" method="post" action="{{ action }}" accept-charset="utf-8" class="mt-10">
+        {% for name, value in fields.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+        <button type="submit" class="btn btn-primary w-full">{% trans 'Go to payment' %} →</button>
+    </form>
+    <p class="text-xs text-neutral-600 mt-4">{% trans 'You will be redirected to the secure WayForPay payment page.' %}</p>
+    <a href="{% url 'cars:my_cars' %}" class="inline-block mt-8 text-sm text-neutral-400 underline">{% trans 'Pay later' %}</a>
+</section>
+<script nonce="{{ CSP_NONCE }}">setTimeout(function () { document.getElementById('pay-form').submit(); }, 1200);</script>
+{% endblock %}

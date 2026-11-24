@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% load i18n static cars_tags %}
+{% block title %}{{ car.make.name }} {{ car.model }}{% endblock %}
+{% block meta_description %}{{ car.make.name }} {{ car.model }} — {{ car.currency_symbol }}{{ car.main_price|money }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ car.make.name }} {{ car.model }}{% if car.year %} {{ car.year }}{% endif %}{% if car.main_price %} · {{ car.currency_symbol }}{{ car.main_price|money }}{% endif %}{% endblock %}
+{% block og_description %}{% if car.mileage_km is not None %}{{ car.mileage_km|thousands }} km · {% endif %}{% if car.power_hp %}{{ car.power_hp }} {% trans 'hp' %} · {% endif %}{% if car.fuel %}{{ car.get_fuel_display }} · {% endif %}{% if car.country %}{{ car.country.name }}{% else %}FIBONACCI{% endif %}{% endblock %}
+{% block og_image %}{% if photos %}{{ request.scheme }}://{{ request.get_host }}{{ photos.0.image.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block twitter_card %}{% if photos %}summary_large_image{% else %}summary{% endif %}{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-12">
+    <nav class="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6 flex flex-wrap gap-2" aria-label="breadcrumb">
+        <a href="{% url 'cars:list' %}" class="hover:text-white">{% trans 'Vehicles' %}</a><span>/</span>
+        <a href="{{ car.make.get_absolute_url }}" class="hover:text-white">{{ car.make.name }}</a>
+    </nav>
+
+    {% if is_owner and car.is_pending %}
+    <div class="panel !border-amber-500/30 text-amber-300 px-4 py-3 text-sm mb-6">{% trans 'This listing is waiting for moderator approval and is only visible to you.' %}</div>
+    {% elif is_owner and car.is_rejected %}
+    <div class="panel !border-red-500/30 text-red-300 px-4 py-3 text-sm mb-6">{% trans 'The listing was not approved.' %}{% if car.rejection_reason %} {% trans 'Reason:' %} {{ car.rejection_reason }}{% endif %} <a href="{% url 'cars:edit' car.pk %}" class="underline">{% trans 'Edit it to submit it again.' %}</a></div>
+    {% elif is_owner and not car.is_listing_active %}
+    <div class="panel !border-amber-500/30 text-amber-300 px-4 py-3 text-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+        <span>{% trans 'This listing is inactive and only visible to you.' %}</span>
+        <form method="post" action="{% url 'cars:activate' car.pk %}">{% csrf_token %}<button class="btn btn-primary !py-2">{% trans 'Activate' %}</button></form>
+    </div>
+    {% endif %}
+
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-8 lg:gap-10 items-start">
+        {# ---------- Left: gallery, key numbers, details, description ---------- #}
+        <div class="min-w-0">
+            {% if photos %}
+            <div class="relative aspect-[4/3] sm:aspect-[16/10] rounded-[var(--radius)] overflow-hidden media-shimmer ring-gradient group"
+                 data-gallery data-images="{{ photo_urls_json }}" data-main="{{ photo_main_json }}" data-thumbs="{{ photo_thumbs_json }}" data-title="{{ car.make.name }} {{ car.model }}"
+                 data-label-close="{% trans 'Close' %}" data-label-previous="{% trans 'Previous' %}" data-label-next="{% trans 'Next' %}"
+                 data-label-photo="{% trans 'Photo' %}" data-label-hint="{% trans 'Double-tap or pinch to zoom · swipe down to close' %}">
+                <button type="button" id="main-photo" class="absolute inset-0 w-full h-full cursor-zoom-in" aria-label="{% trans 'Open fullscreen' %}">
+                    <img id="main-img" src="{{ photos.0|photo_main_url }}" alt="{{ car }}" fetchpriority="high" decoding="async" class="fade-in w-full h-full object-cover">
+                </button>
+                {% if photos|length > 1 %}
+                <button type="button" data-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Previous' %}">←</button>
+                <button type="button" data-step="1" class="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Next' %}">→</button>
+                {% endif %}
+                <span class="absolute bottom-3 right-3 chip chip-glass pointer-events-none"><span id="photo-index">1</span> / {{ photos|length }}</span>
+                <span class="absolute top-3 right-3 w-10 h-10 rounded-full chip-glass hidden sm:flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span>
+            </div>
+            {% if photos|length > 1 %}
+            <div class="scroller mt-3 [grid-auto-columns:5.5rem] sm:[grid-auto-columns:7rem] !gap-2 p-1">
+                {% for p in photos %}
+                <button type="button" class="thumb aspect-[4/3] rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition {% if forloop.first %}is-active{% endif %}" data-index="{{ forloop.counter0 }}" aria-label="{% trans 'Photo' %} {{ forloop.counter }}">
+                    <img src="{{ p.thumb_url }}" alt="" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="relative aspect-[4/3] sm:aspect-[16/10] rounded-[var(--radius)] overflow-hidden panel">
+                {% include "includes/car_silhouette.html" %}
+                <div class="absolute bottom-5 inset-x-0 text-center text-sm text-neutral-500">{% trans 'No photos yet' %}</div>
+            </div>
+            {% endif %}
+
+            {# Key numbers #}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-8">
+                {% if car.country %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Country' %}</div><div class="mt-1 text-lg font-semibold">{{ car.country.name }}</div></div>{% endif %}
+                {% if car.year %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Year' %}</div><div class="mt-1 text-lg font-semibold">{{ car.year }}</div></div>{% endif %}
+                {% if car.mileage_km is not None %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Mileage' %}</div><div class="mt-1 text-lg font-semibold">{{ car.mileage_km|thousands }} km</div></div>{% endif %}
+                {% if car.power_hp %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Power' %}</div><div class="mt-1 text-lg font-semibold">{{ car.power_hp }} {% trans 'hp' %}</div></div>{% endif %}
+                {% if car.fuel %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Category' %}</div><div class="mt-1 text-lg font-semibold">{{ car.get_fuel_display }}</div></div>{% endif %}
+                {% if car.transmission %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Transmission' %}</div><div class="mt-1 text-lg font-semibold">{{ car.get_transmission_display }}</div></div>{% endif %}
+                {% if car.accident is not None %}<div class="panel p-4" data-reveal><div class="text-xs text-neutral-500">{% trans 'Accident' %}</div><div class="mt-1 text-lg font-semibold {% if car.accident %}text-amber-300{% else %}text-emerald-300{% endif %}">{% if car.accident %}{% trans 'After an accident' %}{% else %}{% trans 'No accidents' %}{% endif %}</div></div>{% endif %}
+            </div>
+
+            <div class="grid xl:grid-cols-2 gap-6 mt-10">
+                <div class="panel p-6" data-reveal>
+                    <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-3">{% trans 'Details' %}</h2>
+                    <table class="w-full text-sm">
+                        <tbody>
+                        {% if car.external_id %}<tr class="border-b border-white/5"><td class="py-2.5 pr-4 text-neutral-500 w-1/2">{% trans 'Offer Number' %}</td><td class="py-2.5">{{ car.external_id }}</td></tr>{% endif %}
+                        {% for label, value in car.spec_rows %}{% if label != 'Offer Number' %}
+                            <tr class="border-b border-white/5 last:border-0"><td class="py-2.5 pr-4 text-neutral-500 w-1/2">{{ label|spec }}</td><td class="py-2.5">{{ value|spec }}</td></tr>
+                        {% endif %}{% empty %}
+                            <tr><td class="py-2.5 text-neutral-500">{% trans 'No details provided.' %}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if car.is_imported %}<p class="text-xs text-neutral-600 mt-4">{% trans 'Consumption and emission values as stated by the seller.' %}</p>{% endif %}
+                </div>
+                <div class="panel p-6" data-reveal>
+                    <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-3">{% trans 'Description' %}</h2>
+                    {% if car.description %}
+                        <div class="text-neutral-300 leading-relaxed whitespace-pre-line">{{ car.description }}</div>
+                    {% elif car.description_html %}
+                        {# Sanitized by the importer: only simple formatting tags remain #}
+                        <div class="dealer-description text-neutral-300 leading-relaxed text-sm">{{ car.description_html|safe }}</div>
+                    {% elif car.is_imported %}
+                        <p class="text-neutral-400 leading-relaxed">{% trans 'The full description, equipment list and photos of this vehicle are available on the seller’s website.' %}</p>
+                        <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-outline mt-6">{% trans 'Open the original offer' %} ↗</a>
+                    {% else %}
+                        <p class="text-neutral-500">—</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ---------- Right: sticky price and contact card ---------- #}
+        <aside class="lg:sticky lg:top-24 min-w-0">
+            <div class="panel ring-gradient p-6 sm:p-7 relative overflow-hidden" data-price-box>
+                <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-blue-600/15 blur-3xl pointer-events-none"></div>
+                <div class="relative">
+                    <a href="{{ car.make.get_absolute_url }}" class="text-xs uppercase tracking-[0.3em] text-neutral-500 hover:text-white">{{ car.make.name }}</a>
+                    <h1 class="text-2xl sm:text-3xl mt-2 leading-tight">{{ car.model }}</h1>
+                    <div class="flex flex-wrap gap-1.5 mt-4">
+                        {% if car.is_new_offer %}<span class="chip chip-new">{% trans 'New' %}</span>{% endif %}
+                        {% if car.fuel %}<a href="{{ car.get_fuel_url }}" class="chip chip-glass hover:border-white/40">{{ car.get_fuel_display }}</a>{% endif %}
+                        {% if car.accident is False %}<span class="chip chip-ok">{% trans 'No accidents' %}</span>{% elif car.accident is True %}<span class="chip chip-warn">{% trans 'After an accident' %}</span>{% endif %}
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        {% if car.price_net %}
+                        <div class="text-xs uppercase tracking-[0.2em] text-neutral-500">{% trans 'Net (Export)' %}</div>
+                        <div class="font-display text-3xl sm:text-4xl font-semibold mt-1">{{ car.currency_symbol }}{{ car.price_net|money }}</div>
+                        <div class="text-sm text-neutral-500 mt-1">{% trans 'Gross' %}: {{ car.currency_symbol }}{{ car.price|money }}</div>
+                        {% else %}
+                        <div class="font-display text-3xl sm:text-4xl font-semibold">{{ car.currency_symbol }}{{ car.price|money }}</div>
+                        <div class="text-sm text-neutral-500 mt-1">{{ car.currency }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-6 space-y-2.5">
+                        {% if car.is_imported %}
+                            {% with c=car.dealer_contacts.0 %}
+                            {% if c.whatsapp %}<a href="https://wa.me/{{ c.whatsapp|cut:' '|cut:'+' }}?{{ wa_query }}" target="_blank" rel="noopener" class="btn btn-primary w-full h-12">WhatsApp · {{ c.name }}</a>{% endif %}
+                            {% endwith %}
+                            <a href="#contacts" class="btn btn-outline w-full h-12">{% trans 'All contacts' %}</a>
+                        {% else %}
+                            <a href="{{ car.phone_url }}" class="btn btn-primary w-full h-12">{% trans 'Call' %} · {{ car.contact_phone }}</a>
+                            {% if car.whatsapp_url or car.telegram_url %}
+                            <div class="grid grid-cols-2 gap-2.5">
+                                {% if car.whatsapp_url %}<a href="{{ car.whatsapp_url }}?{{ wa_query }}" target="_blank" rel="noopener" class="btn btn-outline h-12 !px-3 {% if not car.telegram_url %}col-span-2{% endif %}">WhatsApp</a>{% endif %}
+                                {% if car.telegram_url %}<a href="{{ car.telegram_url }}" target="_blank" rel="noopener" class="btn btn-outline h-12 !px-3 {% if not car.whatsapp_url %}col-span-2{% endif %}">Telegram</a>{% endif %}
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                        {% include "includes/favorite_button.html" %}
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    {# ---------- Contacts ---------- #}
+    <div id="contacts" class="scroll-mt-24 border-t border-white/5 mt-14 pt-12">
+        <h2 class="font-display text-xl sm:text-2xl font-semibold">{% trans 'Interested in this vehicle?' %}</h2>
+        {% if car.is_imported and car.dealer_contacts %}
+            <p class="text-neutral-400 mt-2">{% trans 'This vehicle is offered by Hollmann International. Our partners will help you:' %}</p>
+            <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {% get_media_prefix as MEDIA %}
+                {% for c in car.dealer_contacts %}
+                <div class="panel p-5" data-reveal>
+                    <div class="flex items-center gap-4">
+                        {% if c.photo %}<img src="{{ MEDIA }}{{ c.photo }}" alt="" width="56" height="56" class="w-14 h-14 rounded-full object-cover bg-neutral-900 ring-1 ring-white/10" loading="lazy">{% endif %}
+                        <div class="min-w-0">
+                            <div class="font-semibold truncate">{{ c.name }}</div>
+                            {% if c.languages %}<div class="text-xs text-neutral-500 mt-0.5">{{ c.languages }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm">
+                        {% if c.phone %}<a href="tel:{{ c.phone|cut:' ' }}" class="flex justify-between gap-3 hover:text-white text-neutral-300"><span class="text-neutral-500">{% trans 'Phone' %}</span>{{ c.phone }}</a>{% endif %}
+                        {% if c.mobile %}<a href="tel:{{ c.mobile|cut:' ' }}" class="flex justify-between gap-3 hover:text-white text-neutral-300"><span class="text-neutral-500">{% trans 'Mobile' %}</span>{{ c.mobile }}</a>{% endif %}
+                        {% if c.whatsapp %}<a href="https://wa.me/{{ c.whatsapp|cut:' '|cut:'+' }}?{{ wa_query }}" target="_blank" rel="noopener" class="flex justify-between gap-3 hover:text-[#25D366] text-neutral-300"><span class="text-neutral-500">WhatsApp</span>{{ c.whatsapp }}</a>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="inline-block mt-6 text-sm text-neutral-400 hover:text-white underline">{% trans 'Original offer on hollmann.international' %} ↗</a>
+        {% elif car.is_imported %}
+            <p class="text-neutral-400 mt-2">{% trans 'This vehicle is offered by Hollmann International. Contact the dealer through the original offer.' %}</p>
+            <a href="{{ car.source_url }}" target="_blank" rel="noopener" class="btn btn-primary mt-6">{% trans 'Contact the dealer' %} ↗</a>
+        {% else %}
+            <p class="text-neutral-400 mt-2">{% trans 'Contact the seller directly:' %}</p>
+            <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="panel p-5">
+                    <div class="text-xs uppercase tracking-widest text-neutral-500">{% trans 'Contact person' %}</div>
+                    <div class="mt-2 font-semibold break-words">{{ car.contact_name }}</div>
+                </div>
+                <a href="{{ car.phone_url }}" class="panel p-5 flex items-start gap-4 hover:border-white/30 transition">
+                    <svg class="w-6 h-6 shrink-0 text-neutral-300 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+                    <span><span class="block text-xs uppercase tracking-widest text-neutral-500">{% trans 'Phone' %}</span><span class="block mt-2 font-semibold">{{ car.contact_phone }}</span></span>
+                </a>
+                {% if car.whatsapp_url %}
+                <a href="{{ car.whatsapp_url }}?{{ wa_query }}" target="_blank" rel="noopener" class="panel p-5 flex items-start gap-4 hover:!border-[#25D366]/60 transition">
+                    <svg class="w-6 h-6 shrink-0 text-[#25D366] mt-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>
+                    <span><span class="block text-xs uppercase tracking-widest text-neutral-500">WhatsApp</span><span class="block mt-2 font-semibold">{{ car.contact_whatsapp }}</span></span>
+                </a>
+                {% endif %}
+                {% if car.telegram_url %}
+                <a href="{{ car.telegram_url }}" target="_blank" rel="noopener" class="panel p-5 flex items-start gap-4 hover:!border-[#2AABEE]/60 transition">
+                    <svg class="w-6 h-6 shrink-0 text-[#2AABEE] mt-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.8.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.4-.1-.6-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.3z"/></svg>
+                    <span class="min-w-0"><span class="block text-xs uppercase tracking-widest text-neutral-500">Telegram</span><span class="block mt-2 font-semibold truncate">{{ car.telegram_display }}</span></span>
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if similar %}
+    <div class="border-t border-white/5 mt-16 pt-12">
+        <div class="flex items-end justify-between gap-4 mb-8">
+            <div>
+                <div class="text-xs uppercase tracking-[0.3em] text-accent mb-3">{% trans 'You may also like' %}</div>
+                <h2 class="font-display text-xl sm:text-3xl font-semibold">{% trans 'Similar vehicles' %}</h2>
+            </div>
+            {% if similar|length > 4 %}
+            <div class="hidden sm:flex gap-2">
+                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="-1" aria-label="{% trans 'Previous' %}">←</button>
+                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="1" aria-label="{% trans 'Next' %}">→</button>
+            </div>
+            {% endif %}
+        </div>
+        <div class="scroller -mx-4 px-4 sm:mx-0 sm:px-0 [grid-auto-columns:82%] sm:[grid-auto-columns:calc((100%-1.25rem)/2)] lg:[grid-auto-columns:calc((100%-3.75rem)/4)]" data-scroller>
+            {% for car in similar %}{% include "includes/car_card.html" %}{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+
+{# Phones: price and the main contact button stay at hand once the price box is scrolled away #}
+<div class="contact-bar lg:hidden" data-contact-bar aria-hidden="true">
+    <div class="min-w-0">
+        <div class="text-[0.65rem] uppercase tracking-[0.2em] text-neutral-500 truncate">{{ car.make.name }} {{ car.model }}</div>
+        <div class="font-display text-lg font-semibold leading-tight">{{ car.currency_symbol }}{{ car.main_price|money }}</div>
+    </div>
+    {% if car.is_imported %}{% with c=car.dealer_contacts.0 %}
+        {% if c.whatsapp %}<a href="https://wa.me/{{ c.whatsapp|cut:' '|cut:'+' }}?{{ wa_query }}" target="_blank" rel="noopener" class="btn btn-primary !h-11 !px-5 shrink-0" tabindex="-1">WhatsApp</a>
+        {% else %}<a href="#contacts" class="btn btn-primary !h-11 !px-5 shrink-0" tabindex="-1">{% trans 'Contact' %}</a>{% endif %}
+    {% endwith %}{% else %}
+        <div class="flex gap-2 shrink-0">
+            {% if car.whatsapp_url %}<a href="{{ car.whatsapp_url }}?{{ wa_query }}" target="_blank" rel="noopener" class="btn btn-outline !h-11 !px-4" tabindex="-1">WhatsApp</a>{% endif %}
+            <a href="{{ car.phone_url }}" class="btn btn-primary !h-11 !px-5" tabindex="-1">{% trans 'Call' %}</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if photos %}<script src="{% static 'js/gallery.js' %}" defer></script>{% endif %}
+<script src="{% static 'js/contact-bar.js' %}" defer></script>
+{% if similar|length > 4 %}<script nonce="{{ CSP_NONCE }}">
+document.querySelectorAll('[data-scroll]').forEach(function (b) {
+    var scroller = document.querySelector('[data-scroller]');
+    b.addEventListener('click', function () { scroller.scrollBy({left: scroller.clientWidth * 0.8 * b.dataset.scroll, behavior: 'smooth'}); });
+});
+</script>{% endif %}
+{% endblock %}

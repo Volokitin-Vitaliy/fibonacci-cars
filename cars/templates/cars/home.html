@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load i18n static cars_tags %}
+{% block title %}{% trans 'Exclusive vehicles' %}{% endblock %}
+
+{% block content %}
+{# ---------- Hero ---------- #}
+<section class="relative -mt-16 min-h-[86svh] sm:min-h-[92svh] flex items-end overflow-hidden">
+    {% if hero_cars %}
+    <div class="absolute inset-0" data-hero>
+        {% for car in hero_cars %}
+        <a href="{{ car.get_absolute_url }}" class="hero-slide {% if forloop.first %}is-active{% endif %}" data-slide tabindex="-1" aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+            {% if forloop.first %}<img src="{{ car.cover.large_url }}"{% if car.cover.variants %} srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" fetchpriority="high" decoding="async">
+            {% else %}{# loaded just before it is shown, so the first screen downloads one photo #}<img data-src="{{ car.cover.large_url }}"{% if car.cover.variants %} data-srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" decoding="async">{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 30%, rgba(37,99,235,.25), transparent 60%);"></div>
+    {% endif %}
+    <div class="absolute inset-0 bg-gradient-to-t from-[#08080a] via-black/45 to-black/50 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/10 to-transparent pointer-events-none"></div>
+
+    <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14 sm:pb-20 pt-32">
+        <div class="max-w-2xl" data-reveal>
+            <h1 class="font-display text-[1.85rem] min-[360px]:text-4xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight">{% trans 'Cars worldwide.' %}</h1>
+            <div class="mt-9 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <a href="{% url 'cars:list' %}" class="btn btn-primary h-14 !px-8 !text-sm">{% trans 'Choose a car' %} <span aria-hidden="true">→</span></a>
+                <a href="{% url 'cars:add' %}" class="btn btn-outline glass h-14 !px-8 !text-sm">{% trans 'Sell a car' %} <span aria-hidden="true">→</span></a>
+            </div>
+        </div>
+
+        {% if hero_cars %}
+        <div class="mt-12 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+            <div class="flex gap-2" role="tablist">
+                {% for car in hero_cars %}<button type="button" class="hero-dot {% if forloop.first %}is-active{% endif %}" data-dot="{{ forloop.counter0 }}" aria-label="{{ car }}"><span></span></button>{% endfor %}
+            </div>
+            <div class="relative h-12 sm:text-right min-w-0">
+                {% for car in hero_cars %}
+                <a href="{{ car.get_absolute_url }}" class="absolute inset-0 sm:left-auto transition-opacity duration-700 {% if not forloop.first %}opacity-0 pointer-events-none{% endif %}" data-caption>
+                    <div class="text-[11px] uppercase tracking-[0.3em] text-white/50">{{ car.make.name }}</div>
+                    <div class="text-sm sm:text-base font-medium truncate">{{ car.model }} · {{ car.currency_symbol }}{{ car.main_price|money }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{# ---------- Numbers ---------- #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[var(--radius)] overflow-hidden bg-white/5 border border-white/5" data-reveal>
+        <div class="bg-[#0c0c0e] p-5 sm:p-8 min-w-0"><div class="font-display text-2xl min-[360px]:text-3xl sm:text-4xl font-semibold" data-count="{{ stats.vehicles }}">{{ stats.vehicles }}</div><div class="text-sm text-neutral-500 mt-2">{% trans 'vehicles available' %}</div></div>
+        <div class="bg-[#0c0c0e] p-5 sm:p-8 min-w-0"><div class="font-display text-2xl min-[360px]:text-3xl sm:text-4xl font-semibold" data-count="{{ stats.makes }}">{{ stats.makes }}</div><div class="text-sm text-neutral-500 mt-2">{% trans 'makes' %}</div></div>
+        <div class="bg-[#0c0c0e] p-5 sm:p-8 min-w-0"><div class="font-display text-2xl min-[360px]:text-3xl sm:text-4xl font-semibold"><span data-count="110" data-suffix="K+">110K+</span></div><div class="text-sm text-neutral-500 mt-2">{% trans 'followers' %}</div></div>
+        <div class="bg-[#0c0c0e] p-5 sm:p-8 min-w-0"><div class="font-display text-3xl sm:text-4xl font-semibold text-accent">24/7</div><div class="text-sm text-neutral-500 mt-2">{% trans 'export worldwide' %}</div></div>
+    </div>
+</section>
+
+{# ---------- New offers ---------- #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
+    <div class="flex items-end justify-between gap-4 mb-8" data-reveal>
+        <div>
+            <div class="text-xs uppercase tracking-[0.3em] text-accent mb-3">{% trans 'Just arrived' %}</div>
+            <h2 class="font-display text-2xl sm:text-4xl font-semibold">{% if new_offers %}{% trans 'New Offers' %}{% else %}{% trans 'Latest vehicles' %}{% endif %}</h2>
+        </div>
+        <div class="hidden sm:flex gap-2">
+            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="-1" aria-label="{% trans 'Previous' %}">←</button>
+            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="1" aria-label="{% trans 'Next' %}">→</button>
+        </div>
+    </div>
+    <div class="scroller -mx-4 px-4 sm:mx-0 sm:px-0 [grid-auto-columns:82%] sm:[grid-auto-columns:calc((100%-1.25rem)/2)] lg:[grid-auto-columns:calc((100%-3.75rem)/4)]" data-scroller>
+        {% for car in new_offers|default:latest %}{% include "includes/car_card.html" %}{% empty %}<p class="text-neutral-500">{% trans 'No vehicles yet.' %}</p>{% endfor %}
+    </div>
+    <div class="mt-12 text-center">
+        <a href="{% if new_offers %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline min-w-[14rem]">{% trans 'View all' %}</a>
+    </div>
+</section>
+
+{# ---------- Makes ---------- #}
+{% if top_makes %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+    <div class="mb-8" data-reveal>
+        <div class="text-xs uppercase tracking-[0.3em] text-accent mb-3">{% trans 'Manufacturers' %}</div>
+        <h2 class="font-display text-2xl sm:text-4xl font-semibold">{% trans 'Popular makes' %}</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {% for m in top_makes %}
+        <a href="{{ m.get_absolute_url }}" class="panel group p-5 sm:p-6 flex flex-col justify-between min-h-[7.5rem] transition hover:border-white/25 hover:bg-white/[.04]" data-reveal>
+            <span class="font-display text-[0.8rem] min-[360px]:text-sm sm:text-lg font-semibold tracking-wide uppercase break-words min-w-0">{{ m.name }}</span>
+            <span class="flex items-center justify-between text-sm text-neutral-500">{% blocktrans count n=m.n %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}<span class="transition-transform group-hover:translate-x-1 text-white/60">→</span></span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# ---------- Why FIBONACCI ---------- #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+    <div class="mb-8" data-reveal>
+        <div class="text-xs uppercase tracking-[0.3em] text-accent mb-3">FIBONACCI</div>
+        <h2 class="font-display text-2xl sm:text-4xl font-semibold">{% trans 'Why us' %}</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {% trans 'Trusted dealers' as t1 %}{% trans 'Vehicles from Hollmann International and checked sellers.' as d1 %}
+        {% trans 'Export worldwide' as t2 %}{% trans 'Net export prices and delivery to any country.' as d2 %}
+        {% trans 'Direct contact' as t3 %}{% trans 'Phone, WhatsApp and Telegram of the seller — no middlemen.' as d3 %}
+        {% trans 'Sell in minutes' as t4 %}{% trans 'Publish your car, we review it and show it to buyers.' as d4 %}
+        <div class="panel p-6" data-reveal><svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><h3 class="mt-5 font-semibold">{{ t1 }}</h3><p class="mt-2 text-sm text-neutral-400 leading-relaxed">{{ d1 }}</p></div>
+        <div class="panel p-6" data-reveal><svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><h3 class="mt-5 font-semibold">{{ t2 }}</h3><p class="mt-2 text-sm text-neutral-400 leading-relaxed">{{ d2 }}</p></div>
+        <div class="panel p-6" data-reveal><svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><h3 class="mt-5 font-semibold">{{ t3 }}</h3><p class="mt-2 text-sm text-neutral-400 leading-relaxed">{{ d3 }}</p></div>
+        <div class="panel p-6" data-reveal><svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><h3 class="mt-5 font-semibold">{{ t4 }}</h3><p class="mt-2 text-sm text-neutral-400 leading-relaxed">{{ d4 }}</p></div>
+    </div>
+</section>
+
+{# ---------- Social proof + sell ---------- #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 grid lg:grid-cols-2 gap-3">
+    <div class="panel ring-gradient p-8 sm:p-10 overflow-hidden relative" data-reveal>
+        <div class="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+        <div class="relative">
+            <div class="font-display text-5xl sm:text-6xl font-semibold">{{ followers }}</div>
+            <p class="mt-3 text-neutral-400 max-w-sm">{% trans 'people follow FIBONACCI — cars, deliveries and reviews every day.' %}</p>
+            <div class="mt-8 flex flex-wrap gap-2">
+                {% for title, url, icon, primary in social %}
+                <a href="{{ url }}" target="_blank" rel="noopener" class="w-12 h-12 rounded-full border border-white/15 hover:border-white hover:bg-white hover:text-black flex items-center justify-center transition" title="{{ title }}" aria-label="{{ title }}">{% include "includes/social_icon.html" with name=icon %}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="panel p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden" data-reveal>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_100%_100%,rgba(255,255,255,.08),transparent_60%)] pointer-events-none"></div>
+        <div class="relative">
+            <h2 class="font-display text-2xl sm:text-3xl font-semibold leading-tight">{% trans 'Sell your car to buyers worldwide' %}</h2>
+            <p class="mt-3 text-neutral-400 max-w-md">{% trans 'Add photos, a price and your contacts — the listing goes live after a quick review.' %}</p>
+        </div>
+        <div class="relative mt-8"><a href="{% url 'cars:add' %}" class="btn btn-primary h-14 !px-8">{% trans 'Sell a car' %} <span aria-hidden="true">→</span></a></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ CSP_NONCE }}">
+(function () {
+    var slides = document.querySelectorAll('[data-slide]'), dots = document.querySelectorAll('[data-dot]'),
+        captions = document.querySelectorAll('[data-caption]'), current = 0, timer;
+    function load(i) {
+        var img = slides[(i + slides.length) % slides.length].querySelector('img[data-src]');
+        if (!img) return;
+        if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+    }
+    function show(i) {
+        if (!slides.length) return;
+        current = (i + slides.length) % slides.length;
+        load(current); load(current + 1);  // this slide now, the next one in the background
+        slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
+        dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
+        captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });
+        clearTimeout(timer); timer = setTimeout(function () { show(current + 1); }, 6000);
+    }
+    dots.forEach(function (d) { d.addEventListener('click', function () { show(+d.dataset.dot); }); });
+    if (slides.length > 1) {
+        timer = setTimeout(function () { show(1); }, 6000);
+        window.addEventListener('load', function () { setTimeout(function () { load(1); }, 1500); });
+    }
+
+    var scroller = document.querySelector('[data-scroller]');
+    document.querySelectorAll('[data-scroll]').forEach(function (b) {
+        b.addEventListener('click', function () { scroller.scrollBy({left: scroller.clientWidth * 0.8 * b.dataset.scroll, behavior: 'smooth'}); });
+    });
+})();
+</script>
+{% endblock %}

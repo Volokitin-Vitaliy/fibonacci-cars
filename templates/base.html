@@ -1,0 +1,188 @@
+{% load i18n static cars_tags %}{% get_current_language as LANG %}<!DOCTYPE html>
+<html lang="{{ LANG }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
+    <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
+    {% hreflang %}
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+    <meta name="theme-color" content="#08080a">
+    {# Link previews (WhatsApp, Telegram, Facebook, X) #}
+    <meta property="og:site_name" content="FIBONACCI">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}FIBONACCI — {% trans 'Cars worldwide.' %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:locale" content="{% if LANG == 'ru' %}ru_RU{% else %}en_US{% endif %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}{% endblock %}">
+    <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
+    {% if structured_data %}{% json_ld structured_data %}{% endif %}
+    <script nonce="{{ CSP_NONCE }}">document.documentElement.classList.add('js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-24">
+<div id="page-progress" aria-hidden="true"></div>
+<header class="site-header sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 min-[360px]:gap-3 sm:gap-6">
+        <a href="{% url 'cars:home' %}" class="flex items-center gap-1.5 min-[360px]:gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
+            <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-8 h-8 min-[360px]:w-9 min-[360px]:h-9 sm:w-10 sm:h-10">
+            <span class="font-brand text-[0.74rem] min-[360px]:text-[0.84rem] min-[400px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.1em] min-[360px]:tracking-[0.15em] min-[400px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
+            <div class="has-dropdown relative">
+                <a href="{% url 'cars:list' %}" class="nav-link {% if request.resolver_match.app_name == 'cars' and request.resolver_match.url_name in 'list new fuel make detail' %}active{% endif %}">{% trans 'Vehicles' %}</a>
+                <div class="dropdown absolute left-1/2 -translate-x-1/2 top-full pt-5">
+                    <div class="w-[42rem] menu-panel rounded-2xl shadow-2xl shadow-black/60 p-6 grid grid-cols-3 gap-6 normal-case tracking-normal">
+                        <div>
+                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Categories' %}</div>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="{% url 'cars:list' %}" class="hover:underline underline-offset-4">{% trans 'All Vehicles' %}</a></li>
+                                <li><a href="{% url 'cars:new' %}" class="hover:underline underline-offset-4">{% trans 'New Offers' %}</a></li>
+                                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:underline underline-offset-4">{{ c.label }}</a></li>{% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-span-2">
+                            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Manufacturers' %}</div>
+                            <ul class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm max-h-80 overflow-y-auto">
+                                {% for m in nav_makes %}<li><a href="{{ m.get_absolute_url }}" class="hover:underline underline-offset-4">{{ m.name }} <span class="text-neutral-600">{{ m.n }}</span></a></li>{% empty %}<li class="text-neutral-500">—</li>{% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'cars:new' %}" class="nav-link">{% trans 'New Offers' %}</a>
+            <a href="{% url 'cars:add' %}" class="nav-link">{% trans 'Sell your car' %}</a>
+        </nav>
+
+        <div class="flex items-center gap-1.5 min-[360px]:gap-3 sm:gap-5 text-sm uppercase tracking-wider">
+            <form action="{% url 'set_language' %}" method="post" class="flex items-center border border-neutral-800 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                {% get_available_languages as LANGUAGES %}
+                {% for code, name in LANGUAGES %}
+                <button type="submit" name="language" value="{{ code }}" class="px-2 min-[400px]:px-2.5 h-8 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
+                {% endfor %}
+            </form>
+            <button type="button" class="search-open nav-link flex items-center justify-center gap-2 w-9 h-9 sm:w-auto sm:h-auto shrink-0" data-search-open aria-label="{% trans 'Search' %}" title="{% trans 'Search' %} ( / )"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="hidden xl:inline">{% trans 'Search' %}</span></button>
+            <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span data-fav-count>{{ favorite_ids|length }}</span></a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cars:my_cars' %}" class="nav-link hidden sm:inline">{% trans 'Cabinet' %}</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="nav-link hidden sm:inline">{% trans 'Log in' %}</a>
+            {% endif %}
+            <button type="button" class="lg:hidden w-9 h-10 min-[360px]:w-10 -mr-2 flex items-center justify-center text-2xl" data-toggle-hidden="#mobile-nav" aria-label="{% trans 'Menu' %}">☰</button>
+        </div>
+    </div>
+    <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 pt-2 pb-6 text-sm uppercase tracking-wider max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div class="divide-y divide-neutral-900">
+            <a href="{% url 'cars:list' %}" class="block py-3.5">{% trans 'All Vehicles' %}</a>
+            <a href="{% url 'cars:new' %}" class="block py-3.5">{% trans 'New Offers' %}</a>
+            {# Same row as the others, highlighted by inverted colours #}
+            <a href="{% url 'cars:add' %}" class="block py-3.5 -mx-4 px-4 bg-neutral-100 text-neutral-950 font-semibold hover:bg-white">{% trans 'Sell your car' %}</a>
+            <a href="{% url 'cars:favorites' %}" class="flex items-center justify-between py-3.5">{% trans 'Favorites' %}<span data-fav-count class="text-neutral-500">{{ favorite_ids|length }}</span></a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cars:my_cars' %}" class="block py-3.5">{% trans 'Cabinet' %}</a>
+            <a href="{% url 'users:account' %}" class="block py-3.5">{% trans 'Account details' %}</a>
+            <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="w-full text-left py-3.5 uppercase tracking-wider text-neutral-500">{% trans 'Log out' %}</button></form>
+            {% else %}
+            <a href="{% url 'users:login' %}" class="block py-3.5">{% trans 'Log in' %}</a>
+            <a href="{% url 'users:register' %}" class="block py-3.5">{% trans 'Create an account' %}</a>
+            {% endif %}
+        </div>
+        <a href="{% url 'cars:partnership' %}" class="mt-8 block py-3.5 border-t border-b border-neutral-800">{% trans 'Partnership' %}</a>
+    </div>
+</header>
+
+{# Search window: header button, "/" or Ctrl+K #}
+<div id="search-overlay" class="search-overlay" hidden data-t-all="{% trans 'Show all results' %}" data-t-none="{% trans 'Nothing found. Try another make or model.' %}" role="dialog" aria-modal="true" aria-label="{% trans 'Search' %}">
+    <div class="search-backdrop" data-search-close></div>
+    <div class="search-dialog" data-search data-suggest-url="{% url 'cars:search_suggest' %}">
+        <form action="{% url 'cars:list' %}" method="get" class="search-field" role="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" name="q" placeholder="{% trans 'Make, model or year' %}" autocomplete="off" spellcheck="false" aria-label="{% trans 'Search' %}" data-search-input>
+            <button type="button" class="search-esc" data-search-close>Esc</button>
+        </form>
+        <div class="search-results" data-search-results>
+            <div class="search-hint" data-search-hint>
+                <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Popular makes' %}</div>
+                <div class="flex flex-wrap gap-2">{% for m in nav_makes|dictsortreversed:"n"|slice:":10" %}<a href="{{ m.get_absolute_url }}" class="search-chip">{{ m.name }}</a>{% endfor %}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if request.suggest_language %}{# first visit, browser prefers the other language #}
+<div class="lang-offer" data-lang-offer role="region" aria-label="Language">
+    <form action="{% url 'set_language' %}" method="post" class="flex items-center gap-3">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="hidden" name="language" value="{{ request.suggest_language }}">
+        <span>{% if request.suggest_language == 'ru' %}Этот сайт есть на русском{% else %}This site is available in English{% endif %}</span>
+        <button type="submit" class="lang-offer-go">{% if request.suggest_language == 'ru' %}Открыть{% else %}Switch{% endif %}</button>
+        <button type="button" class="lang-offer-close" aria-label="Close" data-remove-closest="[data-lang-offer]">×</button>
+    </form>
+</div>
+{% endif %}
+{% if messages %}
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-2">
+    {% for message in messages %}
+    <div class="border px-4 py-3 text-sm {% if message.tags == 'error' %}border-red-900 text-red-300{% else %}border-neutral-700 text-neutral-200{% endif %}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main class="flex-1">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="border-t border-white/5 mt-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 sm:grid-cols-3 text-sm">
+        <div>
+            <div class="flex items-center gap-3 mb-3">
+                <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
+                <span class="font-brand text-lg tracking-[0.3em]">FIBONACCI</span>
+            </div>
+            <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
+        </div>
+        <div>
+            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Vehicles' %}</div>
+            <ul class="space-y-2">
+                <li><a href="{% url 'cars:list' %}" class="hover:underline underline-offset-4">{% trans 'All Vehicles' %}</a></li>
+                <li><a href="{% url 'cars:new' %}" class="hover:underline underline-offset-4">{% trans 'New Offers' %}</a></li>
+                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:underline underline-offset-4">{{ c.label }}</a></li>{% endfor %}
+            </ul>
+        </div>
+        <div>
+            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Account' %}</div>
+            <ul class="space-y-2">
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'cars:my_cars' %}" class="hover:underline underline-offset-4">{% trans 'My listings' %}</a></li>
+                <li><a href="{% url 'users:account' %}" class="hover:underline underline-offset-4">{% trans 'Account details' %}</a></li>
+                {% else %}
+                <li><a href="{% url 'users:login' %}" class="hover:underline underline-offset-4">{% trans 'Log in' %}</a></li>
+                <li><a href="{% url 'users:register' %}" class="hover:underline underline-offset-4">{% trans 'Create an account' %}</a></li>
+                {% endif %}
+                <li><a href="{% url 'cars:favorites' %}" class="hover:underline underline-offset-4">{% trans 'Favorites' %}</a></li>
+                <li><a href="{% url 'cars:add' %}" class="hover:underline underline-offset-4">{% trans 'Sell your car' %}</a></li>
+                <li><a href="{% url 'cars:partnership' %}" class="hover:underline underline-offset-4">{% trans 'Partnership' %}</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-xs text-neutral-600">
+        © {% now "Y" %} FIBONACCI
+    </div>
+</footer>
+{% include "includes/bottom_nav.html" %}
+<script src="{% static 'js/site.js' %}" defer></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

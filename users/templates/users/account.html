@@ -1,0 +1,20 @@
+{% extends "cars/cabinet/base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'Account details' %}{% endblock %}
+{% block cabinet %}
+<h2 class="text-xl font-semibold mb-8">{% trans 'Account details' %}</h2>
+<form method="post" class="space-y-5 max-w-2xl">
+    {% csrf_token %}
+    <div class="grid sm:grid-cols-3 gap-5">
+        {% include "includes/field.html" with field=form.last_name %}
+        {% include "includes/field.html" with field=form.first_name %}
+        {% include "includes/field.html" with field=form.middle_name %}
+    </div>
+    <div class="grid sm:grid-cols-2 gap-5">
+        {% include "includes/field.html" with field=form.email %}
+        {% include "includes/field.html" with field=form.phone %}
+    </div>
+    {% include "includes/field.html" with field=form.country %}
+    <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
+</form>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load i18n cars_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl sm:text-4xl">{{ title }}</h1>
+        <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
+    </div>
+
+    {# Search in the catalog, with instant results #}
+    <div class="search-inline mb-4" data-search data-suggest-url="{% url 'cars:search_suggest' %}">
+        <form method="get" action="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="catalog-search" role="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Search by make, model or year' %}" autocomplete="off" spellcheck="false" aria-label="{% trans 'Search' %}" data-search-input>
+            {% if query %}<a href="{% url_with q='' page='' %}" class="catalog-search-clear" aria-label="{% trans 'Clear search' %}">✕</a>{% endif %}
+            {% if sort and sort != 'date-descending' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+            <button type="submit" class="btn btn-primary !h-11 !px-6 hidden sm:inline-flex">{% trans 'Find' %}</button>
+        </form>
+        <div class="search-results" data-search-results hidden></div>
+    </div>
+
+    {# Pickers: category (engine type), make, country, sort #}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-sm mb-4">
+        <div class="relative" data-dropdown>
+            <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="picker {% if fuel %}picker-set{% endif %}">
+                <span class="min-w-0"><span class="picker-label">{% trans 'Category' %}</span><span class="block truncate">{{ fuel_label }}</span></span>
+                <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </button>
+            <div data-dropdown-panel class="picker-panel hidden w-full sm:w-72">
+                <div class="py-2">
+                    {% for o in fuel_options %}
+                    <a href="{{ o.href }}" class="picker-option {% if o.active %}is-active{% endif %} {% if not o.count and not o.active %}opacity-40{% endif %}">
+                        <span class="truncate">{{ o.label }}</span>
+                        <span class="text-xs text-neutral-500">{% if o.active %}✓{% else %}{{ o.count }}{% endif %}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="relative" data-dropdown>
+            <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="picker {% if make %}picker-set{% endif %}">
+                <span class="min-w-0"><span class="picker-label">{% trans 'Make' %}</span><span class="block truncate">{% if make %}{{ make.name }}{% else %}{% trans 'All makes' %}{% endif %}</span></span>
+                <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+            </button>
+            <div data-dropdown-panel class="picker-panel picker-panel-right hidden">
+                <div class="p-2 border-b border-neutral-800">
+                    <input type="search" data-dropdown-search placeholder="{% trans 'Find a make' %}" autocomplete="off"
+                           class="w-full bg-white/[.04] border border-white/10 focus:border-blue-500 rounded-xl outline-none px-3 py-2.5 text-sm">
+                </div>
+                <div class="max-h-[55vh] overflow-y-auto py-2">
+                    <a href="{{ all_makes_href }}" class="picker-option {% if not make %}is-active{% endif %}"><span>{% trans 'All makes' %}</span>{% if not make %}<span class="text-xs">✓</span>{% endif %}</a>
+                    {% for o in make_options %}
+                    <a href="{{ o.href }}" data-dropdown-item="{{ o.label|lower }}" class="picker-option {% if o.active %}is-active{% endif %}">
+                        <span class="truncate">{{ o.label }}</span>
+                        <span class="text-xs text-neutral-500">{% if o.active %}✓{% else %}{{ o.count }}{% endif %}</span>
+                    </a>
+                    {% endfor %}
+                    <div data-dropdown-empty class="hidden px-4 py-3 text-sm text-neutral-500">{% trans 'Nothing found' %}</div>
+                </div>
+            </div>
+        </div>
+
+        {% for o in accident_options %}{% if o.active %}{% trans 'Accident' as l_acc %}{% include "includes/picker.html" with label=l_acc value=o.label options=accident_options is_set=accident %}{% endif %}{% endfor %}
+        {% for o in country_options %}{% if o.active %}{% trans 'Country' as l_country %}{% include "includes/picker.html" with label=l_country value=o.label options=country_options is_set=country align="right" %}{% endif %}{% endfor %}
+        {% for o in sort_options %}{% if o.active %}{% trans 'Sort' as l_sort %}{% include "includes/picker.html" with label=l_sort value=o.label options=sort_options align="right" class="col-span-2 sm:col-span-1" %}{% endif %}{% endfor %}
+    </div>
+
+    {# Filters: always open on desktop, collapsible on phones #}
+    <div class="mb-10">
+        <input type="checkbox" id="filters-toggle" class="peer hidden" {% if filters.active_count %}checked{% endif %}>
+        <label for="filters-toggle" class="lg:hidden btn btn-outline w-full cursor-pointer">{% trans 'Filters' %}{% if filters.active_count %} ({{ filters.active_count }}){% endif %}</label>
+        <form method="get" class="hidden peer-checked:grid lg:grid mt-4 grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            {% if fuel %}<input type="hidden" name="fuel" value="{{ fuel }}">{% endif %}
+            {% if make %}<input type="hidden" name="make" value="{{ make.slug }}">{% endif %}
+            {% if country %}<input type="hidden" name="country" value="{{ country }}">{% endif %}
+            {% if accident %}<input type="hidden" name="accident" value="{{ accident }}">{% endif %}
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+            <input type="hidden" name="sort" value="{{ sort }}">
+
+            {# Price: one dropdown with "from", "to" and the currency #}
+            <div class="form-field col-span-2 lg:col-span-1 relative" data-price>
+                <label for="price-button">{% trans 'Price' %}</label>
+                <button type="button" id="price-button" class="price-button {% if filters.price_active %}is-set{% endif %}" aria-expanded="false" aria-controls="price-panel">
+                    <span class="truncate">{% if filters.price_active %}{{ filters.price_summary }}{% else %}<span class="text-neutral-500">{% trans 'Any' %}</span>{% endif %}</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" class="price-arrow shrink-0"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+                </button>
+                <div id="price-panel" class="price-panel" hidden>
+                    <div class="space-y-3">
+                        {% for field in filters.price_fields %}
+                        <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" inputmode="numeric" autocomplete="off" placeholder="{{ field.label }}" aria-label="{% trans 'Price' %}: {{ field.label }}" data-number>
+                        {% endfor %}
+                    </div>
+                    <div class="flex gap-2 mt-4" role="radiogroup" aria-label="{% trans 'Currency' %}">
+                        <label class="cur-option"><input type="radio" name="cur" value="EUR" {% if filters.currency == 'EUR' %}checked{% endif %}><span>€ EUR</span></label>
+                        <label class="cur-option"><input type="radio" name="cur" value="USD" {% if filters.currency == 'USD' %}checked{% endif %}><span>$ USD</span></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mt-4">{% trans 'Apply' %}</button>
+                </div>
+            </div>
+
+            {% for field in filters.year_fields %}
+            <div class="form-field combo" data-combo>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <div class="relative">
+                    <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" inputmode="numeric" autocomplete="off" placeholder="{% trans 'Any' %}" role="combobox" aria-expanded="false" aria-controls="{{ field.id_for_label }}-list" class="!pr-10">
+                    <button type="button" class="combo-toggle" tabindex="-1" aria-label="{{ field.label }}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button>
+                    <ul class="combo-list" id="{{ field.id_for_label }}-list" role="listbox" hidden>
+                        <li role="option" data-value="" class="combo-any">{% trans 'Any' %}</li>
+                        {% for value, label in field.field.presets %}<li role="option" data-value="{{ value }}">{{ label }}</li>{% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="col-span-2 lg:col-span-1 flex gap-2">
+                <button type="submit" class="btn btn-primary flex-1 !px-3">{% trans 'Apply' %}</button>
+                {% if filters.active_count or fuel or make or country or accident or query %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for car in page %}{% include "includes/car_card.html" %}{% empty %}
+        <p class="text-neutral-500 col-span-full py-20 text-center">{% trans 'No vehicles found.' %}</p>
+        {% endfor %}
+    </div>
+
+    {% if page.has_other_pages %}
+    <nav class="flex items-center justify-center gap-2 mt-16 text-sm">
+        {% if page.has_previous %}<a href="{% url_with page=page.previous_page_number %}" class="btn btn-outline !py-2">←</a>{% endif %}
+        <span class="px-4 text-neutral-400">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a href="{% url_with page=page.next_page_number %}" class="btn btn-outline !py-2">→</a>{% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ CSP_NONCE }}">
+document.querySelectorAll('[data-dropdown]').forEach(function (root) {
+    var button = root.querySelector('[data-dropdown-button]');
+    var panel = root.querySelector('[data-dropdown-panel]');
+    var arrow = root.querySelector('[data-dropdown-arrow]');
+    var search = root.querySelector('[data-dropdown-search]');
+    var items = root.querySelectorAll('[data-dropdown-item]');
+    var empty = root.querySelector('[data-dropdown-empty]');
+    function setOpen(open) {
+        if (open) document.querySelectorAll('[data-dropdown-panel]').forEach(function (p) { if (p !== panel) p.classList.add('hidden'); });
+        panel.classList.toggle('hidden', !open);
+        arrow.classList.toggle('rotate-180', open);
+        button.setAttribute('aria-expanded', open);
+        if (open && search && window.matchMedia('(min-width: 640px)').matches) search.focus();
+    }
+    button.addEventListener('click', function () { setOpen(panel.classList.contains('hidden')); });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    if (search) search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase(), shown = 0;
+        items.forEach(function (a) { var ok = a.dataset.dropdownItem.indexOf(q) !== -1; a.classList.toggle('hidden', !ok); if (ok) shown++; });
+        empty.classList.toggle('hidden', shown > 0);
+    });
+});
+// Filter fields: suggested values in a dropdown, or type your own number.
+document.querySelectorAll('[data-combo]').forEach(function (root) {
+    var input = root.querySelector('input');
+    var list = root.querySelector('.combo-list');
+    var toggle = root.querySelector('.combo-toggle');
+    var options = Array.prototype.slice.call(list.querySelectorAll('li'));
+    var active = -1;
+    function digits(v) { return (v || '').replace(/\D/g, ''); }
+    function visible() { return options.filter(function (o) { return !o.hidden; }); }
+    function filter(all) {
+        var q = all ? '' : digits(input.value);
+        options.forEach(function (o) {
+            o.hidden = q !== '' && (o.dataset.value === '' || o.dataset.value.indexOf(q) !== 0);
+            o.classList.toggle('is-selected', o.dataset.value !== '' && o.dataset.value === digits(input.value));
+        });
+        setActive(-1);
+        return visible().length > 0;
+    }
+    function setOpen(open) {
+        if (open) document.querySelectorAll('[data-combo].open').forEach(function (r) { if (r !== root) r.dispatchEvent(new Event('combo:close')); });
+        list.hidden = !open; root.classList.toggle('open', open); input.setAttribute('aria-expanded', open);
+        if (open) { var sel = list.querySelector('.is-selected'); if (sel) list.scrollTop = sel.offsetTop - 40; }
+    }
+    function setActive(i) {
+        var vis = visible(); options.forEach(function (o) { o.classList.remove('is-active'); });
+        active = Math.max(-1, Math.min(i, vis.length - 1));
+        if (active >= 0) { vis[active].classList.add('is-active'); vis[active].scrollIntoView({ block: 'nearest' }); }
+    }
+    function group(v) { return root.hasAttribute('data-group') && digits(v) ? digits(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') : v; }
+    input.value = group(input.value);
+    input.addEventListener('change', function () { input.value = group(input.value); });
+    function choose(o) { input.value = group(o.dataset.value); setOpen(false); input.dispatchEvent(new Event('change', { bubbles: true })); }
+    if (input.form) input.form.addEventListener('submit', function () { input.value = digits(input.value); });
+    root.addEventListener('combo:close', function () { setOpen(false); });
+    input.addEventListener('focus', function () { setOpen(filter(true)); });
+    input.addEventListener('click', function () { if (list.hidden) setOpen(filter(true)); });
+    input.addEventListener('input', function () { setOpen(filter(false)); });
+    input.addEventListener('blur', function () { setTimeout(function () { setOpen(false); }, 120); });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) setOpen(filter(true)); else setActive(active + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+        else if (e.key === 'Enter' && !list.hidden && active >= 0) { e.preventDefault(); choose(visible()[active]); }
+        else if (e.key === 'Escape') setOpen(false);
+    });
+    toggle.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    toggle.addEventListener('click', function () { if (list.hidden) { input.focus(); setOpen(filter(true)); } else setOpen(false); });
+    options.forEach(function (o) {
+        o.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        o.addEventListener('click', function () { choose(o); });
+    });
+});
+// Price dropdown: "from", "to" typed by hand, currency switch.
+document.querySelectorAll('[data-price]').forEach(function (root) {
+    var button = root.querySelector('.price-button'), panel = root.querySelector('.price-panel');
+    function setOpen(open) {
+        panel.hidden = !open; button.setAttribute('aria-expanded', open);
+        if (open) { var first = panel.querySelector('input[type=text]'); if (window.matchMedia('(min-width: 640px)').matches) first.focus(); }
+    }
+    button.addEventListener('click', function () { setOpen(panel.hidden); });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    panel.querySelectorAll('[data-number]').forEach(function (input) {
+        function digits(v) { return (v || '').replace(/\D/g, ''); }
+        function group(v) { return digits(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f'); }
+        input.value = group(input.value);
+        input.addEventListener('input', function () {
+            var atEnd = input.selectionStart === input.value.length;
+            input.value = group(input.value);
+            if (atEnd) input.setSelectionRange(input.value.length, input.value.length);
+        });
+        input.form.addEventListener('submit', function () { input.value = digits(input.value); });
+    });
+});
+</script>
+{% endblock %}

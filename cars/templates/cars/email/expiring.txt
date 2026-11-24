@@ -1,0 +1,10 @@
+{% load i18n %}{% blocktrans with name=user.first_name %}Hello {{ name }},{% endblocktrans %}
+
+{% blocktrans with car=car date=car.active_until|date:"d.m.Y" %}Your listing "{{ car }}" on FIBONACCI will be deactivated on {{ date }}.{% endblocktrans %}
+
+{% trans 'After that it will be hidden from the site until you activate it again in your cabinet:' %}
+{{ cabinet_url }}
+
+{% trans 'Your listing:' %} {{ car_url }}
+
+FIBONACCI
