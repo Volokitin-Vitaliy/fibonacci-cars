@@ -59,15 +59,45 @@ docker compose exec scheduler python manage.py import_hollmann   # first import,
 The site is at `https://your-domain.com`, the admin at `https://your-domain.com/<ADMIN_URL>/`
 (the secret address from `.env`).
 
-## Updating to a new version
+## 6. Automatic updates (GitHub Actions)
+
+After this, every merge into `master` is tested and put on the server automatically
+(`.github/workflows/deploy.yml` → `deploy/deploy.sh`): the database is backed up, the new
+version is built and started, and the site is checked. If tests fail, nothing is deployed.
+
+On the server (as root):
 
 ```bash
-cd /opt/fibonacci
-git pull
-docker compose up -d --build
+adduser --disabled-password --gecos "" deploy
+usermod -aG docker deploy
+mkdir -p /opt/backups && chown -R deploy:deploy /opt/fibonacci /opt/backups
+sudo -u deploy ssh-keygen -t ed25519 -N "" -f /home/deploy/.ssh/github_deploy -C github-actions
+sudo -u deploy sh -c 'cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys'
+cat /home/deploy/.ssh/github_deploy      # private key -> secret SSH_PRIVATE_KEY
+ssh-keyscan -H SERVER_IP                 # -> secret SSH_KNOWN_HOSTS
+```
+
+On GitHub, in the repository:
+
+1. **Actions** tab → enable workflows (forks have them switched off).
+2. **Settings → Environments → New environment** `production` (optionally: required reviewers).
+3. **Settings → Secrets and variables → Actions → New repository secret**:
+   `SSH_HOST` = server IP, `SSH_USER` = `deploy`, `SSH_PRIVATE_KEY` = the private key
+   printed above (all lines, including BEGIN/END), `SSH_KNOWN_HOSTS` = output of
+   `ssh-keyscan -H SERVER_IP`.
+4. **Actions → Test and deploy → Run workflow** once to check that it works.
+
+## Updating by hand
+
+```bash
+sudo -u deploy bash /opt/fibonacci/deploy/deploy.sh
 ```
 
 Migrations and static files run automatically on start.
+
+**Rolling back:** on GitHub open the merged pull request and press **Revert**, then merge the
+revert pull request: the previous version is deployed. Database copies made before each
+update are in `/opt/backups/pre-deploy-*.sql.gz`.
 
 **Once after updating to the version with photo sizes** (makes the small WebP copies
 and removes location data from photos sellers uploaded earlier, ~10 minutes):

@@ -1,0 +1,56 @@
+# Tests every pull request; after a merge into master, tests again and updates the server.
+# Needs repository secrets (Settings -> Secrets and variables -> Actions):
+#   SSH_HOST         server IP address
+#   SSH_USER         deploy
+#   SSH_PRIVATE_KEY  private key of the deploy user (see deploy/README.md)
+#   SSH_KNOWN_HOSTS  output of: ssh-keyscan -H SERVER_IP
+name: Test and deploy
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+      - name: Run tests
+        env:
+          SECRET_KEY: ci-only-not-secret
+        run: python manage.py test
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - name: Update the server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" 'bash /opt/fibonacci/deploy/deploy.sh'
