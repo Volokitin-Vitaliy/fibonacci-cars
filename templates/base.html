@@ -21,7 +21,7 @@
     <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/icon-512.png' %}{% endblock %}">
     <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
     {% if structured_data %}{% json_ld structured_data %}{% endif %}
-    <script>document.documentElement.classList.add('js');</script>
+    <script nonce="{{ CSP_NONCE }}">document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Unbounded:wght@600&display=swap" rel="stylesheet">
@@ -79,7 +79,7 @@
             {% else %}
                 <a href="{% url 'users:login' %}" class="nav-link hidden sm:inline">{% trans 'Log in' %}</a>
             {% endif %}
-            <button type="button" class="lg:hidden w-9 h-10 min-[360px]:w-10 -mr-2 flex items-center justify-center text-2xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
+            <button type="button" class="lg:hidden w-9 h-10 min-[360px]:w-10 -mr-2 flex items-center justify-center text-2xl" data-toggle-hidden="#mobile-nav" aria-label="{% trans 'Menu' %}">☰</button>
         </div>
     </div>
     <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 pt-2 pb-6 text-sm uppercase tracking-wider max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -128,7 +128,7 @@
         <input type="hidden" name="language" value="{{ request.suggest_language }}">
         <span>{% if request.suggest_language == 'ru' %}Этот сайт есть на русском{% else %}This site is available in English{% endif %}</span>
         <button type="submit" class="lang-offer-go">{% if request.suggest_language == 'ru' %}Открыть{% else %}Switch{% endif %}</button>
-        <button type="button" class="lang-offer-close" aria-label="Close" onclick="this.closest('[data-lang-offer]').remove()">×</button>
+        <button type="button" class="lang-offer-close" aria-label="Close" data-remove-closest="[data-lang-offer]">×</button>
     </form>
 </div>
 {% endif %}

@@ -36,10 +36,14 @@ Django marketplace for exclusive vehicles, in English and Russian.
 - **Partnership page** (`/partnership/`) with the brand's links; edit them in
   `cars/partnership.py`.
 - **Floating bottom menu** on every page: a full-width bar on phones, a pill on desktop.
-- **Language choice first:** on the first visit to any page the visitor chooses English or
-  Russian, then the site continues to the requested page (`/en/...`, `/ru/...`).
-  Search engines skip the picker; pages have `hreflang` links, `/robots.txt` and
-  `/sitemap.xml` cover both languages.
+- **Languages:** the site opens straight away: links keep their language (`/en/...`,
+  `/ru/...`), the bare address follows the browser's language, and on the first visit a
+  small offer to switch is shown if the browser prefers the other language. Pages have
+  `hreflang` links, `/robots.txt` and `/sitemap.xml` cover both languages.
+- **SEO and link previews:** schema.org data for search results (car with price and
+  photos, breadcrumbs, organization, site search box); WhatsApp / Telegram / Facebook
+  previews show the car photo, title and price.
+- **Emails** are designed HTML (logo, car photo, button) with a plain-text version.
 
 ## Local development
 
@@ -59,6 +63,27 @@ Without `POSTGRES_DB` in `.env` the project uses SQLite. Admin: http://localhost
 `DEBUG=True` is for your computer only: without it the site runs in production mode
 (no debug pages, secure cookies) and will not serve photos over plain http.
 
+## Front-end (CSS)
+
+Styles are Tailwind CSS compiled into `assets/css/site.css`, which is committed, so the
+server needs no Node.js. After changing classes in templates or `assets/src/site.css`:
+
+```bash
+npm install          # once
+npm run build:css    # or: npm run watch:css while editing
+```
+
+Static files get a content hash in their names on `collectstatic`, so browsers cache them
+for a year and still see every update.
+
+## Photos
+
+Seller photos are turned upright, stripped of EXIF/GPS, limited to 2000 px and saved under
+random names. Every photo gets WebP copies (240, 480, 960, 1600 px) used for thumbnails,
+cards, the vehicle page and the fullscreen viewer. `python manage.py process_photos` makes
+missing copies (`--clean-uploads` also re-saves older seller photos without metadata,
+`--all` remakes every copy). Photo files are deleted together with the photo.
+
 ## Daily jobs
 
 | Command | What it does |
@@ -66,7 +91,9 @@ Without `POSTGRES_DB` in `.env` the project uses SQLite. Admin: http://localhost
 | `python manage.py import_hollmann` | Updates vehicles from hollmann.international, downloads new photos, hides sold cars and deletes their photos. The first run takes ~45 min (≈600 MB of photos), later runs only fetch what changed. Options: `--no-media`, `--no-details`, `--limit 10` (test on a few cars), `--delay 1.0`. |
 | `python manage.py expire_listings` | Marks listings whose month is over as inactive. Visibility does not depend on it: expired listings are hidden at once. |
 | `python manage.py send_expiry_reminders` | Emails owners whose listing expires within `LISTING_REMINDER_DAYS` (3). One email per listing period. |
-| `python manage.py run_scheduler` | Runs all three commands every 24 hours in a loop (the `scheduler` service in docker-compose). |
+| `python manage.py process_photos` | Makes WebP copies for photos that do not have them yet. |
+| `python manage.py clearsessions` | Removes expired visitor sessions. |
+| `python manage.py run_scheduler` | Runs all of the above every 24 hours in a loop (the `scheduler` service in docker-compose). |
 
 Instead of the scheduler you can use cron:
 
@@ -145,6 +172,13 @@ to `https://<domain>/payments/stripe/webhook/` (events `checkout.session.complet
 - **Bot check** (Cloudflare Turnstile, free): add `TURNSTILE_SITE_KEY` and
   `TURNSTILE_SECRET_KEY` (Cloudflare dashboard → Turnstile → Add site) and sign-up and the
   new-listing form get an invisible "not a robot" check. Without keys it is off.
+- **Content-Security-Policy:** browsers run only the site's own scripts (inline scripts
+  carry a per-request nonce), so injected code would not run. `CSP_REPORT_ONLY=True` in
+  `.env` switches it to report-only. The admin is not covered (it needs inline code).
+- **Photo privacy:** location (GPS) and other metadata are removed from uploaded photos.
+- **Email changes** take effect only after the new address is confirmed by a link.
+- **Error reports:** set `SENTRY_DSN` (free plan at sentry.io) to be emailed about server
+  errors; no personal data is sent.
 - `DEBUG` is off unless `.env` says `DEBUG=True`.
 
 ## Email

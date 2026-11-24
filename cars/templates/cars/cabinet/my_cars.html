@@ -60,7 +60,7 @@
                 <form method="post" action="{% url 'cars:activate' car.pk %}" class="col-span-2 sm:col-span-1">{% csrf_token %}<button class="btn btn-primary !py-2 !px-4 w-full">{% if payment_required %}{% blocktrans %}Activate for €{{ listing_price }}{% endblocktrans %}{% else %}{% blocktrans %}Activate for {{ duration }} days{% endblocktrans %}{% endif %}</button></form>
                 {% endif %}
                 <a href="{% url 'cars:edit' car.pk %}" class="btn btn-outline !py-2 !px-4 w-full sm:w-auto">{% trans 'Edit' %}</a>
-                <form method="post" action="{% url 'cars:delete' car.pk %}" onsubmit="return confirm('{% trans 'Delete this listing?' as q %}{{ q|escapejs }}')">{% csrf_token %}<button class="btn btn-danger !py-2 !px-4 w-full">{% trans 'Delete' %}</button></form>
+                <form method="post" action="{% url 'cars:delete' car.pk %}" data-confirm="{% trans 'Delete this listing?' %}">{% csrf_token %}<button class="btn btn-danger !py-2 !px-4 w-full">{% trans 'Delete' %}</button></form>
             </div>
         </div>
     </div>

@@ -56,7 +56,8 @@ docker compose exec web python manage.py createsuperuser
 docker compose exec scheduler python manage.py import_hollmann   # first import, ~45 min
 ```
 
-The site is at `https://your-domain.com`, the admin at `/admin/`.
+The site is at `https://your-domain.com`, the admin at `https://your-domain.com/<ADMIN_URL>/`
+(the secret address from `.env`).
 
 ## Updating to a new version
 
@@ -67,6 +68,15 @@ docker compose up -d --build
 ```
 
 Migrations and static files run automatically on start.
+
+**Once after updating to the version with photo sizes** (makes the small WebP copies
+and removes location data from photos sellers uploaded earlier, ~10 minutes):
+
+```bash
+docker compose exec scheduler python manage.py process_photos --clean-uploads
+```
+
+Later photos get their copies automatically; the daily jobs also catch any that were missed.
 
 ## Backups
 

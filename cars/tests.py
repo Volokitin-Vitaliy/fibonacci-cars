@@ -1228,3 +1228,33 @@ class StructuredDataTests(TestCase):
         self.assertNotIn('<script>alert(1)', page.content.decode())  # escaped inside JSON-LD
         self.assertContains(page, 'property="og:type" content="product"')
         self.assertEqual(page.content.decode().count('property="og:image"'), 1)
+
+
+class ContentSecurityPolicyTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+
+    def test_pages_get_a_policy_with_a_fresh_nonce(self):
+        page = self.client.get(reverse('cars:home'))
+        policy = page['Content-Security-Policy']
+        nonce = re.search(r"'nonce-([^']+)'", policy).group(1)
+        self.assertIn(f'<script nonce="{nonce}">', page.content.decode())
+        self.assertIn("frame-ancestors 'none'", policy)
+        self.assertIn("object-src 'none'", policy)
+        self.assertNotIn('unsafe-eval', policy)
+        other = self.client.get(reverse('cars:home'))['Content-Security-Policy']
+        self.assertNotIn(nonce, other)
+
+    def test_no_inline_event_handlers_in_templates(self):
+        import pathlib
+        offenders = [str(p) for p in pathlib.Path(settings.BASE_DIR).glob('**/templates/**/*.html')
+                     if 'venv' not in p.parts and 'node_modules' not in p.parts
+                     and 'admin' not in p.parts and 'allauth' not in p.parts
+                     and re.search(r'\son(click|submit|change|input|load)=', p.read_text())]
+        self.assertEqual(offenders, [])
+
+    def test_admin_is_left_out(self):
+        admin = CustomUser.objects.create_superuser('csp@example.com', 'C', 'S', 'Adm1n-pass-123')
+        self.client.force_login(admin)
+        page = self.client.get(reverse('admin:index'))
+        self.assertNotIn('Content-Security-Policy', page)

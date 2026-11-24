@@ -152,3 +152,15 @@ document.addEventListener('submit', function (e) {
         b.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
 })();
+
+/* Small behaviours without inline handlers (allowed by the Content-Security-Policy). */
+document.addEventListener('click', function (e) {
+    var toggle = e.target.closest('[data-toggle-hidden]');
+    if (toggle) { var target = document.querySelector(toggle.dataset.toggleHidden); if (target) target.classList.toggle('hidden'); }
+    var remover = e.target.closest('[data-remove-closest]');
+    if (remover) { var box = remover.closest(remover.dataset.removeClosest); if (box) box.remove(); }
+});
+document.addEventListener('submit', function (e) {
+    var form = e.target.closest('form[data-confirm]');
+    if (form && !window.confirm(form.dataset.confirm)) e.preventDefault();
+}, true);

@@ -137,7 +137,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ CSP_NONCE }}">
 document.querySelectorAll('[data-dropdown]').forEach(function (root) {
     var button = root.querySelector('[data-dropdown-button]');
     var panel = root.querySelector('[data-dropdown-panel]');

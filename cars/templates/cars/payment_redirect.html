@@ -14,5 +14,5 @@
     <p class="text-xs text-neutral-600 mt-4">{% trans 'You will be redirected to the secure WayForPay payment page.' %}</p>
     <a href="{% url 'cars:my_cars' %}" class="inline-block mt-8 text-sm text-neutral-400 underline">{% trans 'Pay later' %}</a>
 </section>
-<script>setTimeout(function () { document.getElementById('pay-form').submit(); }, 1200);</script>
+<script nonce="{{ CSP_NONCE }}">setTimeout(function () { document.getElementById('pay-form').submit(); }, 1200);</script>
 {% endblock %}

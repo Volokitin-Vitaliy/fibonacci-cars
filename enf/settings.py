@@ -57,6 +57,10 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 
 # Brute-force protection (django-axes): after 5 wrong passwords for one email from one
 # address, logging in is blocked for 15 minutes. Works for the site and the admin.
+# Content-Security-Policy (enf/csp.py). CSP_REPORT_ONLY=True only reports violations.
+CSP_ENABLED = env_bool('CSP_ENABLED', True)
+CSP_REPORT_ONLY = env_bool('CSP_REPORT_ONLY', False)
+
 # Cloudflare Turnstile bot check on sign-up and the listing form (off without keys).
 TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
 TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
@@ -98,6 +102,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'enf.csp.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'cars.middleware.LanguageChoiceMiddleware',
@@ -125,6 +130,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'cars.context_processors.navigation',
+                'enf.csp.nonce',
             ],
         },
     },
@@ -378,3 +384,14 @@ UNFOLD = {
         ],
     },
 }
+
+
+# Error reports to Sentry (optional): set SENTRY_DSN in .env to get an email with the
+# details of every server error. Personal data (emails, cookies) is not sent.
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+if SENTRY_DSN:
+    import sentry_sdk  # noqa: E402
+
+    sentry_sdk.init(dsn=SENTRY_DSN, send_default_pii=False, traces_sample_rate=0.0,
+                    environment=os.getenv('SENTRY_ENVIRONMENT', 'production'))
+

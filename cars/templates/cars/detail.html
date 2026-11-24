@@ -246,7 +246,7 @@
 {% block extra_js %}
 {% if photos %}<script src="{% static 'js/gallery.js' %}" defer></script>{% endif %}
 <script src="{% static 'js/contact-bar.js' %}" defer></script>
-{% if similar|length > 4 %}<script>
+{% if similar|length > 4 %}<script nonce="{{ CSP_NONCE }}">
 document.querySelectorAll('[data-scroll]').forEach(function (b) {
     var scroller = document.querySelector('[data-scroller]');
     b.addEventListener('click', function () { scroller.scrollBy({left: scroller.clientWidth * 0.8 * b.dataset.scroll, behavior: 'smooth'}); });

@@ -139,7 +139,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ CSP_NONCE }}">
 (function () {
     var slides = document.querySelectorAll('[data-slide]'), dots = document.querySelectorAll('[data-dot]'),
         captions = document.querySelectorAll('[data-caption]'), current = 0, timer;
