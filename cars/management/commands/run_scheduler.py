@@ -20,7 +20,7 @@ class Command(BaseCommand):
         interval = options['interval_hours'] * 3600
         while True:
             self.stdout.write(f'[{timezone.now():%Y-%m-%d %H:%M}] running daily jobs')
-            for command in ('expire_listings', 'send_expiry_reminders', 'import_hollmann'):
+            for command in ('expire_listings', 'send_expiry_reminders', 'import_hollmann', 'clearsessions'):
                 try:
                     call_command(command, stdout=self.stdout)
                 except Exception:

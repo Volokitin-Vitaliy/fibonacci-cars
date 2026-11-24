@@ -9,7 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries import countries
 
-from .models import Car, Make
+from . import images
+from .models import Car, CarPhoto, Make
 
 EXCLUDED_COUNTRIES = {'RU'}
 
@@ -110,6 +111,8 @@ class CarForm(forms.ModelForm):
     def clean_photos(self):
         photos = self.cleaned_data.get('photos') or []
         existing = self.instance.photos.count() if self.instance.pk else 0
+        if not photos and not existing and not self.instance.pk:
+            raise forms.ValidationError(_('Add at least one photo of the car.'))
         if existing + len(photos) > settings.LISTING_MAX_PHOTOS:
             raise forms.ValidationError(
                 _('A listing can have at most %(n)s photos.') % {'n': settings.LISTING_MAX_PHOTOS})
@@ -120,7 +123,10 @@ class CarForm(forms.ModelForm):
         if commit:
             start = car.photos.count()
             for i, image in enumerate(self.cleaned_data.get('photos') or []):
-                car.photos.create(image=image, position=start + i)
+                photo = CarPhoto(car=car, position=start + i)
+                cleaned = images.clean_upload(image)
+                photo.image.save(cleaned.name, cleaned, save=False)
+                photo.save()
         return car
 
 

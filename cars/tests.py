@@ -254,7 +254,7 @@ class ListingLifecycleTests(TestCase):
         self.assertFalse(car.is_listing_active)
 
     def test_create_listing_from_cabinet(self):
-        response = self.client.post(reverse('cars:add'), {
+        response = self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Tesla').pk, 'model': 'Model S Plaid',
             'description': 'Like new', 'year': 2023, 'mileage_km': 12000, 'fuel': 'electric',
             'transmission': 'automatic', 'power_hp': 1020, 'color': 'White', 'price': '79000',
@@ -280,7 +280,7 @@ class ListingLifecycleTests(TestCase):
         self.assertContains(page, 'Ivan Petrov')
 
     def test_contact_name_and_phone_are_required(self):
-        response = self.client.post(reverse('cars:add'), {
+        response = self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Audi').pk, 'model': 'A6', 'price': '1000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol',
         })
@@ -540,7 +540,7 @@ class ContactTests(TestCase):
                 'fuel': 'petrol', 'contact_name': 'Ivan',
                 'contact_phone': '+49 151 0000001', 'country': 'DE'}
         data.update(contacts)
-        return self.client.post(reverse('cars:add'), data)
+        return self.client.post(reverse('cars:add'), {'photos': png(), **data})
 
     def test_separate_whatsapp_and_telegram(self):
         self.post(contact_whatsapp='+49 151 999 88 77', contact_telegram='https://t.me/ivan_cars')
@@ -569,6 +569,7 @@ class ContactTests(TestCase):
         self.assertIn('contact_telegram', response.context['form'].errors)
 
 
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media')
 class LayoutTests(TestCase):
     def setUp(self):
         self.client.cookies.load(LANG)
@@ -629,11 +630,11 @@ class LayoutTests(TestCase):
     def test_listing_form_requires_accident_answer(self):
         user = make_user('seller2@example.com', '+49 151 0000009')
         self.client.force_login(user)
-        response = self.client.post(reverse('cars:add'), {
+        response = self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
             'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
         self.assertIn('accident', response.context['form'].errors)
-        self.client.post(reverse('cars:add'), {
+        self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Audi').pk, 'model': 'S8', 'price': '1000', 'currency': 'EUR',
             'fuel': 'petrol', 'accident': 'True', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
         self.assertIs(Car.objects.get(model='S8').accident, True)
@@ -693,7 +694,7 @@ class ModerationTests(TestCase):
         self.client.force_login(self.user)
 
     def create(self):
-        self.client.post(reverse('cars:add'), {
+        self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000', 'currency': 'EUR', 'accident': 'False',
             'fuel': 'petrol', 'contact_name': 'Ivan',
             'contact_phone': '+49 151 0000001', 'country': 'DE',
@@ -947,7 +948,7 @@ class WayForPayTests(TestCase):
         self.client.force_login(self.user)
 
     def submit(self):
-        return self.client.post(reverse('cars:add'), {
+        return self.client.post(reverse('cars:add'), {'photos': png(),
             'make': Make.get_by_name('Audi').pk, 'model': 'RS7', 'price': '120000', 'currency': 'EUR',
             'accident': 'False', 'fuel': 'petrol', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
 
@@ -1101,3 +1102,89 @@ class SimilarCarsTests(TestCase):
             self.assertContains(page, 'Similar vehicles')
             self.assertContains(page, self.bmw_close.get_absolute_url())
         self.assertNotContains(page, 'hollmann.international')
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media')
+class DeepFixTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+
+    def test_confirmed_account_keeps_password_on_google_sign_in(self):
+        from allauth.account.models import EmailAddress
+        from allauth.socialaccount.internal.flows.email_authentication import wipe_password
+        from django.core import mail
+        self.client.post(reverse('users:register'), {
+            'last_name': 'P', 'first_name': 'I', 'email': 'keep@example.com', 'country': 'DE',
+            'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw'})
+        link = re.search(r'https?://\S+/verify/\S+/', mail.outbox[0].body).group(0)
+        self.client.get(link.split('testserver', 1)[1])
+        user = CustomUser.objects.get(email='keep@example.com')
+        self.assertTrue(EmailAddress.objects.filter(user=user, email='keep@example.com', verified=True,
+                                                    primary=True).exists())
+        wipe_password(None, user, 'keep@example.com')  # what allauth does on Google sign-in
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('Sup3r-secret-pw'))
+        # Accounts made by an admin are confirmed too.
+        admin = CustomUser.objects.create_superuser('boss@example.com', 'B', 'S', 'Adm1n-pass-123')
+        self.assertTrue(admin.email_verified)
+        self.assertTrue(EmailAddress.objects.filter(user=admin, verified=True).exists())
+
+    def test_email_change_needs_confirmation(self):
+        from django.core import mail
+        user = CustomUser.objects.create_user('old@example.com', 'O', 'L', 'Sup3r-secret-pw')
+        self.client.force_login(user)
+        self.client.post(reverse('users:account'), {'last_name': 'L', 'first_name': 'O',
+                                                    'email': 'new@example.com', 'country': 'DE'})
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'old@example.com')
+        self.assertEqual(mail.outbox[-1].to, ['new@example.com'])
+        path = re.search(r'https?://\S+', mail.outbox[-1].body).group(0).split('testserver', 1)[1]
+        self.client.get(path)
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'new@example.com')
+        self.assertEqual(self.client.get(path).status_code, 400)  # used once
+
+    def test_uploaded_photo_is_cleaned_resized_and_files_removed_with_it(self):
+        import os
+        from django.test import TestCase as _T  # noqa: F401
+        from PIL import Image as PILImage
+        owner = make_user()
+        self.client.force_login(owner)
+        big = PILImage.new('RGB', (3000, 2000), 'blue')
+        exif = PILImage.Exif()
+        exif[0x8825] = {2: (55.0, 45.0, 0.0), 4: (37.0, 36.0, 0.0)}  # GPS position
+        buf = BytesIO()
+        big.save(buf, 'JPEG', exif=exif)
+        upload = SimpleUploadedFile('IMG_home_street_5.jpg', buf.getvalue(), content_type='image/jpeg')
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('cars:add'), {
+                'photos': upload, 'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000',
+                'currency': 'EUR', 'fuel': 'petrol', 'accident': 'False', 'contact_name': 'Ivan',
+                'contact_phone': '+49 151 0000001', 'country': 'DE'})
+        photo = Car.objects.get(model='RS6').photos.get()
+        self.assertNotIn('home_street', photo.image.name)
+        with PILImage.open(photo.image.path) as saved:
+            self.assertEqual(max(saved.size), 2000)
+            self.assertFalse(saved.getexif())
+        self.assertEqual(photo.variants, [480, 960, 1600, 2000])
+        self.assertIn('-480.webp', photo.small_url)
+        files = [photo.image.path] + [os.path.join(os.path.dirname(photo.image.path), 'v', f)
+                                      for f in os.listdir(os.path.join(os.path.dirname(photo.image.path), 'v'))]
+        self.assertTrue(all(os.path.exists(f) for f in files))
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('cars:delete', args=[photo.car_id]))
+        self.assertFalse(any(os.path.exists(f) for f in files))
+
+    def test_new_listing_needs_a_photo(self):
+        self.client.force_login(make_user())
+        page = self.client.post(reverse('cars:add'), {
+            'make': Make.get_by_name('Audi').pk, 'model': 'NoPhoto', 'price': '1000', 'currency': 'EUR',
+            'fuel': 'petrol', 'accident': 'False', 'contact_name': 'I', 'contact_phone': '+49 151 0000001',
+            'country': 'DE'})
+        self.assertContains(page, 'Add at least one photo')
+        self.assertFalse(Car.objects.filter(model='NoPhoto').exists())
+
+    def test_branded_404(self):
+        page = self.client.get('/en/no-such-page/')
+        self.assertEqual(page.status_code, 404)
+        self.assertContains(page, 'car was sold', status_code=404)

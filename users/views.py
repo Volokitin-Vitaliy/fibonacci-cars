@@ -58,6 +58,21 @@ def verify_email(request, uidb64, token):
     return redirect('cars:my_cars')
 
 
+def confirm_email_change(request, token):
+    found = verification.email_change_from_link(token)
+    if found is None:
+        return render(request, 'users/verify_failed.html', status=400)
+    user, new_email = found
+    if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+        messages.error(request, _('This email is already in use.'))
+        return redirect('users:account')
+    user.email = new_email
+    user.email_verified = True
+    user.save(update_fields=['email', 'email_verified'])
+    messages.success(request, _('Your email has been changed to %(email)s.') % {'email': new_email})
+    return redirect('users:account')
+
+
 class EmailLoginView(LoginView):
     template_name = 'users/login.html'
     authentication_form = LoginForm
@@ -72,9 +87,18 @@ def logout(request):
 
 @login_required
 def account(request):
+    current_email = request.user.email
     form = AccountForm(request.POST or None, instance=request.user)
     if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, _('Your details have been saved.'))
+        new_email = form.cleaned_data['email']
+        user = form.save(commit=False)
+        user.email = current_email  # changes only after the new address is confirmed
+        user.save()
+        if new_email != current_email.lower():
+            verification.send_change_link(request, user, new_email)
+            messages.info(request, _('To change your email, open the link we sent to %(email)s. '
+                                     'Until then your current address stays.') % {'email': new_email})
+        else:
+            messages.success(request, _('Your details have been saved.'))
         return redirect('users:account')
     return render(request, 'users/account.html', {'form': form, 'section': 'account'})

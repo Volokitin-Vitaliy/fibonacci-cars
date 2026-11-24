@@ -65,6 +65,7 @@ AXES_FAILURE_LIMIT = int(os.getenv('AXES_FAILURE_LIMIT', 5))
 AXES_COOLOFF_TIME = timedelta(minutes=int(os.getenv('AXES_COOLOFF_MINUTES', 15)))
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
 AXES_RESET_ON_SUCCESS = True
+AXES_DISABLE_ACCESS_LOG = True  # keep failed attempts only, not a row per login
 AXES_USERNAME_FORM_FIELD = 'username'  # the email field on the site and admin login forms
 AXES_LOCKOUT_TEMPLATE = 'users/locked.html'
 # nginx puts the visitor's real address in X-Real-IP (the app is not reachable directly).

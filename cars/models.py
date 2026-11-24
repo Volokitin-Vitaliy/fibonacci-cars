@@ -4,6 +4,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db import models
 from django_countries.fields import CountryField
 from django.db.models import Q
@@ -328,9 +329,38 @@ class CarPhoto(models.Model):
     position = models.PositiveIntegerField(default=0)
     # Original address of an imported photo, so the daily import downloads it only once.
     source_url = models.URLField(max_length=500, blank=True, db_index=True)
+    # Widths of the WebP copies made by cars.images (the last one is the full size).
+    variants = models.JSONField(default=list, blank=True)
 
     class Meta:
         ordering = ('position', 'id')
+
+    def _variant_url(self, width):
+        from .images import variant_path
+        return default_storage.url(variant_path(self.image.name, width))
+
+    def url_for(self, width):
+        """The smallest copy at least `width` pixels wide (or the largest there is)."""
+        if not self.variants:
+            return self.image.url
+        fitting = [w for w in self.variants if w >= width]
+        return self._variant_url(min(fitting) if fitting else max(self.variants))
+
+    @property
+    def small_url(self):
+        return self.url_for(480)
+
+    @property
+    def card_url(self):
+        return self.url_for(960)
+
+    @property
+    def large_url(self):
+        return self.url_for(10_000)
+
+    @property
+    def srcset(self):
+        return ', '.join(f'{self._variant_url(w)} {w}w' for w in sorted(self.variants))
 
 
 class Favorite(models.Model):

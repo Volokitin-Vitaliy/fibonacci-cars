@@ -11,6 +11,9 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError("The Email field must be set.")
         email = self.normalize_email(email)
+        # Accounts made by an admin or in the shell are trusted; sign-ups that still need
+        # the confirmation link are created inactive (is_active=False).
+        extra_fields.setdefault('email_verified', extra_fields.get('is_active', True))
         user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
