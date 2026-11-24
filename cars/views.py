@@ -1,8 +1,11 @@
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Case, Count, F, IntegerField, Prefetch, Q, Value, When
+from django.db.models.functions import Abs
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -14,7 +17,7 @@ from django_countries.fields import Country
 
 from users import captcha
 
-from . import favorites, payments, services
+from . import favorites, payments, search, services
 from .forms import CarFilterForm, CarForm
 from .models import Car, CarPhoto, Favorite, Make, Payment
 
@@ -78,6 +81,9 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         accident = ''
     if accident:
         base = base.filter(accident=ACCIDENT_FILTERS[accident])
+    query = ' '.join(request.GET.get('q', '').split())[:100]
+    if query:
+        base = search.search(base, query)
     filters = CarFilterForm(request.GET or None)
     base = filters.apply(base)
     for_countries = base.filter(fuel=fuel) if fuel else base
@@ -141,11 +147,13 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         ('price-ascending', _('Price: low to high')), ('price-descending', _('Price: high to low'))])
 
     title = _('New Offers') if new else _('All Vehicles')
-    if fuel or make:
+    if query:
+        title = _('Search: %(query)s') % {'query': query}
+    elif fuel or make:
         title = ' · '.join(str(x) for x in (make.name if make else '',
                                             Car.Fuel(fuel).label if fuel else '') if x)
     return render(request, 'cars/list.html', {
-        'page': page, 'title': title, 'sort': sort, 'is_new': new, 'country': country,
+        'page': page, 'title': title, 'sort': sort, 'is_new': new, 'country': country, 'query': query,
         'filters': filters, 'fuel': fuel, 'make': make,
         'fuel_label': Car.Fuel(fuel).label if fuel else _('All categories'),
         'fuel_options': fuel_options, 'make_options': make_options,
@@ -155,14 +163,59 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     })
 
 
+def search_suggest(request):
+    """Instant search results for the search box (JSON)."""
+    query = ' '.join(request.GET.get('q', '').split())[:100]
+    if len(query) < 2:
+        return JsonResponse({'results': [], 'total': 0})
+    found = search.search(Car.objects.visible(), query)
+    cars = with_cover(found).order_by('-is_new', '-created_at', '-pk')[:6]
+    results = []
+    for car in cars:
+        cover = car.cover
+        results.append({
+            'title': car.model, 'make': car.make.name, 'year': car.year,
+            'price': f'{car.currency_symbol}{car.main_price:,.0f}' if car.main_price else '',
+            'url': car.get_absolute_url(),
+            'image': cover.image.url if cover else '',
+        })
+    return JsonResponse({
+        'results': results, 'total': found.count(),
+        'all_url': reverse('cars:list') + '?' + urlencode({'q': query}),
+    })
+
+
+def similar_cars(car, limit=8):
+    """Cars a buyer of this one would also look at: close in price, preferring the same
+    make, then the same category. Up to half the list comes from the same make."""
+    others = with_cover(Car.objects.visible().exclude(pk=car.pk))
+    if not car.price_eur:
+        return list(others.filter(make=car.make).order_by('-created_at')[:limit])
+    price = car.price_eur
+    in_range = others.filter(price_eur__gte=price / 2, price_eur__lte=price * 2)
+    by_price = Abs(F('price_eur') - price)
+    same_make = list(in_range.filter(make=car.make).annotate(diff=by_price).order_by('diff')[:limit // 2])
+    taken = [c.pk for c in same_make]
+    rest = in_range.exclude(pk__in=taken).exclude(make=car.make).annotate(
+        diff=by_price, same_fuel=Case(When(fuel=car.fuel, then=1), default=0, output_field=IntegerField()))
+    if not car.fuel:
+        rest = rest.annotate(same_fuel=Value(0, output_field=IntegerField()))
+    result = same_make + list(rest.order_by('-same_fuel', 'diff')[:limit - len(same_make)])
+    if len(result) < 4:  # rare or very expensive cars: fill with the closest prices overall
+        result += list(others.exclude(pk__in=[c.pk for c in result]).annotate(diff=by_price)
+                       .order_by('diff')[:4 - len(result)])
+    return result
+
+
 def car_detail(request, pk):
     car = get_object_or_404(with_cover(Car.objects.all()), pk=pk)
     is_owner = request.user.is_authenticated and car.owner_id == request.user.id
     if not Car.objects.visible().filter(pk=pk).exists() and not is_owner:
         raise Http404
-    related = with_cover(Car.objects.visible().filter(make=car.make).exclude(pk=car.pk))[:4]
+    photos = list(car.photos.all())
     return render(request, 'cars/detail.html', {
-        'car': car, 'photos': list(car.photos.all()), 'related': related,
+        'car': car, 'photos': photos, 'similar': similar_cars(car),
+        'photo_urls_json': json.dumps([p.image.url for p in photos]),
         'is_owner': is_owner,
     })
 

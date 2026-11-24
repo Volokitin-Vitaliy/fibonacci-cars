@@ -825,6 +825,23 @@ class FilterTests(TestCase):
         self.assertEqual(self.ids(price_min=91000, price_max=93000), {self.usd.pk})
         self.assertEqual(self.ids(price_min='abc'), {self.usd.pk, self.cheap_old.pk})
 
+    def test_search(self):
+        self.usd.model = 'Cullinan Black Badge'
+        self.usd.save()
+        self.assertEqual(self.ids(q='cullinan'), {self.usd.pk})
+        self.assertEqual(self.ids(q='bmw black'), {self.usd.pk})
+        self.assertEqual(self.ids(q='бмв'), {self.usd.pk, self.cheap_old.pk})
+        self.assertEqual(self.ids(q='2005'), {self.cheap_old.pk})
+        self.assertEqual(self.ids(q='nothing-like-this'), set())
+        page = self.client.get(reverse('cars:list'), {'q': 'cullinan'})
+        self.assertContains(page, 'Search: cullinan')
+        data = self.client.get(reverse('cars:search_suggest'), {'q': 'cull'}).json()
+        self.assertEqual(data['total'], 1)
+        self.assertEqual(data['results'][0]['title'], 'Cullinan Black Badge')
+        self.assertEqual(data['results'][0]['url'], self.usd.get_absolute_url())
+        self.assertIn('q=cull', data['all_url'])
+        self.assertEqual(self.client.get(reverse('cars:search_suggest'), {'q': 'c'}).json()['total'], 0)
+
     def test_price_in_dollars(self):
         # $16,000 = €14,720 < €15,000; $17,000 = €15,640 > €15,000
         self.assertEqual(self.ids(price_max=16000, cur='USD'), set())
@@ -1049,3 +1066,38 @@ class SeoTests(TestCase):
         self.client.get('/ru/')
         user.refresh_from_db()
         self.assertEqual(user.language, 'ru')
+
+
+class SimilarCarsTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+        owner = make_user()
+
+        def listing(make, price, fuel='petrol', model='X'):
+            car = make_listing(owner, fuel=fuel)
+            car.make, car.model, car.price = Make.get_by_name(make), model, Decimal(price)
+            car.save()
+            return car
+        self.car = listing('BMW', 100000)
+        self.bmw_close = listing('BMW', 110000)
+        self.bmw_far = listing('BMW', 400000)          # more than twice the price
+        self.audi_petrol = listing('Audi', 95000)
+        self.audi_diesel = listing('Audi', 100000, fuel='diesel')
+        self.cheap = listing('Fiat', 10000)             # less than half the price
+
+    def test_similar_cars_by_price_make_and_category(self):
+        from cars.views import similar_cars
+        ids = [c.pk for c in similar_cars(self.car)]
+        self.assertEqual(ids[0], self.bmw_close.pk)            # same make first
+        self.assertEqual(ids[1:3], [self.audi_petrol.pk, self.audi_diesel.pk])  # same category first
+        self.assertNotIn(self.car.pk, ids)
+        self.assertNotIn(self.bmw_far.pk, ids[:3])
+        self.assertEqual(len(ids), 4)  # topped up to four with the closest prices
+
+    def test_detail_page_has_gallery_and_similar(self):
+        from django.utils import translation
+        with translation.override('en'):
+            page = self.client.get(self.car.get_absolute_url())
+            self.assertContains(page, 'Similar vehicles')
+            self.assertContains(page, self.bmw_close.get_absolute_url())
+        self.assertNotContains(page, 'hollmann.international')

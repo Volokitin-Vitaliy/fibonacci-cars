@@ -8,7 +8,19 @@
         <div class="text-sm text-neutral-500 mt-2">{% blocktrans count n=page.paginator.count %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}</div>
     </div>
 
-    {# Pickers: category (engine type), make, seller, sort #}
+    {# Search in the catalog, with instant results #}
+    <div class="search-inline mb-4" data-search data-suggest-url="{% url 'cars:search_suggest' %}">
+        <form method="get" action="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="catalog-search" role="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" name="q" value="{{ query }}" placeholder="{% trans 'Search by make, model or year' %}" autocomplete="off" spellcheck="false" aria-label="{% trans 'Search' %}" data-search-input>
+            {% if query %}<a href="{% url_with q='' page='' %}" class="catalog-search-clear" aria-label="{% trans 'Clear search' %}">✕</a>{% endif %}
+            {% if sort and sort != 'date-descending' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+            <button type="submit" class="btn btn-primary !h-11 !px-6 hidden sm:inline-flex">{% trans 'Find' %}</button>
+        </form>
+        <div class="search-results" data-search-results hidden></div>
+    </div>
+
+    {# Pickers: category (engine type), make, country, sort #}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-sm mb-4">
         <div class="relative" data-dropdown>
             <button type="button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="picker {% if fuel %}picker-set{% endif %}">
@@ -64,6 +76,7 @@
             {% if make %}<input type="hidden" name="make" value="{{ make.slug }}">{% endif %}
             {% if country %}<input type="hidden" name="country" value="{{ country }}">{% endif %}
             {% if accident %}<input type="hidden" name="accident" value="{{ accident }}">{% endif %}
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
             <input type="hidden" name="sort" value="{{ sort }}">
 
             {# Price: one dropdown with "from", "to" and the currency #}
@@ -102,7 +115,7 @@
             {% endfor %}
             <div class="col-span-2 lg:col-span-1 flex gap-2">
                 <button type="submit" class="btn btn-primary flex-1 !px-3">{% trans 'Apply' %}</button>
-                {% if filters.active_count or fuel or make or country or accident %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
+                {% if filters.active_count or fuel or make or country or accident or query %}<a href="{% if is_new %}{% url 'cars:new' %}{% else %}{% url 'cars:list' %}{% endif %}" class="btn btn-outline !px-3" title="{% trans 'Reset filters' %}">✕</a>{% endif %}
             </div>
         </form>
     </div>

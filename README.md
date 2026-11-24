@@ -21,6 +21,11 @@ Django marketplace for exclusive vehicles, in English and Russian.
   the owner activates it again from the cabinet.
 - **Paid listings via WayForPay** (or Stripe): 10 EUR when a listing is submitted and when
   it is reactivated; switched off by default.
+- **Search** in the header (or press `/`) and in the catalog: make, model or year, with
+  instant results and photos; Russian spellings of popular makes work too («ламба», «мерс»).
+- **Vehicle page:** fullscreen gallery (swipe, pinch / double-tap / wheel zoom, keyboard,
+  swipe down or Back to close) and a "Similar vehicles" row (close price, same make first,
+  then the same category).
 - **Filters:** price from/to typed by hand in EUR or USD, and year from/to (suggested years
   1970 to today, or typed). Every listing has a country (Russia is not offered); imported
   Hollmann cars are set to Germany.
@@ -42,7 +47,7 @@ Django marketplace for exclusive vehicles, in English and Russian.
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "SECRET_KEY=change-me" > .env
+printf "SECRET_KEY=change-me\nDEBUG=True\n" > .env
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py import_hollmann        # first import, takes a few minutes
@@ -50,6 +55,9 @@ python manage.py runserver
 ```
 
 Without `POSTGRES_DB` in `.env` the project uses SQLite. Admin: http://localhost:8000/admin/
+
+`DEBUG=True` is for your computer only: without it the site runs in production mode
+(no debug pages, secure cookies) and will not serve photos over plain http.
 
 ## Daily jobs
 
@@ -120,6 +128,24 @@ Set `PAYMENT_PROVIDER=stripe`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and 
 to `https://<domain>/payments/stripe/webhook/` (events `checkout.session.completed`,
 `checkout.session.async_payment_succeeded`, `checkout.session.expired`,
 `checkout.session.async_payment_failed`).
+
+## Security
+
+- **Email confirmation:** accounts created with email and password stay inactive until the
+  link in the confirmation email is clicked. Signing in with Google / Apple confirms the
+  address; if someone had signed up with that address without confirming it, the Google /
+  Apple owner gets the account and the earlier password stops working.
+- **Brute-force protection** (django-axes): 5 wrong passwords for one email from one address
+  lock logging in for 15 minutes, on the site and in the admin. Locked attempts are listed
+  in the admin under **Axes → Access attempts**; delete a row there (or run
+  `python manage.py axes_reset`) to unlock early. nginx also limits login and sign-up pages
+  to 10 requests a minute per address.
+- **Secret admin address:** set `ADMIN_URL=some-secret-path` in `.env`; the admin then lives
+  at `https://<domain>/some-secret-path/` and `/admin/` returns 404.
+- **Bot check** (Cloudflare Turnstile, free): add `TURNSTILE_SITE_KEY` and
+  `TURNSTILE_SECRET_KEY` (Cloudflare dashboard → Turnstile → Add site) and sign-up and the
+  new-listing form get an invisible "not a robot" check. Without keys it is off.
+- `DEBUG` is off unless `.env` says `DEBUG=True`.
 
 ## Email
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-23 16:32+0000\n"
+"POT-Creation-Date: 2026-11-24 09:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -214,8 +214,8 @@ msgstr "Объявление неактивно и видно только ва�
 msgid "Activate"
 msgstr "Активировать"
 
-msgid "Open fullscreen"
-msgstr "Открыть на весь экран"
+msgid "Close"
+msgstr "Закрыть"
 
 msgid "Previous"
 msgstr "Назад"
@@ -226,8 +226,11 @@ msgstr "Вперёд"
 msgid "Photo"
 msgstr "Фото"
 
-msgid "View photos on hollmann.international"
-msgstr "Смотреть фото на hollmann.international"
+msgid "Double-tap or pinch to zoom · swipe down to close"
+msgstr "Двойное касание или щипок — зум · свайп вниз — закрыть"
+
+msgid "Open fullscreen"
+msgstr "Открыть на весь экран"
 
 msgid "No photos yet"
 msgstr "Фотографий пока нет"
@@ -329,12 +332,11 @@ msgstr "Свяжитесь с продавцом напрямую:"
 msgid "Contact person"
 msgstr "Контактное лицо"
 
-msgid "Close"
-msgstr "Закрыть"
+msgid "You may also like"
+msgstr "Вам может понравиться"
 
-#, python-format
-msgid "More from %(make)s"
-msgstr "Ещё %(make)s"
+msgid "Similar vehicles"
+msgstr "Похожие автомобили"
 
 msgid "Activate it in your cabinet to publish it:"
 msgstr "Активируйте его в кабинете, чтобы опубликовать:"
@@ -479,6 +481,18 @@ msgstr[0] "%(n)s автомобиль"
 msgstr[1] "%(n)s автомобиля"
 msgstr[2] "%(n)s автомобилей"
 
+msgid "Search by make, model or year"
+msgstr "Поиск по марке, модели или году"
+
+msgid "Search"
+msgstr "Поиск"
+
+msgid "Clear search"
+msgstr "Очистить поиск"
+
+msgid "Find"
+msgstr "Найти"
+
 msgid "Make"
 msgstr "Марка"
 
@@ -595,11 +609,20 @@ msgstr "Продать автомобиль"
 msgid "Menu"
 msgstr "Меню"
 
+msgid "Make, model or year"
+msgstr "Марка, модель или год"
+
 msgid "Exclusive vehicles from trusted dealers and private sellers."
 msgstr "Эксклюзивные автомобили от проверенных дилеров и частных продавцов."
 
 msgid "Account"
 msgstr "Аккаунт"
+
+msgid "Show all results"
+msgstr "Показать все результаты"
+
+msgid "Nothing found. Try another make or model."
+msgstr "Ничего не найдено. Попробуйте другую марку или модель."
 
 msgid "Main menu"
 msgstr "Главное меню"
@@ -634,8 +657,33 @@ msgstr "или по email"
 msgid "Save"
 msgstr "Сохранить"
 
+msgid "Please confirm your email address to activate your FIBONACCI account:"
+msgstr "Подтвердите адрес электронной почты, чтобы активировать аккаунт FIBONACCI:"
+
+msgid "If you did not sign up, just ignore this email."
+msgstr "Если вы не регистрировались, просто проигнорируйте это письмо."
+
+msgid "Confirm your email for FIBONACCI"
+msgstr "Подтвердите почту для FIBONACCI"
+
+msgid "Too many attempts"
+msgstr "Слишком много попыток"
+
+msgid ""
+"For your security, logging in to this account is paused for 15 minutes after several wrong "
+"passwords. Please try again later."
+msgstr ""
+"Для вашей безопасности вход в этот аккаунт приостановлен на 15 минут после нескольких неверных "
+"паролей. Попробуйте позже."
+
+msgid "Back to the home page"
+msgstr "На главную"
+
 msgid "Manage your listings and favorites."
 msgstr "Управляйте объявлениями и избранным."
+
+msgid "Send the link again"
+msgstr "Отправить ссылку ещё раз"
 
 msgid "Incorrect email or password."
 msgstr "Неверный email или пароль."
@@ -648,6 +696,39 @@ msgstr "Продавайте свой автомобиль и сохраняйт
 
 msgid "Already registered?"
 msgstr "Уже зарегистрированы?"
+
+msgid "Link is not valid"
+msgstr "Ссылка недействительна"
+
+msgid ""
+"The confirmation link has expired or was already used. Request a new one or log in if your "
+"account is already active."
+msgstr ""
+"Срок действия ссылки истёк, или она уже была использована. Запросите новую или войдите, если "
+"аккаунт уже активен."
+
+msgid "Send a new link"
+msgstr "Отправить новую ссылку"
+
+msgid "Confirm your email"
+msgstr "Подтвердите почту"
+
+msgid "Open the link from the email we sent you to activate your account."
+msgstr "Откройте ссылку из письма, которое мы отправили, чтобы активировать аккаунт."
+
+msgid "No email? Check the spam folder or send it again."
+msgstr "Письма нет? Проверьте папку «Спам» или отправьте ещё раз."
+
+msgid "Email"
+msgstr "Email"
+
+#, python-format
+msgid ""
+"We have sent a link to <span class=\"text-white\">%(email)s</span>. Open it to activate your "
+"account."
+msgstr ""
+"Мы отправили ссылку на <span class=\"text-white\">%(email)s</span>. Откройте её, чтобы "
+"активировать аккаунт."
 
 msgid "moderation"
 msgstr "модерация"
@@ -1079,6 +1160,10 @@ msgstr "Сначала дешевле"
 msgid "Price: high to low"
 msgstr "Сначала дороже"
 
+#, python-format
+msgid "Search: %(query)s"
+msgstr "Поиск: %(query)s"
+
 msgid "Thank you! Your listing has been sent for review. We will email you once it is approved."
 msgstr "Спасибо! Объявление отправлено на модерацию. Мы напишем вам на почту, когда оно будет одобрено."
 
@@ -1174,6 +1259,9 @@ msgstr "Система"
 msgid "Groups"
 msgstr "Группы"
 
+msgid "Please confirm that you are not a robot and try again."
+msgstr "Подтвердите, что вы не робот, и попробуйте снова."
+
 msgid "First name"
 msgstr "Имя"
 
@@ -1186,11 +1274,12 @@ msgstr "Отчество"
 msgid "This phone number is already registered."
 msgstr "Этот номер телефона уже зарегистрирован."
 
-msgid "Email"
-msgstr "Email"
-
 msgid "This email is already in use."
 msgstr "Этот email уже используется."
+
+#, python-format
+msgid "Please confirm your email first: open the link we sent to %(email)s."
+msgstr "Сначала подтвердите почту: откройте ссылку, которую мы отправили на %(email)s."
 
 msgid "email"
 msgstr "email"
@@ -1210,8 +1299,14 @@ msgstr "телефон"
 msgid "language"
 msgstr "язык"
 
-msgid "Welcome! Your account has been created."
-msgstr "Добро пожаловать! Аккаунт создан."
+msgid "email verified"
+msgstr "почта подтверждена"
+
+msgid "If this address is waiting for confirmation, we have sent the link again."
+msgstr "Если этот адрес ожидает подтверждения, мы отправили ссылку ещё раз."
+
+msgid "Your email is confirmed. Welcome to FIBONACCI!"
+msgstr "Почта подтверждена. Добро пожаловать в FIBONACCI!"
 
 msgid "Your details have been saved."
 msgstr "Данные сохранены."

@@ -90,6 +90,38 @@
         .chip-ok { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
         .chip-warn { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
 
+        /* ---- Search ---- */
+        .search-overlay { position: fixed; inset: 0; z-index: 80; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 1rem 1rem; }
+        .search-overlay[hidden] { display: none; }
+        .search-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: fadeIn .15s ease-out; }
+        .search-dialog { position: relative; width: 100%; max-width: 40rem; border-radius: 1.25rem; background: rgba(14,14,16,.98); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 30px 80px rgba(0,0,0,.7); overflow: hidden; animation: popIn .18s ease-out; }
+        .search-field { display: flex; align-items: center; gap: .75rem; padding: 0 1.1rem; border-bottom: 1px solid rgba(255,255,255,.08); color: var(--muted); }
+        .search-field input { flex: 1; min-width: 0; height: 3.75rem; background: transparent; border: 0; outline: none; color: #fff; font-size: 1.05rem; }
+        .search-field input::-webkit-search-cancel-button { display: none; }
+        .search-esc { font-size: .7rem; letter-spacing: .08em; border: 1px solid rgba(255,255,255,.15); border-radius: .5rem; padding: .2rem .45rem; color: var(--muted); }
+        .search-results { max-height: min(60vh, 32rem); overflow-y: auto; padding: .5rem; }
+        .search-hint { padding: .9rem .75rem 1rem; }
+        .search-chip { display: inline-flex; padding: .45rem .85rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font-size: .85rem; color: #e5e5e5; transition: background .15s, color .15s; }
+        .search-chip:hover { background: #fff; color: #0a0a0a; }
+        .search-item { display: flex; align-items: center; gap: .9rem; padding: .55rem .6rem; border-radius: .85rem; color: #e5e5e5; }
+        .search-item:hover, .search-item.is-active { background: rgba(255,255,255,.07); color: #fff; }
+        .search-item img, .search-item .search-thumb { width: 4.5rem; height: 3.25rem; border-radius: .6rem; object-fit: cover; flex-shrink: 0; background: #1a1a1d; }
+        .search-item mark { background: transparent; color: #fff; font-weight: 700; }
+        .search-all { display: flex; justify-content: space-between; align-items: center; margin-top: .25rem; padding: .85rem .75rem; border-top: 1px solid rgba(255,255,255,.08); font-size: .85rem; color: #fff; }
+        .search-all:hover, .search-all.is-active { background: rgba(255,255,255,.05); }
+        .search-empty { padding: 1.5rem .75rem; color: var(--muted); font-size: .9rem; text-align: center; }
+        .search-inline { position: relative; }
+        .search-inline .search-results { position: absolute; z-index: 46; left: 0; right: 0; top: calc(100% + .4rem); border-radius: 1.1rem; background: rgba(12,12,14,.98); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+        .search-inline .search-results:empty, .search-inline .search-results[hidden] { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } }
+        @keyframes popIn { from { opacity: 0; transform: translateY(-8px) scale(.98); } }
+        @media (max-width: 639px) { .search-overlay { padding: 0; } .search-dialog { max-width: none; min-height: 100%; border-radius: 0; border: 0; } .search-results { max-height: calc(100vh - 4rem); } }
+        .catalog-search { display: flex; align-items: center; gap: .75rem; padding: .35rem .4rem .35rem 1.1rem; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255,255,255,.03); color: var(--muted); transition: border-color .2s, box-shadow .2s; }
+        .catalog-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,.18); }
+        .catalog-search input { flex: 1; min-width: 0; height: 2.75rem; background: transparent; border: 0; outline: none; color: #fff; font-size: 1rem; }
+        .catalog-search input::-webkit-search-cancel-button { display: none; }
+        .catalog-search-clear { width: 2.25rem; height: 2.25rem; display: grid; place-items: center; border-radius: 999px; color: var(--muted); }
+        .catalog-search-clear:hover { color: #fff; background: rgba(255,255,255,.08); }
         /* ---- Forms ---- */
         .form-field label { display: block; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .45rem; }
         .form-field input[type=text], .form-field input[type=email], .form-field input[type=password],
@@ -156,10 +188,10 @@
 <body class="min-h-screen flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-24">
 <div id="page-progress" aria-hidden="true"></div>
 <header class="site-header sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
-        <a href="{% url 'cars:home' %}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
-            <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-9 h-9 sm:w-10 sm:h-10">
-            <span class="font-brand text-[0.8rem] min-[360px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.14em] min-[360px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
+    <div class="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 min-[360px]:gap-3 sm:gap-6">
+        <a href="{% url 'cars:home' %}" class="flex items-center gap-1.5 min-[360px]:gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
+            <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-8 h-8 min-[360px]:w-9 min-[360px]:h-9 sm:w-10 sm:h-10">
+            <span class="font-brand text-[0.74rem] min-[360px]:text-[0.84rem] min-[400px]:text-[0.95rem] sm:text-lg font-semibold tracking-[0.1em] min-[360px]:tracking-[0.15em] min-[400px]:tracking-[0.22em] sm:tracking-[0.3em]">FIBONACCI</span>
         </a>
 
         <nav class="hidden lg:flex items-center gap-8 text-sm tracking-wider uppercase">
@@ -188,22 +220,23 @@
             <a href="{% url 'cars:add' %}" class="nav-link">{% trans 'Sell your car' %}</a>
         </nav>
 
-        <div class="flex items-center gap-3 sm:gap-5 text-sm uppercase tracking-wider">
+        <div class="flex items-center gap-1.5 min-[360px]:gap-3 sm:gap-5 text-sm uppercase tracking-wider">
             <form action="{% url 'set_language' %}" method="post" class="flex items-center border border-neutral-800 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 {% get_available_languages as LANGUAGES %}
                 {% for code, name in LANGUAGES %}
-                <button type="submit" name="language" value="{{ code }}" class="px-2.5 h-8 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
+                <button type="submit" name="language" value="{{ code }}" class="px-2 min-[400px]:px-2.5 h-8 {% if code == LANG %}bg-neutral-100 text-neutral-900{% else %}text-neutral-400 hover:text-white{% endif %}">{{ code|upper }}</button>
                 {% endfor %}
             </form>
+            <button type="button" class="search-open nav-link flex items-center justify-center gap-2 w-9 h-9 sm:w-auto sm:h-auto shrink-0" data-search-open aria-label="{% trans 'Search' %}" title="{% trans 'Search' %} ( / )"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="hidden xl:inline">{% trans 'Search' %}</span></button>
             <a href="{% url 'cars:favorites' %}" class="nav-link hidden sm:inline" title="{% trans 'Favorites' %}">♡ <span data-fav-count>{{ favorite_ids|length }}</span></a>
             {% if user.is_authenticated %}
                 <a href="{% url 'cars:my_cars' %}" class="nav-link hidden sm:inline">{% trans 'Cabinet' %}</a>
             {% else %}
                 <a href="{% url 'users:login' %}" class="nav-link hidden sm:inline">{% trans 'Log in' %}</a>
             {% endif %}
-            <button type="button" class="lg:hidden w-10 h-10 -mr-2 flex items-center justify-center text-2xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
+            <button type="button" class="lg:hidden w-9 h-10 min-[360px]:w-10 -mr-2 flex items-center justify-center text-2xl" onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" aria-label="{% trans 'Menu' %}">☰</button>
         </div>
     </div>
     <div id="mobile-nav" class="hidden lg:hidden border-t border-neutral-900 px-4 pt-2 pb-6 text-sm uppercase tracking-wider max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -225,6 +258,24 @@
         <a href="{% url 'cars:partnership' %}" class="mt-8 block py-3.5 border-t border-b border-neutral-800">{% trans 'Partnership' %}</a>
     </div>
 </header>
+
+{# Search window: header button, "/" or Ctrl+K #}
+<div id="search-overlay" class="search-overlay" hidden role="dialog" aria-modal="true" aria-label="{% trans 'Search' %}">
+    <div class="search-backdrop" data-search-close></div>
+    <div class="search-dialog" data-search data-suggest-url="{% url 'cars:search_suggest' %}">
+        <form action="{% url 'cars:list' %}" method="get" class="search-field" role="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" name="q" placeholder="{% trans 'Make, model or year' %}" autocomplete="off" spellcheck="false" aria-label="{% trans 'Search' %}" data-search-input>
+            <button type="button" class="search-esc" data-search-close>Esc</button>
+        </form>
+        <div class="search-results" data-search-results>
+            <div class="search-hint" data-search-hint>
+                <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Popular makes' %}</div>
+                <div class="flex flex-wrap gap-2">{% for m in nav_makes|dictsortreversed:"n"|slice:":10" %}<a href="{{ m.get_absolute_url }}" class="search-chip">{{ m.name }}</a>{% endfor %}</div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% if messages %}
 <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-2">
@@ -275,6 +326,76 @@
         © {% now "Y" %} FIBONACCI
     </div>
 </footer>
+<script>
+/* Search with instant results: header window and the catalog's search field. */
+(function () {
+    var overlay = document.getElementById('search-overlay');
+    var esc = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); };
+    {% trans 'Show all results' as t_all %}{% trans 'Nothing found. Try another make or model.' as t_none %}
+    var T = { all: '{{ t_all|escapejs }}', none: '{{ t_none|escapejs }}' };
+    function highlight(text, words) {
+        var out = esc(text);
+        words.forEach(function (w) { if (w.length > 1) out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); });
+        return out;
+    }
+    function setup(root) {
+        var input = root.querySelector('[data-search-input]'), box = root.querySelector('[data-search-results]');
+        var hint = root.querySelector('[data-search-hint]'), url = root.dataset.suggestUrl;
+        var timer, controller, active = -1;
+        function items() { return Array.prototype.slice.call(box.querySelectorAll('.search-item, .search-all')); }
+        function setActive(i) {
+            var list = items(); list.forEach(function (el) { el.classList.remove('is-active'); });
+            active = list.length ? (i + list.length) % list.length : -1;
+            if (active >= 0) { list[active].classList.add('is-active'); list[active].scrollIntoView({ block: 'nearest' }); }
+        }
+        function render(data, q) {
+            var words = q.toLowerCase().split(/\s+/);
+            if (!data.results.length) { box.innerHTML = '<div class="search-empty">' + T.none + '</div>'; return; }
+            box.innerHTML = data.results.map(function (r) {
+                var img = r.image ? '<img src="' + esc(r.image) + '" alt="" loading="lazy">' : '<span class="search-thumb"></span>';
+                return '<a class="search-item" href="' + esc(r.url) + '">' + img + '<span class="min-w-0 flex-1"><span class="block text-[0.68rem] uppercase tracking-[0.2em] text-neutral-500">' + highlight(r.make, words) + '</span><span class="block truncate font-medium">' + highlight(r.title, words) + '</span><span class="block text-xs text-neutral-400 mt-0.5">' + [r.year, r.price].filter(Boolean).map(esc).join(' · ') + '</span></span></a>';
+            }).join('') + '<a class="search-all" href="' + esc(data.all_url) + '"><span>' + T.all + ' (' + data.total + ')</span><span aria-hidden="true">→</span></a>';
+        }
+        function run() {
+            var q = input.value.trim(); active = -1;
+            if (q.length < 2) { box.innerHTML = ''; if (hint) box.appendChild(hint); if (!hint) box.hidden = true; return; }
+            if (controller) controller.abort();
+            controller = window.AbortController ? new AbortController() : null;
+            fetch(url + '?q=' + encodeURIComponent(q), controller ? { signal: controller.signal } : {})
+                .then(function (r) { return r.json(); })
+                .then(function (data) { if (input.value.trim() === q) { box.hidden = false; render(data, q); } })
+                .catch(function () {});
+        }
+        input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(run, 160); });
+        input.addEventListener('focus', function () { if (input.value.trim().length >= 2 && !box.children.length) run(); else if (box.children.length) box.hidden = false; });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+            else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); items()[active].click(); }
+        });
+        if (root.classList.contains('search-inline')) {
+            document.addEventListener('click', function (e) { if (!root.contains(e.target)) box.hidden = true; });
+            input.addEventListener('keydown', function (e) { if (e.key === 'Escape') box.hidden = true; });
+        }
+        root.searchInput = input;
+    }
+    document.querySelectorAll('[data-search]').forEach(setup);
+    if (!overlay) return;
+    var lastFocus;
+    function open() {
+        lastFocus = document.activeElement; overlay.hidden = false; document.documentElement.style.overflow = 'hidden';
+        var input = overlay.querySelector('[data-search-input]'); input.focus(); input.select();
+    }
+    function close() { overlay.hidden = true; document.documentElement.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    document.querySelectorAll('[data-search-open]').forEach(function (b) { b.addEventListener('click', open); });
+    overlay.querySelectorAll('[data-search-close]').forEach(function (b) { b.addEventListener('click', close); });
+    document.addEventListener('keydown', function (e) {
+        var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || '')) || e.target.isContentEditable;
+        if (!overlay.hidden && e.key === 'Escape') { e.preventDefault(); close(); }
+        else if (overlay.hidden && ((e.key === '/' && !typing) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'))) { e.preventDefault(); open(); }
+    });
+})();
+</script>
 {% include "includes/bottom_nav.html" %}
 <script>
 /* Favorites without reloading the page; works for guests too. */

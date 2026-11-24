@@ -10,6 +10,7 @@ urlpatterns = [
     path('new/', views.car_list, {'new': True}, name='new'),
     path('category/<str:fuel>/', views.car_list, name='fuel'),
     path('manufacturer/<slug:make_slug>/', views.car_list, name='make'),
+    path('search/suggest/', views.search_suggest, name='search_suggest'),
     path('vehicle/<int:pk>/', views.car_detail, name='detail'),
     path('vehicle/<int:pk>/favorite/', views.toggle_favorite, name='favorite'),
 
