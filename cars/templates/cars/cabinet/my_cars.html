@@ -15,7 +15,7 @@
 {% for car in cars %}
     <div class="panel p-4 flex flex-col sm:flex-row gap-5" data-reveal>
         <a href="{{ car.get_absolute_url }}" class="sm:w-48 shrink-0 aspect-[4/3] bg-[#141414] block overflow-hidden rounded-xl">
-            {% with cover=car.cover %}{% if cover %}<img src="{{ cover.image.url }}" alt="" class="w-full h-full object-cover">{% else %}<div class="w-full h-full flex items-center justify-center text-neutral-600 text-sm uppercase tracking-widest">{{ car.make.name }}</div>{% endif %}{% endwith %}
+            {% with cover=car.cover %}{% if cover %}<img src="{{ cover.small_url }}" alt="" loading="lazy" class="w-full h-full object-cover">{% else %}<div class="w-full h-full flex items-center justify-center text-neutral-600 text-sm uppercase tracking-widest">{{ car.make.name }}</div>{% endif %}{% endwith %}
         </a>
         <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-start justify-between gap-3">

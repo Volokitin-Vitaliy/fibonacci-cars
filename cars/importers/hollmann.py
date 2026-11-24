@@ -9,6 +9,7 @@ hidden here and their photos are deleted.
 import logging
 import re
 import time
+import uuid
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from urllib.parse import unquote, urljoin
@@ -290,7 +291,8 @@ class HollmannImporter:
                 self.log(f'  {car.external_id}: photo failed ({exc})')
                 continue
             photo = CarPhoto(car=car, position=position, source_url=url)
-            photo.image.save(f'{position + 1:02d}.jpg', ContentFile(data), save=True)
+            # A new name every time, so a replaced photo is never served from a stale cache.
+            photo.image.save(f'{position + 1:02d}-{uuid.uuid4().hex[:8]}.jpg', ContentFile(data), save=True)
             added += 1
         return added
 

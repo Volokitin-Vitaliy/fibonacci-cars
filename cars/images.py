@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 MAX_SIDE = 2000
 JPEG_QUALITY = 86
-VARIANT_WIDTHS = (480, 960, 1600)
+VARIANT_WIDTHS = (240, 480, 960, 1600)
 WEBP_QUALITY = 80
 
 

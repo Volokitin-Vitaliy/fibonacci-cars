@@ -4,7 +4,7 @@
         <div class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius)] media-shimmer ring-gradient">
             {% with cover=car.cover %}
             {% if cover %}
-                <img src="{{ cover.image.url }}" alt="{{ car }}" loading="lazy" decoding="async"
+                <img src="{{ cover.card_url }}"{% if cover.variants %} srcset="{{ cover.srcset }}" sizes="(min-width: 1280px) 290px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 88vw"{% endif %} alt="{{ car }}" loading="lazy" decoding="async"
                      class="fade-in absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]">
             {% else %}
                 {% include "includes/car_silhouette.html" %}

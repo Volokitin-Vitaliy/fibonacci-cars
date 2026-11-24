@@ -4,38 +4,6 @@
 {% block meta_description %}{{ car.make.name }} {{ car.model }} — {{ car.currency_symbol }}{{ car.main_price|money }}{% endblock %}
 {% block extra_head %}
 {% if photos %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ photos.0.image.url }}">{% endif %}
-<style>
-    .dealer-description b, .dealer-description strong { color: #f5f5f5; font-weight: 600; }
-    .dealer-description code { font-family: ui-monospace, monospace; font-size: .72rem; color: #93c5fd; background: rgba(59,130,246,.12); border-radius: 6px; padding: .05rem .35rem; margin-right: .35rem; }
-    .dealer-description hr { border-color: rgba(255,255,255,.08); margin: 1rem 0; }
-    .thumb.is-active { outline: 2px solid var(--accent); outline-offset: 2px; opacity: 1; }
-    /* Fullscreen viewer */
-    .lb { position: fixed; inset: 0; z-index: 90; background: #000; display: flex; flex-direction: column; touch-action: none; user-select: none; -webkit-user-select: none; animation: lbIn .2s ease-out; }
-    .lb[hidden] { display: none; }
-    .lb-top { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; gap: 1rem; padding: max(.9rem, env(safe-area-inset-top)) 1rem .9rem; background: linear-gradient(rgba(0,0,0,.75), transparent); }
-    .lb-count { font-size: .8rem; letter-spacing: .12em; color: #d4d4d4; font-variant-numeric: tabular-nums; min-width: 3.5rem; }
-    .lb-title { flex: 1; min-width: 0; text-align: center; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lb-stage { position: relative; flex: 1; overflow: hidden; cursor: grab; }
-    .lb.is-zoomed .lb-stage { cursor: move; }
-    .lb-track { display: flex; height: 100%; will-change: transform; }
-    .lb-slide { flex: 0 0 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .lb-slide img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; will-change: transform; pointer-events: none; }
-    .lb-btn { width: 3rem; height: 3rem; border-radius: 999px; display: grid; place-items: center; font-size: 1.1rem; color: #fff; background: rgba(20,20,22,.6); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background .15s, opacity .2s; }
-    .lb-btn:hover { background: rgba(255,255,255,.18); }
-    .lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; }
-    .lb-prev { left: 1rem; } .lb-next { right: 1rem; }
-    .lb.is-zoomed .lb-prev, .lb.is-zoomed .lb-next, .lb-single .lb-prev, .lb-single .lb-next, .lb-single .lb-thumbs { opacity: 0; pointer-events: none; }
-    .lb-hint { position: absolute; left: 0; right: 0; bottom: 6.2rem; text-align: center; font-size: .72rem; letter-spacing: .06em; color: rgba(255,255,255,.45); pointer-events: none; animation: lbHint 4s ease forwards; }
-    .lb-thumbs { display: flex; gap: .5rem; overflow-x: auto; padding: .75rem 1rem max(.9rem, env(safe-area-inset-bottom)); scrollbar-width: none; justify-content: safe center; transition: opacity .2s; }
-    .lb-thumbs::-webkit-scrollbar { display: none; }
-    .lb-thumb { flex: 0 0 auto; width: 4.5rem; height: 3.2rem; border-radius: .5rem; overflow: hidden; opacity: .45; transition: opacity .15s, outline-color .15s; outline: 2px solid transparent; outline-offset: 2px; }
-    .lb-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .lb-thumb:hover { opacity: .8; } .lb-thumb.is-active { opacity: 1; outline-color: #fff; }
-    @keyframes lbIn { from { opacity: 0; } }
-    @keyframes lbHint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
-    @media (max-width: 639px) { .lb-prev, .lb-next { display: none; } .lb-thumb { width: 3.6rem; height: 2.6rem; } .lb-hint { bottom: 5rem; } }
-    @media (hover: hover) { .lb-hint { display: none; } }
-</style>
 {% endblock %}
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-12">
@@ -60,11 +28,11 @@
         <div class="min-w-0">
             {% if photos %}
             <div class="relative aspect-[4/3] sm:aspect-[16/10] rounded-[var(--radius)] overflow-hidden media-shimmer ring-gradient group"
-                 data-gallery data-images="{{ photo_urls_json }}" data-title="{{ car.make.name }} {{ car.model }}"
+                 data-gallery data-images="{{ photo_urls_json }}" data-main="{{ photo_main_json }}" data-thumbs="{{ photo_thumbs_json }}" data-title="{{ car.make.name }} {{ car.model }}"
                  data-label-close="{% trans 'Close' %}" data-label-previous="{% trans 'Previous' %}" data-label-next="{% trans 'Next' %}"
                  data-label-photo="{% trans 'Photo' %}" data-label-hint="{% trans 'Double-tap or pinch to zoom · swipe down to close' %}">
                 <button type="button" id="main-photo" class="absolute inset-0 w-full h-full cursor-zoom-in" aria-label="{% trans 'Open fullscreen' %}">
-                    <img id="main-img" src="{{ photos.0.image.url }}" alt="{{ car }}" class="fade-in w-full h-full object-cover">
+                    <img id="main-img" src="{{ photos.0|photo_main_url }}" alt="{{ car }}" fetchpriority="high" decoding="async" class="fade-in w-full h-full object-cover">
                 </button>
                 {% if photos|length > 1 %}
                 <button type="button" data-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Previous' %}">←</button>
@@ -77,7 +45,7 @@
             <div class="scroller mt-3 [grid-auto-columns:5.5rem] sm:[grid-auto-columns:7rem] !gap-2 p-1">
                 {% for p in photos %}
                 <button type="button" class="thumb aspect-[4/3] rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition {% if forloop.first %}is-active{% endif %}" data-index="{{ forloop.counter0 }}" aria-label="{% trans 'Photo' %} {{ forloop.counter }}">
-                    <img src="{{ p.image.url }}" alt="" loading="lazy" class="w-full h-full object-cover">
+                    <img src="{{ p.thumb_url }}" alt="" loading="lazy" decoding="async" class="w-full h-full object-cover">
                 </button>
                 {% endfor %}
             </div>

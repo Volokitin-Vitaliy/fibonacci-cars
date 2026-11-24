@@ -1166,7 +1166,7 @@ class DeepFixTests(TestCase):
         with PILImage.open(photo.image.path) as saved:
             self.assertEqual(max(saved.size), 2000)
             self.assertFalse(saved.getexif())
-        self.assertEqual(photo.variants, [480, 960, 1600, 2000])
+        self.assertEqual(photo.variants, [240, 480, 960, 1600, 2000])
         self.assertIn('-480.webp', photo.small_url)
         files = [photo.image.path] + [os.path.join(os.path.dirname(photo.image.path), 'v', f)
                                       for f in os.listdir(os.path.join(os.path.dirname(photo.image.path), 'v'))]

@@ -52,6 +52,12 @@ def spec(value):
 
 
 @register.filter
+def photo_main_url(photo):
+    """Photo size for the big picture on the vehicle page (sharp on phones and laptops)."""
+    return photo.url_for(1600)
+
+
+@register.filter
 def money(value):
     """168980.00 -> '168,980' ; keeps cents only when present."""
     if value is None:

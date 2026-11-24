@@ -177,7 +177,7 @@ def search_suggest(request):
             'title': car.model, 'make': car.make.name, 'year': car.year,
             'price': f'{car.currency_symbol}{car.main_price:,.0f}' if car.main_price else '',
             'url': car.get_absolute_url(),
-            'image': cover.image.url if cover else '',
+            'image': cover.thumb_url if cover else '',
         })
     return JsonResponse({
         'results': results, 'total': found.count(),
@@ -215,7 +215,9 @@ def car_detail(request, pk):
     photos = list(car.photos.all())
     return render(request, 'cars/detail.html', {
         'car': car, 'photos': photos, 'similar': similar_cars(car),
-        'photo_urls_json': json.dumps([p.image.url for p in photos]),
+        'photo_urls_json': json.dumps([p.large_url for p in photos]),
+        'photo_main_json': json.dumps([p.url_for(1600) for p in photos]),
+        'photo_thumbs_json': json.dumps([p.thumb_url for p in photos]),
         'is_owner': is_owner,
     })
 

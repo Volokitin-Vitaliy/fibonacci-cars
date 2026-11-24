@@ -50,7 +50,7 @@
         <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {% for p in photos %}
             <label class="relative block cursor-pointer">
-                <img src="{{ p.image.url }}" alt="" class="aspect-[4/3] w-full object-cover">
+                <img src="{{ p.thumb_url }}" alt="" loading="lazy" class="aspect-[4/3] w-full object-cover">
                 <span class="absolute inset-x-0 bottom-0 bg-black/70 text-xs px-2 py-1 flex items-center gap-1"><input type="checkbox" name="remove_photo" value="{{ p.pk }}"> {% trans 'Remove' %}</span>
             </label>
             {% endfor %}

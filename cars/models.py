@@ -347,6 +347,10 @@ class CarPhoto(models.Model):
         return self._variant_url(min(fitting) if fitting else max(self.variants))
 
     @property
+    def thumb_url(self):
+        return self.url_for(240)
+
+    @property
     def small_url(self):
         return self.url_for(480)
 

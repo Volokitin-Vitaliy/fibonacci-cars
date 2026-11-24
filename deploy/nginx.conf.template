@@ -38,11 +38,15 @@ server {
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
 
     gzip on;
-    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_vary on;
+    gzip_types text/css application/javascript application/json image/svg+xml application/manifest+json text/plain application/xml;
 
+    # File names carry a content hash, so they can be cached for a year.
     location /static/ {
         alias /app/static/;
-        expires 30d;
+        expires 1y;
     }
 
     location /media/ {

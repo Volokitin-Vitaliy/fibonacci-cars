@@ -2,21 +2,6 @@
 {% load i18n static cars_tags %}
 {% block title %}{% trans 'Exclusive vehicles' %}{% endblock %}
 
-{% block extra_head %}
-<style>
-    .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
-    .hero-slide.is-active { opacity: 1; }
-    .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
-    .hero-slide.is-active img { animation: kenburns 9s ease-out forwards; }
-    @keyframes kenburns { from { transform: scale(1.12) translate3d(1%, 1%, 0); } to { transform: scale(1.02) translate3d(0, 0, 0); } }
-    .hero-dot { height: 2px; width: 2rem; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
-    .hero-dot span { display: block; height: 100%; width: 0; background: #fff; }
-    .hero-dot.is-active span { animation: dot 6s linear forwards; }
-    @keyframes dot { to { width: 100%; } }
-    @media (prefers-reduced-motion: reduce) { .hero-slide.is-active img, .hero-dot.is-active span { animation: none; } }
-</style>
-{% endblock %}
-
 {% block content %}
 {# ---------- Hero ---------- #}
 <section class="relative -mt-16 min-h-[86svh] sm:min-h-[92svh] flex items-end overflow-hidden">
@@ -24,7 +9,8 @@
     <div class="absolute inset-0" data-hero>
         {% for car in hero_cars %}
         <a href="{{ car.get_absolute_url }}" class="hero-slide {% if forloop.first %}is-active{% endif %}" data-slide tabindex="-1" aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
-            <img src="{{ car.cover.image.url }}" alt="{{ car }}" {% if not forloop.first %}loading="lazy"{% endif %}>
+            {% if forloop.first %}<img src="{{ car.cover.large_url }}"{% if car.cover.variants %} srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" fetchpriority="high" decoding="async">
+            {% else %}{# loaded just before it is shown, so the first screen downloads one photo #}<img data-src="{{ car.cover.large_url }}"{% if car.cover.variants %} data-srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" decoding="async">{% endif %}
         </a>
         {% endfor %}
     </div>
@@ -157,16 +143,27 @@
 (function () {
     var slides = document.querySelectorAll('[data-slide]'), dots = document.querySelectorAll('[data-dot]'),
         captions = document.querySelectorAll('[data-caption]'), current = 0, timer;
+    function load(i) {
+        var img = slides[(i + slides.length) % slides.length].querySelector('img[data-src]');
+        if (!img) return;
+        if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+    }
     function show(i) {
         if (!slides.length) return;
         current = (i + slides.length) % slides.length;
+        load(current); load(current + 1);  // this slide now, the next one in the background
         slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
         dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
         captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });
         clearTimeout(timer); timer = setTimeout(function () { show(current + 1); }, 6000);
     }
     dots.forEach(function (d) { d.addEventListener('click', function () { show(+d.dataset.dot); }); });
-    if (slides.length > 1) timer = setTimeout(function () { show(1); }, 6000);
+    if (slides.length > 1) {
+        timer = setTimeout(function () { show(1); }, 6000);
+        window.addEventListener('load', function () { setTimeout(function () { load(1); }, 1500); });
+    }
 
     var scroller = document.querySelector('[data-scroller]');
     document.querySelectorAll('[data-scroll]').forEach(function (b) {

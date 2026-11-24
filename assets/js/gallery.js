@@ -6,8 +6,10 @@
     'use strict';
     var root = document.querySelector('[data-gallery]');
     if (!root) return;
-    var images = JSON.parse(root.dataset.images || '[]');
+    var images = JSON.parse(root.dataset.images || '[]');      // full size, for the viewer
     if (!images.length) return;
+    var mainImages = JSON.parse(root.dataset.main || 'null') || images;   // big photo on the page
+    var thumbImages = JSON.parse(root.dataset.thumbs || 'null') || images; // small copies
     var label = function (name, fallback) { return root.dataset['label' + name] || fallback; };
     var MAX_SCALE = 4, DOUBLE_TAP_SCALE = 2.5;
     var current = 0;
@@ -18,7 +20,7 @@
     var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
     function showInline(i) {
         current = (i + images.length) % images.length;
-        if (main.getAttribute('src') !== images[current]) { main.classList.remove('is-loaded'); main.src = images[current]; }
+        if (main.getAttribute('src') !== mainImages[current]) { main.classList.remove('is-loaded'); main.src = mainImages[current]; }
         if (index) index.textContent = current + 1;
         thumbs.forEach(function (t, k) {
             t.classList.toggle('is-active', k === current);
@@ -77,7 +79,7 @@
         th.type = 'button';
         th.className = 'lb-thumb';
         th.setAttribute('aria-label', label('Photo', 'Photo') + ' ' + (i + 1));
-        th.innerHTML = '<img src="' + src.replace(/"/g, '&quot;') + '" alt="" loading="lazy">';
+        th.innerHTML = '<img src="' + thumbImages[i].replace(/"/g, '&quot;') + '" alt="" loading="lazy">';
         th.addEventListener('click', function () { go(i); });
         strip.appendChild(th);
         return { el: slide, img: img, thumb: th };
