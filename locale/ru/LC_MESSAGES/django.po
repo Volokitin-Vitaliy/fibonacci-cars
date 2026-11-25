@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-25 15:19+0000\n"
+"POT-Creation-Date: 2026-11-25 15:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -46,6 +46,15 @@ msgstr "После сохранения объявление снова уйдё
 
 msgid "Vehicle"
 msgstr "Автомобиль"
+
+msgid "Choose a make"
+msgstr "Выберите марку"
+
+msgid "Find a make"
+msgstr "Найти марку"
+
+msgid "Nothing found"
+msgstr "Ничего не найдено"
 
 msgid "Characteristics"
 msgstr "Характеристики"
@@ -501,12 +510,6 @@ msgstr "Марка"
 msgid "All makes"
 msgstr "Все марки"
 
-msgid "Find a make"
-msgstr "Найти марку"
-
-msgid "Nothing found"
-msgstr "Ничего не найдено"
-
 msgid "Sort"
 msgstr "Сортировка"
 
@@ -661,6 +664,9 @@ msgstr "В избранное"
 
 msgid "In favorites"
 msgstr "В избранном"
+
+msgid "Reset"
+msgstr "Сбросить"
 
 msgid "Continue with Google"
 msgstr "Войти через Google"
@@ -867,14 +873,14 @@ msgstr "@username или номер телефона"
 msgid "Country where the car is"
 msgstr "Страна, где находится автомобиль"
 
-msgid "Choose a make"
-msgstr "Выберите марку"
-
 msgid "Model / title"
 msgstr "Модель / название"
 
-msgid "Choose a category"
-msgstr "Выберите категорию"
+msgid "Fuel"
+msgstr "Топливо"
+
+msgid "Choose the fuel"
+msgstr "Выберите топливо"
 
 msgid "Enter a year between 1900 and next year."
 msgstr "Укажите год от 1900 до следующего года."
@@ -924,26 +930,53 @@ msgstr "Объявление пользователя"
 msgid "Approved"
 msgstr "Одобрено"
 
-msgid "Combustion (petrol)"
-msgstr "ДВС (бензин)"
+msgid "Petrol"
+msgstr "Бензин"
 
 msgid "Diesel"
 msgstr "Дизель"
 
-msgid "Hybrid"
-msgstr "Гибрид"
+msgid "Gas"
+msgstr "Газ"
+
+msgid "LPG / Petrol"
+msgstr "Газ пропан-бутан / Бензин"
+
+msgid "CNG / Petrol"
+msgstr "Газ метан / Бензин"
+
+msgid "Hybrid (HEV)"
+msgstr "Гибрид (HEV)"
+
+msgid "Plug-in hybrid (PHEV)"
+msgstr "Гибрид (PHEV)"
+
+msgid "Mild hybrid (MHEV)"
+msgstr "Гибрид (MHEV)"
 
 msgid "Electric"
 msgstr "Электро"
 
-msgid "Gas (LPG/CNG)"
-msgstr "Газ (ГБО)"
+msgid "Other"
+msgstr "Другое"
+
+msgid "Manual"
+msgstr "Ручная / Механика"
 
 msgid "Automatic"
 msgstr "Автомат"
 
-msgid "Manual"
-msgstr "Механика"
+msgid "Tiptronic"
+msgstr "Типтроник"
+
+msgid "Robotic"
+msgstr "Робот"
+
+msgid "CVT"
+msgstr "Вариатор"
+
+msgid "Reduction gear"
+msgstr "Редуктор"
 
 msgid "source"
 msgstr "источник"
@@ -1191,8 +1224,8 @@ msgstr "Электродвигатель"
 msgid "Plugin Hybrid (Petrol/Electricity)"
 msgstr "Подключаемый гибрид (бензин/электро)"
 
-msgid "All categories"
-msgstr "Все категории"
+msgid "Gearbox"
+msgstr "Коробка передач"
 
 msgid "All countries"
 msgstr "Все страны"

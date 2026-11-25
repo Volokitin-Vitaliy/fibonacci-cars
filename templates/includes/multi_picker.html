@@ -1,0 +1,28 @@
+{% load i18n %}{% comment %}Dropdown with checkboxes (several values of one filter): picker = {name, label, summary,
+selected, options [{value, label, checked, count}], hidden [(name, value)], reset_href}; action = form URL.{% endcomment %}
+<div class="relative {{ class }}" data-dropdown>
+    <button type="button" data-dropdown-button aria-haspopup="true" aria-expanded="false" class="picker {% if picker.selected %}picker-set{% endif %}">
+        <span class="min-w-0"><span class="picker-label">{{ picker.label }}</span><span class="block truncate">{{ picker.summary }}</span></span>
+        <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+    </button>
+    <div data-dropdown-panel class="picker-panel hidden {% if align == 'right' %}picker-panel-end{% endif %} min-w-full w-max max-w-[min(20rem,calc(100vw-2rem))]">
+        <form method="get" action="{{ action }}">
+            {% for name, value in picker.hidden %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+            <div class="max-h-[50vh] overflow-y-auto py-2">
+                {% for o in picker.options %}
+                <label class="picker-option cursor-pointer {% if not o.count and not o.checked %}opacity-45{% endif %}">
+                    <span class="flex items-center gap-3 min-w-0">
+                        <input type="checkbox" name="{{ picker.name }}" value="{{ o.value }}" class="check" {% if o.checked %}checked{% endif %}>
+                        <span class="truncate">{{ o.label }}</span>
+                    </span>
+                    <span class="text-xs text-neutral-500 pl-3">{{ o.count }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="flex gap-2 p-2 border-t border-white/10">
+                <a href="{{ picker.reset_href }}" class="btn btn-outline flex-1 !h-10 !px-3 !text-[0.7rem]">{% trans 'Reset' %}</a>
+                <button type="submit" class="btn btn-primary flex-1 !h-10 !px-3 !text-[0.7rem]">{% trans 'Apply' %}</button>
+            </div>
+        </form>
+    </div>
+</div>

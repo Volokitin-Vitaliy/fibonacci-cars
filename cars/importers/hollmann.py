@@ -173,6 +173,10 @@ def detect_fuel(drive):
     Hybrids are checked first: their description also mentions electricity."""
     drive = drive.lower()
     if 'hybrid' in drive:
+        if 'plug' in drive:
+            return Car.Fuel.PHEV
+        if 'mild' in drive:
+            return Car.Fuel.MHEV
         return Car.Fuel.HYBRID
     if 'electric' in drive:
         return Car.Fuel.ELECTRIC
@@ -196,7 +200,11 @@ def specs_to_fields(specs):
     if power:
         fields['power_hp'] = int(power)
     transmission = data.get('Transmission', '').lower()
-    if 'auto' in transmission:
+    if any(word in transmission for word in ('dual-clutch', 'dual clutch', 'dct', 'dsg', 'pdk')):
+        fields['transmission'] = Car.Transmission.ROBOT
+    elif 'cvt' in transmission or 'continuously' in transmission:
+        fields['transmission'] = Car.Transmission.CVT
+    elif 'auto' in transmission:
         fields['transmission'] = Car.Transmission.AUTOMATIC
     elif 'manual' in transmission:
         fields['transmission'] = Car.Transmission.MANUAL
