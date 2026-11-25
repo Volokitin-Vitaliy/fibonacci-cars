@@ -1,7 +1,7 @@
 # nginx for FIBONACCI. ${DOMAIN} is filled in from .env when the container starts.
-upstream django {
-    server web:8000;
-}
+# Docker's internal DNS: the site container gets a new address whenever it is rebuilt,
+# so its name is looked up at request time instead of once at nginx start (that caused 502s).
+resolver 127.0.0.11 valid=10s ipv6=off;
 
 # At most 10 login / sign-up requests a minute from one address (plus a short burst);
 # the app itself also locks an account for 15 minutes after 5 wrong passwords.
@@ -57,7 +57,8 @@ server {
     # Login, sign-up and email confirmation pages, on the site and in the admin.
     location ~ /(login|register|verify)/ {
         limit_req zone=auth burst=10 nodelay;
-        proxy_pass http://django;
+        set $django http://web:8000;
+        proxy_pass $django;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -65,7 +66,8 @@ server {
     }
 
     location / {
-        proxy_pass http://django;
+        set $django http://web:8000;
+        proxy_pass $django;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
