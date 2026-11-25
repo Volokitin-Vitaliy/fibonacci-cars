@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-24 11:02+0000\n"
+"POT-Creation-Date: 2026-11-25 14:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -728,14 +728,27 @@ msgstr ""
 msgid "Manage your listings and favorites."
 msgstr "Управляйте объявлениями и избранным."
 
-msgid "Send the link again"
-msgstr "Отправить ссылку ещё раз"
-
 msgid "Incorrect email or password."
 msgstr "Неверный email или пароль."
 
 msgid "No account yet?"
 msgstr "Ещё нет аккаунта?"
+
+#, python-format
+msgid ""
+"Your email is not confirmed yet. We have just sent a new link to %(email)s — open it and you are "
+"in. Check the Spam folder too."
+msgstr ""
+"Почта ещё не подтверждена. Мы только что отправили новую ссылку на %(email)s — откройте её, и вы "
+"войдёте. Проверьте и папку «Спам»."
+
+#, python-format
+msgid ""
+"Your email is not confirmed yet. Open the link we sent to %(email)s (check the Spam folder too). "
+"A new link can be sent once a minute."
+msgstr ""
+"Почта ещё не подтверждена. Откройте ссылку, которую мы отправили на %(email)s (проверьте и "
+"«Спам»). Новую ссылку можно получить раз в минуту."
 
 msgid "Sell your vehicle and save the ones you like."
 msgstr "Продавайте свой автомобиль и сохраняйте понравившиеся."
@@ -764,6 +777,9 @@ msgstr "Письма нет? Проверьте папку «Спам» или �
 
 msgid "Email"
 msgstr "Email"
+
+msgid "Send the link again"
+msgstr "Отправить ссылку ещё раз"
 
 #, python-format
 msgid ""
@@ -1355,8 +1371,16 @@ msgstr "почта подтверждена"
 msgid "If this address is waiting for confirmation, we have sent the link again."
 msgstr "Если этот адрес ожидает подтверждения, мы отправили ссылку ещё раз."
 
+#, python-format
+msgid "Press the button to confirm %(email)s and activate your account."
+msgstr "Нажмите кнопку, чтобы подтвердить %(email)s и активировать аккаунт."
+
 msgid "Your email is confirmed. Welcome to FIBONACCI!"
 msgstr "Почта подтверждена. Добро пожаловать в FIBONACCI!"
+
+#, python-format
+msgid "Press the button to use %(email)s for your account."
+msgstr "Нажмите кнопку, чтобы использовать %(email)s для вашего аккаунта."
 
 #, python-format
 msgid "Your email has been changed to %(email)s."

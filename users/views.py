@@ -48,6 +48,14 @@ def verify_email(request, uidb64, token):
     user = verification.user_from_link(uidb64, token)
     if user is None:
         return render(request, 'users/verify_failed.html', status=400)
+    if request.method != 'POST':
+        # Mail scanners and link previews open links on their own; only a button press
+        # by a person confirms the address.
+        return render(request, 'users/confirm_action.html', {
+            'title': _('Confirm your email'), 'email': user.email,
+            'text': _('Press the button to confirm %(email)s and activate your account.') % {'email': user.email},
+            'button': _('Confirm email'),
+        })
     if not user.email_verified or not user.is_active:
         user.email_verified = True
         user.is_active = True
@@ -63,6 +71,12 @@ def confirm_email_change(request, token):
     if found is None:
         return render(request, 'users/verify_failed.html', status=400)
     user, new_email = found
+    if request.method != 'POST':
+        return render(request, 'users/confirm_action.html', {
+            'title': _('Confirm your new email'), 'email': new_email,
+            'text': _('Press the button to use %(email)s for your account.') % {'email': new_email},
+            'button': _('Confirm email'),
+        })
     if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
         messages.error(request, _('This email is already in use.'))
         return redirect('users:account')
@@ -77,6 +91,18 @@ class EmailLoginView(LoginView):
     template_name = 'users/login.html'
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def form_invalid(self, form):
+        # Right password but the email is not confirmed yet: send a fresh link right away
+        # (at most once a minute) instead of making the person look for a button.
+        email = getattr(form, 'unverified_email', None)
+        if email:
+            user = User.objects.filter(email__iexact=email).first()
+            if user and user.awaits_verification and verification.may_resend(self.request, user):
+                verification.send_link(self.request, user)
+                form.link_sent = True
+            self.request.session['verify_email'] = email
+        return super().form_invalid(form)
 
 
 @require_POST
