@@ -146,9 +146,9 @@
 
 <footer class="site-footer mt-28">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
-        <div class="grid gap-y-10 gap-x-8 grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div class="grid gap-y-10 gap-x-8 grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
             {# Brand #}
-            <div class="col-span-2 sm:col-span-3 lg:col-span-1">
+            <div class="col-span-2 lg:col-span-1">
                 <a href="{% url 'cars:home' %}" class="inline-flex items-center gap-3" aria-label="FIBONACCI">
                     <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
                     <span class="font-brand text-lg tracking-[0.3em]">FIBONACCI</span>
@@ -172,16 +172,8 @@
                 </ul>
             </nav>
 
-            {% if nav_makes %}
-            <nav aria-label="{% trans 'Popular makes' %}">
-                <div class="footer-heading">{% trans 'Popular makes' %}</div>
-                <ul class="footer-links">
-                    {% for m in nav_makes|dictsortreversed:"n"|slice:":5" %}<li><a href="{{ m.get_absolute_url }}">{{ m.name }}</a></li>{% endfor %}
-                </ul>
-            </nav>
-            {% endif %}
 
-            <nav aria-label="{% trans 'Account' %}" class="col-span-2 sm:col-span-1">
+            <nav aria-label="{% trans 'Account' %}">
                 <div class="footer-heading">{% trans 'Account' %}</div>
                 <ul class="footer-links">
                     {% if user.is_authenticated %}
