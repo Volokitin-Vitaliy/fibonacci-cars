@@ -75,7 +75,9 @@ class ParserTests(TestCase):
         })
 
     def test_detect_fuel(self):
-        self.assertEqual(detect_fuel('Plugin Hybrid (Petrol/Electricity)'), 'hybrid')
+        self.assertEqual(detect_fuel('Plugin Hybrid (Petrol/Electricity)'), 'phev')
+        self.assertEqual(detect_fuel('Hybrid (Petrol/Electricity)'), 'hybrid')
+        self.assertEqual(detect_fuel('Mild Hybrid (Diesel/Electricity)'), 'mhev')
         self.assertEqual(detect_fuel('Electric Motor (Electricity)'), 'electric')
         self.assertEqual(detect_fuel('Combustion Engine (Diesel)'), 'diesel')
         self.assertEqual(detect_fuel('Combustion Engine (Petrol)'), 'petrol')
@@ -627,9 +629,29 @@ class LayoutTests(TestCase):
         # The make picker keeps the category and the sort, and counts within the category.
         self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;sort=price-ascending&amp;make=bmw')
         makes = {o['label']: o['count'] for o in page.context['make_options']}
-        self.assertEqual(makes, {'Audi': 1, 'BMW': 1})
-        fuels = {o['value']: o['count'] for o in page.context['fuel_options']}
-        self.assertEqual((fuels['diesel'], fuels['petrol'], fuels['gas']), (2, 1, 0))
+        self.assertEqual(makes, {'Audi': 1, 'BMW': 1})  # only makes that have cars
+        fuels = {o['value']: o['count'] for o in page.context['fuel_picker']['options']}
+        self.assertEqual(fuels, {'diesel': 2, 'petrol': 1})  # no empty choices
+
+    def test_several_fuels_and_gearboxes(self):
+        owner = make_user()
+        diesel_auto = make_listing(owner, fuel='diesel', transmission='automatic')
+        phev_robot = make_listing(owner, fuel='phev', transmission='robot')
+        petrol_manual = make_listing(owner, fuel='petrol', transmission='manual')
+
+        def ids(**params):
+            return {c.pk for c in self.client.get(reverse('cars:list'), params).context['page']}
+
+        self.assertEqual(ids(fuel=['diesel', 'phev']), {diesel_auto.pk, phev_robot.pk})
+        self.assertEqual(ids(transmission=['robot', 'manual']), {phev_robot.pk, petrol_manual.pk})
+        self.assertEqual(ids(fuel=['diesel', 'phev'], transmission=['robot']), {phev_robot.pk})
+        self.assertEqual(ids(fuel=['nonsense']), {diesel_auto.pk, phev_robot.pk, petrol_manual.pk})
+        page = self.client.get(reverse('cars:list'), {'fuel': ['diesel', 'phev']})
+        self.assertContains(page, 'name="fuel" value="phev" class="check" checked')
+        self.assertEqual(page.context['fuel_picker']['summary'], 'Diesel +1')
+        # The gearbox form keeps the chosen fuels.
+        self.assertIn(('fuel', 'diesel'), page.context['transmission_picker']['hidden'])
+        self.assertIn(('fuel', 'phev'), page.context['transmission_picker']['hidden'])
 
     def test_accident_filter(self):
         owner = make_user()
@@ -662,7 +684,7 @@ class LayoutTests(TestCase):
     def test_all_pickers_are_dropdowns(self):
         page = self.client.get(reverse('cars:list'), {'fuel': 'diesel'})
         content = page.content.decode()
-        self.assertEqual(content.count('data-dropdown-button aria-haspopup'), 5)
+        self.assertEqual(content.count('data-dropdown-button aria-haspopup'), 6)
         self.assertNotIn('<select name="sort"', content)
         self.assertContains(page, '/en/vehicles/?fuel=diesel&amp;sort=price-ascending')
         self.assertContains(page, 'All countries')
@@ -690,10 +712,13 @@ class LayoutTests(TestCase):
         self.assertEqual(self.client.get(reverse('cars:list'), {'sort': 'name-ascending'}).context['sort'],
                          'date-descending')
 
-    def test_categories_are_engine_types(self):
+    def test_fuel_and_gearbox_choices(self):
+        self.assertEqual(Car.Fuel.labels, ['Petrol', 'Diesel', 'Gas', 'LPG / Petrol', 'CNG / Petrol',
+                                           'Hybrid (HEV)', 'Plug-in hybrid (PHEV)', 'Mild hybrid (MHEV)',
+                                           'Electric', 'Other'])
+        self.assertEqual(Car.Transmission.labels, ['Manual', 'Automatic', 'Tiptronic', 'Robotic', 'CVT',
+                                                   'Reduction gear'])
         page = self.client.get(reverse('cars:list'))
-        labels = [o['label'] for o in page.context['fuel_options']][1:]
-        self.assertEqual(labels, ['Combustion (petrol)', 'Diesel', 'Hybrid', 'Electric', 'Gas (LPG/CNG)'])
         self.assertNotContains(page, 'Armoured')
         self.assertNotContains(page, 'Oldtimer')
 
@@ -862,6 +887,9 @@ class FilterTests(TestCase):
         self.assertEqual(data['results'][0]['url'], self.usd.get_absolute_url())
         self.assertIn('q=cull', data['all_url'])
         self.assertEqual(self.client.get(reverse('cars:search_suggest'), {'q': 'c'}).json()['total'], 0)
+        # The search box on 'New offers' searches the whole catalog too (like the suggestions).
+        page = self.client.get(reverse('cars:new'))
+        self.assertContains(page, f'action="{reverse("cars:list")}" class="catalog-search"')
 
     def test_price_in_dollars(self):
         # $16,000 = €14,720 < €15,000; $17,000 = €15,640 > €15,000

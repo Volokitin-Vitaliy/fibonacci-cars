@@ -65,18 +65,22 @@ def home(request):
 
 
 def car_list(request, make_slug=None, fuel=None, new=False):
-    """Catalog. Category (engine type) and make are separate choices that can
-    be combined with each other and with the filters, e.g. diesel + BMW."""
+    """Catalog. Fuel types and gearboxes are multi-choice (checkboxes), make is a single
+    choice; all combine with each other and with the filters, e.g. diesel + PHEV + BMW."""
     base = Car.objects.new_offers() if new else Car.objects.visible()
     base_url = reverse('cars:new') if new else reverse('cars:list')
 
-    fuel = fuel or request.GET.get('fuel', '')
-    if fuel and fuel not in Car.Fuel.values:
-        raise Http404
+    fuels = [f for f in request.GET.getlist('fuel') if f in Car.Fuel.values]
+    if fuel:  # /category/<fuel>/ pages
+        if fuel not in Car.Fuel.values:
+            raise Http404
+        fuels.insert(0, fuel)
+    fuels = list(dict.fromkeys(fuels))
+    transmissions = list(dict.fromkeys(t for t in request.GET.getlist('transmission')
+                                       if t in Car.Transmission.values))
     make_slug = make_slug or request.GET.get('make', '')
     make = get_object_or_404(Make, slug=make_slug) if make_slug else None
 
-    # Countries offered in the picker: only those with cars matching the other choices.
     country = request.GET.get('country', '').upper()
     accident = request.GET.get('accident', '')
     if accident not in ACCIDENT_FILTERS:
@@ -88,53 +92,72 @@ def car_list(request, make_slug=None, fuel=None, new=False):
         base = search.search(base, query)
     filters = CarFilterForm(request.GET or None)
     base = filters.apply(base)
-    for_countries = base.filter(fuel=fuel) if fuel else base
-    if make:
-        for_countries = for_countries.filter(make=make)
-    country_counts = dict(for_countries.exclude(country='').order_by().values_list('country')
-                          .annotate(n=Count('pk', distinct=True)))
+
+    def narrow(qs, skip=None):
+        """Apply the fuel / gearbox / make choices, except `skip` (for its own counts)."""
+        if fuels and skip != 'fuel':
+            qs = qs.filter(fuel__in=fuels)
+        if transmissions and skip != 'transmission':
+            qs = qs.filter(transmission__in=transmissions)
+        if make and skip != 'make':
+            qs = qs.filter(make=make)
+        return qs
+
+    def counts(qs, field):
+        return dict(qs.order_by().values_list(field).annotate(n=Count('pk', distinct=True)))
+
+    # Countries offered in the picker: only those with cars matching the other choices.
+    country_counts = counts(narrow(base).exclude(country=''), 'country')
     if country not in country_counts:
         country = ''
     if country:
         base = base.filter(country=country)
 
-    cars = base
-    if fuel:
-        cars = cars.filter(fuel=fuel)
-    if make:
-        cars = cars.filter(make=make)
-
     sort = request.GET.get('sort', 'date-descending')
     if sort not in SORTS:
         sort = 'date-descending'
-    cars = with_cover(cars.distinct()).order_by(*SORTS[sort], '-pk')
+    cars = with_cover(narrow(base).distinct()).order_by(*SORTS[sort], '-pk')
     page = Paginator(cars, PER_PAGE).get_page(request.GET.get('page'))
 
-    # Links for the two pickers keep everything else that is selected.
+    # Links and forms keep everything else that is selected.
     params = request.GET.copy()
     params.pop('page', None)
-    params['fuel'], params['make'] = fuel, make.slug if make else ''
+    params.setlist('fuel', fuels)
+    params.setlist('transmission', transmissions)
+    params['make'] = make.slug if make else ''
     params['sort'] = '' if sort == 'date-descending' else sort
+
+    def pairs(query, exclude=()):
+        return [(k, v) for k in query for v in query.getlist(k) if v and k not in exclude]
 
     def link(**changes):
         query = params.copy()
         for key, value in changes.items():
             query[key] = value
-        query = {k: v for k, v in query.items() if v}
-        return base_url + ('?' + urlencode(query) if query else '')
+        items = pairs(query)
+        return base_url + ('?' + urlencode(items) if items else '')
 
-    for_fuels = base.filter(make=make) if make else base
-    for_makes = base.filter(fuel=fuel) if fuel else base
-    fuel_counts = dict(for_fuels.order_by().values_list('fuel').annotate(n=Count('pk', distinct=True)))
-    make_counts = dict(for_makes.order_by().values_list('make').annotate(n=Count('pk', distinct=True)))
-    fuel_options = [{'value': '', 'label': _('All categories'), 'href': link(fuel=''),
-                     'active': not fuel, 'count': sum(fuel_counts.values())}]
-    fuel_options += [{'value': value, 'label': label, 'href': link(fuel=value),
-                      'active': fuel == value, 'count': fuel_counts.get(value, 0)}
-                     for value, label in Car.Fuel.choices]
-    make_options = [{'value': m.slug, 'label': m.name, 'href': link(make=m.slug),
-                     'active': make == m, 'count': make_counts[m.pk]}
-                    for m in Make.objects.filter(pk__in=make_counts).order_by('name')]
+    def multi_picker(name, label, choices, selected, own_counts):
+        chosen = [str(lbl) for value, lbl in choices if value in selected]
+        summary = chosen[0] + (f' +{len(chosen) - 1}' if len(chosen) > 1 else '') if chosen else _('Any')
+        return {
+            'name': name, 'label': label, 'summary': summary, 'selected': bool(chosen),
+            # Only choices that have cars (or are already ticked).
+            'options': [{'value': value, 'label': lbl, 'checked': value in selected,
+                         'count': own_counts.get(value, 0)} for value, lbl in choices
+                        if own_counts.get(value) or value in selected],
+            'hidden': pairs(params, exclude=(name,)), 'reset_href': link(**{name: ''}),
+        }
+
+    fuel_picker = multi_picker('fuel', _('Fuel'), Car.Fuel.choices, fuels,
+                               counts(narrow(base, skip='fuel'), 'fuel'))
+    transmission_picker = multi_picker('transmission', _('Gearbox'), Car.Transmission.choices, transmissions,
+                                       counts(narrow(base, skip='transmission'), 'transmission'))
+    make_counts = counts(narrow(base, skip='make'), 'make')
+    # Only makes that have cars (the full list is in the listing form).
+    shown_makes = Make.objects.filter(Q(pk__in=make_counts) | Q(pk=make.pk if make else None)).order_by('name')
+    make_options = [{'value': m.slug, 'label': m.name, 'href': link(make=m.slug), 'logo': m.logo_url,
+                     'active': make == m, 'count': make_counts.get(m.pk, 0)} for m in shown_makes]
 
     def options(key, current, choices):
         return [{'value': value, 'label': label, 'href': link(**{key: value}),
@@ -151,17 +174,20 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     title = _('New Offers') if new else _('All Vehicles')
     if query:
         title = _('Search: %(query)s') % {'query': query}
-    elif fuel or make:
+    elif make or len(fuels) == 1:
         title = ' · '.join(str(x) for x in (make.name if make else '',
-                                            Car.Fuel(fuel).label if fuel else '') if x)
+                                            Car.Fuel(fuels[0]).label if len(fuels) == 1 else '') if x)
     return render(request, 'cars/list.html', {
         'page': page, 'title': title, 'sort': sort, 'is_new': new, 'country': country, 'query': query,
-        'filters': filters, 'fuel': fuel, 'make': make,
-        'fuel_label': Car.Fuel(fuel).label if fuel else _('All categories'),
-        'fuel_options': fuel_options, 'make_options': make_options,
+        'filters': filters, 'make': make, 'base_url': base_url,
+        'fuel_picker': fuel_picker, 'transmission_picker': transmission_picker,
+        'make_options': make_options,
         'all_makes_href': link(make=''),
         'accident': accident, 'accident_options': accident_options,
         'country_options': country_options, 'sort_options': sort_options,
+        'filter_hidden': pairs(params, exclude=('price_min', 'price_max', 'cur', 'year_min', 'year_max')),
+        'any_filter': bool(fuels or transmissions or make or country or accident or query
+                           or filters.active_count),
     })
 
 

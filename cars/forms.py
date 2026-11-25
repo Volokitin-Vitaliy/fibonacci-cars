@@ -76,8 +76,8 @@ class CarForm(forms.ModelForm):
         self.fields['model'].label = _('Model / title')
         self.fields['contact_name'].required = True
         self.fields['fuel'].required = True
-        self.fields['fuel'].label = _('Category')
-        self.fields['fuel'].choices = [('', _('Choose a category'))] + list(Car.Fuel.choices)
+        self.fields['fuel'].label = _('Fuel')
+        self.fields['fuel'].choices = [('', _('Choose the fuel'))] + list(Car.Fuel.choices)
         self.fields['transmission'].choices = [('', '—')] + list(self.fields['transmission'].choices)[1:]
         self.fields['year'].widget.attrs.update(min=1900, max=date.today().year + 1)
         self.fields['price'].widget.attrs.update(min=1, step='1')

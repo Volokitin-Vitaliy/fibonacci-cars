@@ -14,7 +14,36 @@
     <fieldset class="space-y-5">
         <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Vehicle' %}</legend>
         <div class="grid sm:grid-cols-2 gap-5">
-            {% include "includes/field.html" with field=form.make %}
+            {# Make: the full list with logos and a search #}
+            <div>
+                {# only the caption uses the form label style; the options below are labels too #}
+                <div class="form-field"><label for="make-button">{{ form.make.label }} *</label></div>
+                <div class="relative" data-dropdown>
+                    <button type="button" id="make-button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="make-select {% if form.make.errors %}!border-red-500{% endif %}">
+                        <span class="flex items-center gap-3 min-w-0" data-dropdown-value>
+                            {% for m in form.fields.make.queryset %}{% if m.pk|stringformat:"s" == form.make.value|stringformat:"s" %}<img src="{{ m.logo_url }}" alt="" width="22" height="22" class="w-[22px] h-[22px] object-contain shrink-0"><span class="truncate">{{ m.name }}</span>{% endif %}{% empty %}{% endfor %}
+                            {% if not form.make.value %}<span class="text-neutral-500">{% trans 'Choose a make' %}</span>{% endif %}
+                        </span>
+                        <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+                    </button>
+                    <div data-dropdown-panel class="picker-panel hidden w-full">
+                        <div class="p-2 border-b border-white/10">
+                            <input type="search" data-dropdown-search placeholder="{% trans 'Find a make' %}" autocomplete="off"
+                                   class="w-full bg-white/[.04] border border-white/10 focus:border-blue-500 rounded-xl outline-none px-3 py-2.5 text-sm">
+                        </div>
+                        <div class="max-h-[50vh] overflow-y-auto py-2" role="listbox">
+                            {% for m in form.fields.make.queryset %}
+                            <label data-dropdown-item="{{ m.name|lower }}" class="picker-option cursor-pointer {% if m.pk|stringformat:'s' == form.make.value|stringformat:'s' %}is-active{% endif %}">
+                                <input type="radio" name="make" value="{{ m.pk }}" class="sr-only" {% if m.pk|stringformat:'s' == form.make.value|stringformat:'s' %}checked{% endif %}>
+                                <span class="flex items-center gap-3 min-w-0" data-option-face><img src="{{ m.logo_url }}" alt="" width="22" height="22" loading="lazy" class="w-[22px] h-[22px] object-contain shrink-0"><span class="truncate">{{ m.name }}</span></span>
+                            </label>
+                            {% endfor %}
+                            <div data-dropdown-empty class="hidden px-4 py-3 text-sm text-neutral-500">{% trans 'Nothing found' %}</div>
+                        </div>
+                    </div>
+                </div>
+                {% for e in form.make.errors %}<p class="text-sm text-red-400 mt-1.5">{{ e }}</p>{% endfor %}
+            </div>
             {% include "includes/field.html" with field=form.fuel %}
         </div>
         <div class="grid sm:grid-cols-2 gap-5">

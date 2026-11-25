@@ -51,6 +51,20 @@ class Make(models.Model):
     def get_absolute_url(self):
         return reverse('cars:make', args=[self.slug])
 
+    @property
+    def logo_url(self):
+        """Monochrome logo of the make, or a neutral car icon."""
+        from django.templatetags.static import static
+
+        from .makes_data import logo_key
+        key = logo_key(self.name)
+        return static(f'img/makes/{key}.svg' if key else 'img/makes/_car.svg')
+
+    @property
+    def has_logo(self):
+        from .makes_data import logo_key
+        return logo_key(self.name) is not None
+
 
 class CarQuerySet(models.QuerySet):
     def visible(self):
@@ -95,16 +109,25 @@ class Car(models.Model):
         USD = 'USD', '$ USD'
 
     class Fuel(models.TextChoices):
-        # The site's vehicle categories.
-        PETROL = 'petrol', _('Combustion (petrol)')
+        # Fuel types, as on the big classifieds.
+        PETROL = 'petrol', _('Petrol')
         DIESEL = 'diesel', _('Diesel')
-        HYBRID = 'hybrid', _('Hybrid')
+        GAS = 'gas', _('Gas')
+        LPG_PETROL = 'lpg_petrol', _('LPG / Petrol')
+        CNG_PETROL = 'cng_petrol', _('CNG / Petrol')
+        HYBRID = 'hybrid', _('Hybrid (HEV)')
+        PHEV = 'phev', _('Plug-in hybrid (PHEV)')
+        MHEV = 'mhev', _('Mild hybrid (MHEV)')
         ELECTRIC = 'electric', _('Electric')
-        GAS = 'gas', _('Gas (LPG/CNG)')
+        OTHER = 'other', _('Other')
 
     class Transmission(models.TextChoices):
-        AUTOMATIC = 'automatic', _('Automatic')
         MANUAL = 'manual', _('Manual')
+        AUTOMATIC = 'automatic', _('Automatic')
+        TIPTRONIC = 'tiptronic', _('Tiptronic')
+        ROBOT = 'robot', _('Robotic')
+        CVT = 'cvt', _('CVT')
+        REDUCER = 'reducer', _('Reduction gear')
 
     source = models.CharField(_('source'), max_length=20, choices=Source.choices, default=Source.USER)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

@@ -164,3 +164,43 @@ document.addEventListener('submit', function (e) {
     var form = e.target.closest('form[data-confirm]');
     if (form && !window.confirm(form.dataset.confirm)) e.preventDefault();
 }, true);
+
+/* Dropdowns (catalog pickers, make choice in the listing form): open/close, search,
+   and for a choice made with radio buttons, show it on the button and close. */
+document.querySelectorAll('[data-dropdown]').forEach(function (root) {
+    var button = root.querySelector('[data-dropdown-button]');
+    var panel = root.querySelector('[data-dropdown-panel]');
+    var arrow = root.querySelector('[data-dropdown-arrow]');
+    var search = root.querySelector('[data-dropdown-search]');
+    var items = root.querySelectorAll('[data-dropdown-item]');
+    var empty = root.querySelector('[data-dropdown-empty]');
+    if (!button || !panel) return;
+    function setOpen(open) {
+        if (open) document.querySelectorAll('[data-dropdown-panel]').forEach(function (p) { if (p !== panel) p.classList.add('hidden'); });
+        panel.classList.toggle('hidden', !open);
+        if (arrow) arrow.classList.toggle('rotate-180', open);
+        button.setAttribute('aria-expanded', open);
+        if (open && search && window.matchMedia('(min-width: 640px)').matches) search.focus();
+    }
+    button.addEventListener('click', function () { setOpen(panel.classList.contains('hidden')); });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    if (search) search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase(), shown = 0;
+        // Match from the start of the name or of any word in it: 'mer' finds Mercedes, not Hummer.
+        items.forEach(function (a) {
+            var name = a.dataset.dropdownItem;
+            var ok = !q || (' ' + name.replace(/[-&/]/g, ' ')).indexOf(' ' + q) !== -1;
+            a.classList.toggle('hidden', !ok); if (ok) shown++;
+        });
+        if (empty) empty.classList.toggle('hidden', shown > 0);
+    });
+    root.querySelectorAll('input[type=radio]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            var option = radio.closest('[data-dropdown-item]'), value = root.querySelector('[data-dropdown-value]');
+            if (option && value) value.innerHTML = option.querySelector('[data-option-face]').innerHTML;
+            root.querySelectorAll('[data-dropdown-item]').forEach(function (o) { o.classList.toggle('is-active', o === option); });
+            setOpen(false);
+        });
+    });
+});
