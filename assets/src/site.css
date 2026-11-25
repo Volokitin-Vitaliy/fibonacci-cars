@@ -171,7 +171,9 @@ fieldset { min-width: 0; }
 .js img.fade-in.is-loaded { opacity: 1; }
 
 /* ---- Horizontal scrollers ---- */
-.scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; /* sideways only: a vertical swipe scrolls the page */
+    overscroll-behavior-x: contain; touch-action: pan-x pan-y; scroll-snap-type: x mandatory;
+    padding-bottom: 1.5rem; margin-bottom: -1.5rem; /* room for the cards' reveal motion, nothing clipped */ scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .scroller::-webkit-scrollbar { display: none; }
 .scroller > * { scroll-snap-align: start; }
 
@@ -181,10 +183,11 @@ fieldset { min-width: 0; }
     .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
     .hero-slide.is-active img { animation: kenburns 9s ease-out forwards; }
     @keyframes kenburns { from { transform: scale(1.12) translate3d(1%, 1%, 0); } to { transform: scale(1.02) translate3d(0, 0, 0); } }
-    @media (max-width: 639px) {  /* phones: the whole car stays in view, slides only fade */
-        .hero-slide img { transform: none; }
-        .hero-slide.is-active img { animation: none; }
+    @media (max-width: 639px) {  /* phones: starts with the whole car, then a gentle zoom in */
+        .hero-slide img { transform: scale(1.015); }
+        .hero-slide.is-active img { animation: kenburns-phone 9s ease-out forwards; }
     }
+    @keyframes kenburns-phone { from { transform: scale(1.015); } to { transform: scale(1.08); } }
     .hero-dot { height: 2px; width: 2rem; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
     .hero-dot span { display: block; height: 100%; width: 0; background: #fff; }
     .hero-dot.is-active span { animation: dot 6s linear forwards; }
