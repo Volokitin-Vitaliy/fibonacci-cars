@@ -399,6 +399,8 @@ class RegistrationTests(TestCase):
 
     def test_email_must_be_confirmed(self):
         from django.core import mail
+        from django.core.cache import cache
+        cache.clear()
         self.client.post(reverse('users:register'), {
             'last_name': 'Petrov', 'first_name': 'Ivan', 'email': 'ivan@example.com', 'country': 'DE',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw',
@@ -410,19 +412,28 @@ class RegistrationTests(TestCase):
         # Logging in before confirming explains what to do.
         page = self.client.post(reverse('users:login'), {'username': 'ivan@example.com',
                                                         'password': 'Sup3r-secret-pw'})
-        self.assertContains(page, 'Please confirm your email first')
+        self.assertContains(page, 'We have just sent a new link to ivan@example.com')
+        self.assertEqual(len(mail.outbox), 2)  # a fresh link is sent right away
+        again = self.client.post(reverse('users:login'), {'username': 'ivan@example.com',
+                                                         'password': 'Sup3r-secret-pw'})
+        self.assertContains(again, 'A new link can be sent once a minute')
+        self.assertEqual(len(mail.outbox), 2)
         wrong = self.client.post(reverse('users:login'), {'username': 'ivan@example.com',
                                                          'password': 'wrong-password'})
-        self.assertNotContains(wrong, 'Please confirm your email first')
+        self.assertNotContains(wrong, 'not confirmed yet')
         # The link activates the account and signs in; it works only once.
-        link = re.search(r'https?://\S+/verify/\S+/', mail.outbox[0].body).group(0)
+        link = re.search(r'https?://\S+/verify/\S+/', mail.outbox[-1].body).group(0)
         path = link.split('testserver', 1)[1]
-        self.assertRedirects(self.client.get(path), reverse('cars:my_cars'))
+        # Opening the link (as mail scanners do) changes nothing; the button confirms.
+        self.assertContains(self.client.get(path), 'Confirm email')
+        user.refresh_from_db()
+        self.assertTrue(user.awaits_verification)
+        self.assertRedirects(self.client.post(path), reverse('cars:my_cars'))
         user.refresh_from_db()
         self.assertTrue(user.is_active and user.email_verified)
         self.client.logout()
         self.client.cookies.load(LANG)
-        again = self.client.get(path)
+        again = self.client.post(path)
         self.assertEqual(again.status_code, 400, again.get("Location"))
 
     def test_resend_link_is_limited(self):
@@ -1126,7 +1137,7 @@ class DeepFixTests(TestCase):
             'last_name': 'P', 'first_name': 'I', 'email': 'keep@example.com', 'country': 'DE',
             'password1': 'Sup3r-secret-pw', 'password2': 'Sup3r-secret-pw'})
         link = re.search(r'https?://\S+/verify/\S+/', mail.outbox[0].body).group(0)
-        self.client.get(link.split('testserver', 1)[1])
+        self.client.post(link.split('testserver', 1)[1])
         user = CustomUser.objects.get(email='keep@example.com')
         self.assertTrue(EmailAddress.objects.filter(user=user, email='keep@example.com', verified=True,
                                                     primary=True).exists())
@@ -1148,10 +1159,13 @@ class DeepFixTests(TestCase):
         self.assertEqual(user.email, 'old@example.com')
         self.assertEqual(mail.outbox[-1].to, ['new@example.com'])
         path = re.search(r'https?://\S+', mail.outbox[-1].body).group(0).split('testserver', 1)[1]
-        self.client.get(path)
+        self.client.get(path)  # opening alone does nothing
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'old@example.com')
+        self.client.post(path)
         user.refresh_from_db()
         self.assertEqual(user.email, 'new@example.com')
-        self.assertEqual(self.client.get(path).status_code, 400)  # used once
+        self.assertEqual(self.client.post(path).status_code, 400)  # used once
 
     def test_uploaded_photo_is_cleaned_resized_and_files_removed_with_it(self):
         import os

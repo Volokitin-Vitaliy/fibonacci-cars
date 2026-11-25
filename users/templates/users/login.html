@@ -10,8 +10,10 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
         {% if form.unverified_email %}
-        <div class="rounded-xl border border-amber-700/60 bg-amber-500/10 text-amber-200 px-4 py-3 text-sm">{{ form.non_field_errors.0 }}
-            <a href="{% url 'users:verify_sent' %}" class="block mt-2 underline text-white">{% trans 'Send the link again' %}</a></div>
+        <div class="rounded-xl border border-amber-700/60 bg-amber-500/10 text-amber-200 px-4 py-3 text-sm">
+            {% if form.link_sent %}{% blocktrans with email=form.unverified_email %}Your email is not confirmed yet. We have just sent a new link to {{ email }} — open it and you are in. Check the Spam folder too.{% endblocktrans %}
+            {% else %}{% blocktrans with email=form.unverified_email %}Your email is not confirmed yet. Open the link we sent to {{ email }} (check the Spam folder too). A new link can be sent once a minute.{% endblocktrans %}{% endif %}
+        </div>
         {% elif form.non_field_errors %}<div class="rounded-xl border border-red-900 text-red-300 px-4 py-3 text-sm">{% if 'locked' in form.non_field_errors.as_text %}{{ form.non_field_errors.0 }}{% else %}{% trans 'Incorrect email or password.' %}{% endif %}</div>{% endif %}
         {% include "includes/field.html" with field=form.username %}
         {% include "includes/field.html" with field=form.password %}
