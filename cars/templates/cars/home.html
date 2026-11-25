@@ -6,7 +6,7 @@
 {# ---------- Hero ---------- #}
 {# Phones: the photo on top, uncovered, text below it. Larger screens: text over the photo. #}
 <section class="relative -mt-16 sm:min-h-[92svh] flex flex-col sm:flex-row sm:items-end overflow-hidden">
-    <div class="hero-media relative w-full h-[min(88vw,36rem)] shrink-0 overflow-hidden sm:absolute sm:inset-0 sm:h-auto">
+    <div class="hero-media relative w-full aspect-[3/2] shrink-0 overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto">
     {% if hero_cars %}
     <div class="absolute inset-0" data-hero>
         {% for car in hero_cars %}
@@ -20,15 +20,15 @@
     <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 30%, rgba(37,99,235,.25), transparent 60%);"></div>
     {% endif %}
     {# phones: the photo melts into the page at the bottom #}
-    <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#08080a] to-transparent pointer-events-none sm:hidden"></div>
+    <div class="absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-[#08080a] from-[18%] via-[#08080a]/75 via-[45%] to-transparent pointer-events-none sm:hidden"></div>
     <div class="absolute inset-0 hidden sm:block bg-gradient-to-t from-[#08080a] via-black/45 to-black/50 pointer-events-none"></div>
     <div class="absolute inset-0 hidden sm:block bg-gradient-to-r from-black/70 via-black/10 to-transparent pointer-events-none"></div>
     </div>
 
-    <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:mt-0 pb-12 sm:pb-20 sm:pt-32">
+    <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-0 pb-10 sm:pb-20 sm:pt-32">
         <div class="max-w-2xl" data-reveal>
-            <h1 class="font-display text-[1.9rem] min-[360px]:text-[2.2rem] sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight">{% trans 'Cars worldwide.' %}</h1>
-            <div class="mt-6 sm:mt-9 grid grid-cols-2 sm:flex gap-2.5 sm:gap-4">
+            <h1 class="sr-only">FIBONACCI — {% trans 'Cars worldwide.' %}</h1>
+            <div class="grid grid-cols-2 sm:flex gap-2.5 sm:gap-4">
                 <a href="{% url 'cars:list' %}" class="btn btn-primary h-12 sm:h-14 !px-3 sm:!px-8 !text-[0.72rem] min-[360px]:!text-xs sm:!text-sm">{% trans 'Choose a car' %} <span aria-hidden="true" class="hidden min-[400px]:inline">→</span></a>
                 <a href="{% url 'cars:add' %}" class="btn btn-outline glass h-12 sm:h-14 !px-3 sm:!px-8 !text-[0.72rem] min-[360px]:!text-xs sm:!text-sm">{% trans 'Sell a car' %} <span aria-hidden="true" class="hidden min-[400px]:inline">→</span></a>
             </div>
@@ -107,7 +107,7 @@
         <h2 class="font-display text-2xl sm:text-4xl font-semibold">{% trans 'Why us' %}</h2>
     </div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {% trans 'Trusted dealers' as t1 %}{% trans 'Vehicles from Hollmann International and checked sellers.' as d1 %}
+        {% trans 'Trusted dealers' as t1 %}{% trans 'Vehicles from trusted European dealers and checked private sellers.' as d1 %}
         {% trans 'Export worldwide' as t2 %}{% trans 'Net export prices and delivery to any country.' as d2 %}
         {% trans 'Direct contact' as t3 %}{% trans 'Phone, WhatsApp and Telegram of the seller — no middlemen.' as d3 %}
         {% trans 'Sell in minutes' as t4 %}{% trans 'Publish your car, we review it and show it to buyers.' as d4 %}
