@@ -581,8 +581,9 @@ class ContactTests(TestCase):
         car = Car.objects.get(model='Q8')
         services.approve(car)
         page = self.client.get(car.get_absolute_url())
-        self.assertNotContains(page, 'wa.me')
-        self.assertNotContains(page, 't.me/')
+        listing = page.content.decode().split('<footer')[0]  # the footer links our own channels
+        self.assertNotIn('wa.me', listing)
+        self.assertNotIn('t.me/', listing)
 
     def test_telegram_phone_and_validation(self):
         self.post(contact_telegram='+7 999 123 45 67')

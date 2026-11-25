@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-25 15:56+0000\n"
+"POT-Creation-Date: 2026-11-25 16:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -640,6 +640,9 @@ msgstr "Эксклюзивные автомобили от проверенны�
 
 msgid "Account"
 msgstr "Аккаунт"
+
+msgid "Back to top"
+msgstr "Наверх"
 
 msgid "Exclusive cars worldwide."
 msgstr "Эксклюзивные автомобили по всему миру."
