@@ -25,6 +25,7 @@ fi
 echo "==> Updating to $NEW"
 git reset --hard --quiet origin/master
 docker compose up -d --build --remove-orphans
+docker compose restart nginx   # picks up nginx config changes
 docker image prune -f >/dev/null
 
 echo "==> Checking that the site answers"
