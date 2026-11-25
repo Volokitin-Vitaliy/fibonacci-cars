@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Count, Q
 
-from . import favorites
+from . import favorites, partnership
 from django.urls import reverse
 
 from .models import Car, Make
@@ -20,5 +20,7 @@ def navigation(request):
                       for value, label in Car.Fuel.choices],
         'nav_makes': makes,
         'favorite_ids': favorite_ids,
+        'contact_email': partnership.EMAIL,
+        'social_links': [(title, url, icon) for title, url, icon, primary in partnership.LINKS if not primary],
         'TURNSTILE_SITE_KEY': settings.TURNSTILE_SITE_KEY if settings.TURNSTILE_SECRET_KEY else '',
     }

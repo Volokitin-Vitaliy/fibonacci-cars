@@ -144,41 +144,54 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="border-t border-white/5 mt-28">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 sm:grid-cols-3 text-sm">
-        <div>
-            <div class="flex items-center gap-3 mb-3">
-                <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
-                <span class="font-brand text-lg tracking-[0.3em]">FIBONACCI</span>
-            </div>
-            <p class="text-neutral-500 max-w-xs">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
-        </div>
-        <div>
-            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Vehicles' %}</div>
-            <ul class="space-y-2">
-                <li><a href="{% url 'cars:list' %}" class="hover:underline underline-offset-4">{% trans 'All Vehicles' %}</a></li>
-                <li><a href="{% url 'cars:new' %}" class="hover:underline underline-offset-4">{% trans 'New Offers' %}</a></li>
-                {% for c in nav_fuels %}<li><a href="{{ c.url }}" class="hover:underline underline-offset-4">{{ c.label }}</a></li>{% endfor %}
-            </ul>
-        </div>
-        <div>
-            <div class="text-xs uppercase tracking-widest text-neutral-500 mb-3">{% trans 'Account' %}</div>
-            <ul class="space-y-2">
-                {% if user.is_authenticated %}
-                <li><a href="{% url 'cars:my_cars' %}" class="hover:underline underline-offset-4">{% trans 'My listings' %}</a></li>
-                <li><a href="{% url 'users:account' %}" class="hover:underline underline-offset-4">{% trans 'Account details' %}</a></li>
-                {% else %}
-                <li><a href="{% url 'users:login' %}" class="hover:underline underline-offset-4">{% trans 'Log in' %}</a></li>
-                <li><a href="{% url 'users:register' %}" class="hover:underline underline-offset-4">{% trans 'Create an account' %}</a></li>
+<footer class="site-footer mt-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
+        <div class="grid gap-y-10 gap-x-8 grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+            {# Brand #}
+            <div class="col-span-2 lg:col-span-1">
+                <a href="{% url 'cars:home' %}" class="inline-flex items-center gap-3" aria-label="FIBONACCI">
+                    <img src="{% static 'img/logo-96.png' %}" alt="" width="40" height="40" class="logo-mark w-10 h-10">
+                    <span class="font-brand text-lg tracking-[0.3em]">FIBONACCI</span>
+                </a>
+                <p class="text-sm text-neutral-500 mt-4 max-w-xs leading-relaxed">{% trans 'Exclusive vehicles from trusted dealers and private sellers.' %}</p>
+                {% if social_links %}
+                <div class="flex flex-wrap gap-2 mt-6">
+                    {% for title, url, icon in social_links %}
+                    <a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ title }}" title="{{ title }}" class="footer-social">{% include "includes/social_icon.html" with name=icon %}</a>
+                    {% endfor %}
+                </div>
                 {% endif %}
-                <li><a href="{% url 'cars:favorites' %}" class="hover:underline underline-offset-4">{% trans 'Favorites' %}</a></li>
-                <li><a href="{% url 'cars:add' %}" class="hover:underline underline-offset-4">{% trans 'Sell your car' %}</a></li>
-                <li><a href="{% url 'cars:partnership' %}" class="hover:underline underline-offset-4">{% trans 'Partnership' %}</a></li>
-            </ul>
+            </div>
+
+            <nav aria-label="{% trans 'Vehicles' %}">
+                <div class="footer-heading">{% trans 'Vehicles' %}</div>
+                <ul class="footer-links">
+                    <li><a href="{% url 'cars:list' %}">{% trans 'All Vehicles' %}</a></li>
+                    <li><a href="{% url 'cars:new' %}">{% trans 'New Offers' %}</a></li>
+                    <li><a href="{% url 'cars:add' %}">{% trans 'Sell your car' %}</a></li>
+                </ul>
+            </nav>
+
+
+            <nav aria-label="{% trans 'Account' %}">
+                <div class="footer-heading">{% trans 'Account' %}</div>
+                <ul class="footer-links">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'cars:my_cars' %}">{% trans 'My listings' %}</a></li>
+                    {% else %}
+                    <li><a href="{% url 'users:login' %}">{% trans 'Log in' %}</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'cars:favorites' %}">{% trans 'Favorites' %}</a></li>
+                    <li><a href="{% url 'cars:partnership' %}">{% trans 'Partnership' %}</a></li>
+                </ul>
+            </nav>
         </div>
-    </div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-xs text-neutral-600">
-        © {% now "Y" %} FIBONACCI
+
+        <div class="footer-bottom">
+            <span>© {% now "Y" %} FIBONACCI</span>
+            <a href="mailto:{{ contact_email }}" class="hover:text-white transition">{{ contact_email }}</a>
+            <a href="#top" class="footer-top">{% trans 'Back to top' %} <span aria-hidden="true">↑</span></a>
+        </div>
     </div>
 </footer>
 {% include "includes/bottom_nav.html" %}
