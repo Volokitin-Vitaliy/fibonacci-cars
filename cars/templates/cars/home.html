@@ -6,7 +6,7 @@
 {# ---------- Hero ---------- #}
 {# Phones: the photo on top, uncovered, text below it. Larger screens: text over the photo. #}
 <section class="relative -mt-16 sm:min-h-[92svh] flex flex-col sm:flex-row sm:items-end overflow-hidden">
-    <div class="hero-media relative w-full h-[min(88vw,36rem)] shrink-0 sm:absolute sm:inset-0 sm:h-auto">
+    <div class="hero-media relative w-full h-[min(88vw,36rem)] shrink-0 overflow-hidden sm:absolute sm:inset-0 sm:h-auto">
     {% if hero_cars %}
     <div class="absolute inset-0" data-hero>
         {% for car in hero_cars %}
