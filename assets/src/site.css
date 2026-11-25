@@ -179,13 +179,12 @@ fieldset { min-width: 0; }
     .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
     .hero-slide.is-active { opacity: 1; }
     .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
-    @media (max-width: 639px) {  /* phones: the whole car stays in view */
-        .hero-slide img { transform: none; }
-        .hero-slide.is-active img { animation-name: kenburns-soft; }
-    }
-    @keyframes kenburns-soft { from { transform: scale(1.05); } to { transform: scale(1); } }
     .hero-slide.is-active img { animation: kenburns 9s ease-out forwards; }
     @keyframes kenburns { from { transform: scale(1.12) translate3d(1%, 1%, 0); } to { transform: scale(1.02) translate3d(0, 0, 0); } }
+    @media (max-width: 639px) {  /* phones: the whole car stays in view, slides only fade */
+        .hero-slide img { transform: none; }
+        .hero-slide.is-active img { animation: none; }
+    }
     .hero-dot { height: 2px; width: 2rem; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
     .hero-dot span { display: block; height: 100%; width: 0; background: #fff; }
     .hero-dot.is-active span { animation: dot 6s linear forwards; }

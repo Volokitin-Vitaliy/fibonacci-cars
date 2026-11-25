@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-25 14:42+0000\n"
+"POT-Creation-Date: 2026-11-25 15:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -280,14 +280,6 @@ msgstr "Значения расхода и выбросов указаны пр�
 msgid "Description"
 msgstr "Описание"
 
-msgid ""
-"The full description, equipment list and photos of this vehicle are available on the seller’s "
-"website."
-msgstr "Полное описание, комплектация и фотографии этого автомобиля доступны на сайте продавца."
-
-msgid "Open the original offer"
-msgstr "Открыть оригинальное предложение"
-
 msgid "New"
 msgstr "Новое"
 
@@ -306,8 +298,8 @@ msgstr "Позвонить"
 msgid "Interested in this vehicle?"
 msgstr "Заинтересовал автомобиль?"
 
-msgid "This vehicle is offered by Hollmann International. Our partners will help you:"
-msgstr "Этот автомобиль предлагает Hollmann International. Наши партнёры помогут вам:"
+msgid "Our specialists will help you with this car:"
+msgstr "Наши специалисты помогут вам с этим автомобилем:"
 
 msgid "Phone"
 msgstr "Телефон"
@@ -315,16 +307,11 @@ msgstr "Телефон"
 msgid "Mobile"
 msgstr "Мобильный"
 
-msgid "Original offer on hollmann.international"
-msgstr "Оригинальное предложение на hollmann.international"
+msgid "Write to us and we will tell you everything about this car."
+msgstr "Напишите нам, и мы расскажем всё об этом автомобиле."
 
-msgid "This vehicle is offered by Hollmann International. Contact the dealer through the original offer."
-msgstr ""
-"Этот автомобиль предлагает Hollmann International. Свяжитесь с дилером через оригинальное "
-"предложение."
-
-msgid "Contact the dealer"
-msgstr "Связаться с дилером"
+msgid "Contact us"
+msgstr "Связаться с нами"
 
 msgid "Contact the seller directly:"
 msgstr "Свяжитесь с продавцом напрямую:"
@@ -459,8 +446,8 @@ msgstr "Почему мы"
 msgid "Trusted dealers"
 msgstr "Проверенные дилеры"
 
-msgid "Vehicles from Hollmann International and checked sellers."
-msgstr "Автомобили от Hollmann International и проверенных продавцов."
+msgid "Vehicles from trusted European dealers and checked private sellers."
+msgstr "Автомобили от проверенных европейских дилеров и частных продавцов."
 
 msgid "Export worldwide"
 msgstr "Экспорт по всему миру"
