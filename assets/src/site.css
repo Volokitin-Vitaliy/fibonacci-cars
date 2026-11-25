@@ -143,8 +143,17 @@ fieldset { min-width: 0; }
 .has-dropdown:hover .dropdown, .has-dropdown:focus-within .dropdown { display: block; }
 
 /* ---- Header: more solid once the page is scrolled ---- */
-.site-header { background: rgba(8,8,10,.6); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); border-bottom: 1px solid transparent; transition: background .3s, border-color .3s; }
-.site-header.is-scrolled { background: rgba(8,8,10,.88); border-bottom-color: var(--line); }
+/* Header: a soft black-to-transparent fade with no hard edge (no blur: a blur always ends
+   in a visible line); a little denser once the page is scrolled. */
+.site-header { background: transparent; isolation: isolate; }
+.site-header::before { content: ''; position: absolute; inset: 0 0 -2.5rem 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(8,8,10,.88) 0%, rgba(8,8,10,.62) 45%, rgba(8,8,10,.22) 75%, rgba(8,8,10,0) 100%);
+    transition: opacity .35s; }
+.site-header::after { content: ''; position: absolute; inset: 0 0 -2.5rem 0; z-index: -1; pointer-events: none; opacity: 0;
+    background: linear-gradient(to bottom, rgba(8,8,10,.97) 0%, rgba(8,8,10,.9) 55%, rgba(8,8,10,.35) 82%, rgba(8,8,10,0) 100%);
+    transition: opacity .35s; }
+.site-header.is-scrolled::after { opacity: 1; }
+#mobile-nav { background: rgba(8,8,10,.97); }
 
 /* ---- Page loading bar ---- */
 #page-progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 70; opacity: 0; background: linear-gradient(90deg, var(--accent), #93c5fd); box-shadow: 0 0 12px var(--accent-glow); transition: width .6s ease, opacity .3s; }
@@ -170,6 +179,11 @@ fieldset { min-width: 0; }
     .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
     .hero-slide.is-active { opacity: 1; }
     .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
+    @media (max-width: 639px) {  /* phones: the whole car stays in view */
+        .hero-slide img { transform: none; }
+        .hero-slide.is-active img { animation-name: kenburns-soft; }
+    }
+    @keyframes kenburns-soft { from { transform: scale(1.05); } to { transform: scale(1); } }
     .hero-slide.is-active img { animation: kenburns 9s ease-out forwards; }
     @keyframes kenburns { from { transform: scale(1.12) translate3d(1%, 1%, 0); } to { transform: scale(1.02) translate3d(0, 0, 0); } }
     .hero-dot { height: 2px; width: 2rem; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
