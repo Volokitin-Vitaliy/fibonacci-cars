@@ -1,4 +1,5 @@
 import json
+import logging
 from urllib.parse import quote
 
 from django.conf import settings
@@ -28,6 +29,7 @@ SORTS = {
     'price-ascending': ('price_eur',),
     'price-descending': ('-price_eur',),
 }
+logger = logging.getLogger(__name__)
 PER_PAGE = 24
 ACCIDENT_FILTERS = {'no': False, 'yes': True}
 
@@ -35,6 +37,27 @@ ACCIDENT_FILTERS = {'no': False, 'yes': True}
 def with_cover(queryset):
     return (queryset.select_related('make')
             .prefetch_related(Prefetch('photos', queryset=CarPhoto.objects.order_by('position', 'id'))))
+
+
+@csrf_exempt
+@require_POST
+def telegram_webhook(request):
+    """Updates from the Telegram moderation bot (see cars/telegram.py)."""
+    from hmac import compare_digest
+
+    from . import telegram
+    if not telegram.bot_configured() or not compare_digest(
+            request.headers.get('X-Telegram-Bot-Api-Secret-Token', ''), telegram.webhook_secret()):
+        return HttpResponse(status=403)
+    try:
+        update = json.loads(request.body)
+    except ValueError:
+        return HttpResponseBadRequest()
+    try:
+        telegram.handle_update(update)
+    except Exception:  # answer 200 anyway, or Telegram keeps resending the same update
+        logger.exception('Telegram update failed')
+    return HttpResponse('ok')
 
 
 def set_language(request):

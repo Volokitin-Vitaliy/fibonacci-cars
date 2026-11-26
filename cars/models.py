@@ -184,6 +184,11 @@ class Car(models.Model):
     moderation = models.CharField(_('moderation'), max_length=20, choices=Moderation.choices,
                                   default=Moderation.APPROVED)
     rejection_reason = models.TextField(_('rejection reason'), blank=True)
+    # The reason of the last rejection, kept when the owner resubmits, so the moderator
+    # sees what was asked to be fixed. Cleared on approval.
+    previous_rejection_reason = models.TextField(_('previous rejection reason'), blank=True)
+    # Telegram moderation message (chat id, message id) of the current review.
+    telegram_messages = models.JSONField(default=list, blank=True)
 
     # Import bookkeeping.
     external_id = models.CharField(max_length=50, blank=True)

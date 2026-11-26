@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils import translation
 
 EXEMPT_PREFIXES = ('/' + settings.ADMIN_URL, '/static/', '/media/', '/i18n/', '/choose-language/',
-                   '/payments/', '/accounts/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
+                   '/payments/', '/telegram/', '/accounts/', '/favicon.ico', '/robots.txt', '/sitemap.xml')
 
 # Search engines and link previews get the page as it is, without language offers.
 BOT_RE = re.compile(

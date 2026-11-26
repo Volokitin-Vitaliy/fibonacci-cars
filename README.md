@@ -181,6 +181,29 @@ to `https://<domain>/payments/stripe/webhook/` (events `checkout.session.complet
   errors; no personal data is sent.
 - `DEBUG` is off unless `.env` says `DEBUG=True`.
 
+## Moderation in Telegram
+
+New and resubmitted listings come to a Telegram bot with photos, details and two buttons:
+**✅ Approve** / **❌ Reject**. Rejecting asks for the reason (reply to the bot's message, or
+send `-` for none). The decision works exactly like in the admin: the owner gets an email,
+the reason shows as a moderator comment in their cabinet, and when they fix and resubmit the
+listing, the bot shows the new version together with what you asked to fix. Approving
+publishes it on the site. Decisions made in the admin also close the buttons in Telegram.
+
+1. In Telegram open **@BotFather** → `/newbot` → copy the token.
+2. On the server add to `.env` and restart (`docker compose up -d`):
+   ```ini
+   TELEGRAM_BOT_TOKEN=123456:ABC...
+   ```
+3. Connect the bot to the site: `docker compose exec web python manage.py telegram_webhook`
+4. Send `/start` to your bot: it answers with your chat id. Add it to `.env` (several
+   moderators: comma-separated) and restart:
+   ```ini
+   TELEGRAM_MODERATOR_CHAT_IDS=123456789
+   ```
+
+Only these chat ids can approve or reject.
+
 ## Email
 
 Without `EMAIL_HOST` emails are printed to the console. For real sending:
