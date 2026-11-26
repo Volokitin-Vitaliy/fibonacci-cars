@@ -89,9 +89,12 @@ def home(request):
     visible = Car.objects.visible()
     new_offers = list(with_cover(Car.objects.new_offers()).order_by('-created_at')[:10])
     latest = [] if new_offers else list(with_cover(visible).order_by('-created_at')[:10])
-    # Hero: the most impressive cars that have photos.
-    hero_cars = list(with_cover(visible.filter(photos__isnull=False).distinct())
-                     .order_by('-price_eur')[:5])
+    # Hero: the cars picked in the admin ("show on the home page"); without a pick,
+    # the most expensive cars that have photos.
+    with_photos = with_cover(visible.filter(photos__isnull=False).distinct())
+    hero_cars = list(with_photos.filter(show_on_home=True).order_by('home_order', '-price_eur')[:8])
+    if not hero_cars:
+        hero_cars = list(with_photos.order_by('-price_eur')[:5])
     top_makes = (Make.objects.annotate(n=Count('cars', filter=Q(cars__in=visible)))
                  .filter(n__gt=0).order_by('-n', 'name')[:8])
     return render(request, 'cars/home.html', {

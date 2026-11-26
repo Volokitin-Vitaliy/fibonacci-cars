@@ -195,6 +195,9 @@ class Car(models.Model):
     source_url = models.URLField(blank=True)
     is_published = models.BooleanField(_('published'), default=True)
     is_new = models.BooleanField(_('new offer'), default=False)
+    # Hero slideshow on the home page, chosen in the admin (lower number first).
+    show_on_home = models.BooleanField(_('show on the home page'), default=False, db_index=True)
+    home_order = models.PositiveSmallIntegerField(_('order on the home page'), default=0)
     last_synced_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(_('created'), auto_now_add=True)
