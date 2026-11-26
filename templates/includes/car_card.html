@@ -13,7 +13,6 @@
             <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
             <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pr-14">
                 {% if car.is_new_offer %}<span class="chip chip-new">{% trans 'New' %}</span>{% endif %}
-                {% if car.accident is False %}<span class="chip chip-ok">{% trans 'No accidents' %}</span>{% elif car.accident is True %}<span class="chip chip-warn">{% trans 'After an accident' %}</span>{% endif %}
             </div>
             {# Key numbers slide up on hover (always visible on touch screens) #}
             <div class="absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5 transition-all duration-300 md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100">
@@ -21,6 +20,7 @@
                 {% if car.mileage_km is not None %}<span class="chip chip-glass">{{ car.mileage_km|thousands }} km</span>{% endif %}
                 {% if car.power_hp %}<span class="chip chip-glass">{{ car.power_hp }} {% trans 'hp' %}</span>{% endif %}
                 {% if car.fuel %}<span class="chip chip-glass">{{ car.get_fuel_display }}</span>{% endif %}
+                {% if car.accident is False %}<span class="chip chip-glass"><i class="chip-dot bg-emerald-400" aria-hidden="true"></i>{% trans 'No accidents' %}</span>{% elif car.accident is True %}<span class="chip chip-glass"><i class="chip-dot bg-amber-400" aria-hidden="true"></i>{% trans 'After an accident' %}</span>{% endif %}
             </div>
         </div>
         <div class="pt-4 px-1">
