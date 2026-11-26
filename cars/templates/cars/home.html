@@ -167,12 +167,12 @@
         slides.forEach(function (s) { s.classList.remove('is-leaving', 'is-entering'); });
         slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
         if (previous && previous !== slides[current]) {
-            previous.classList.add('is-leaving');                  // stays underneath
-            slides[current].classList.add('is-entering');          // wipes in over it
+            previous.classList.add('is-leaving');                  // fades to black, zoom continues
+            slides[current].classList.add('is-entering');          // emerges from the dark after it
             wipeTimer = setTimeout(function () {
                 previous.classList.remove('is-leaving');
                 slides[current].classList.remove('is-entering');
-            }, 1900);
+            }, 1800);
         }
         dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
         captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });

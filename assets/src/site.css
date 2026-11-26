@@ -178,31 +178,27 @@ fieldset { min-width: 0; }
 .scroller > * { scroll-snap-align: start; }
 
 /* ---- from cars/templates/cars/home.html ---- */
-    /* Slides change with a soft wipe from left to right: the next car appears over the
-       previous one through a wide gradient edge. */
+    /* Slides change through darkness, like a car brand film: the current car keeps its
+       slow camera push and fades to black, then the next one emerges from the dark.
+       The cars never overlap. Same slow zoom-in on every screen. */
+    [data-hero] { background: #08080a; }
     .hero-slide { position: absolute; inset: 0; opacity: 0; z-index: 0; }
     .hero-slide.is-active { opacity: 1; z-index: 2; }
-    .hero-slide.is-leaving { opacity: 1; z-index: 1; }
-    .hero-slide.is-entering {
-        -webkit-mask-image: linear-gradient(90deg, #000 42%, transparent 58%); mask-image: linear-gradient(90deg, #000 42%, transparent 58%);
-        -webkit-mask-size: 250% 100%; mask-size: 250% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-        animation: hero-wipe 1.8s cubic-bezier(.65, 0, .35, 1) forwards;
-    }
-    @keyframes hero-wipe { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
-    .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
+    .hero-slide.is-leaving { opacity: 0; z-index: 1; transition: opacity .8s cubic-bezier(.4, 0, .2, 1); }
+    .hero-slide.is-entering { animation: hero-emerge 1.7s cubic-bezier(.4, 0, .2, 1) forwards; }
+    @keyframes hero-emerge { 0%, 40% { opacity: 0; } 100% { opacity: 1; } }
+    .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.015); }
     /* The leaving slide keeps its zoom running (same animation), so it does not jump back. */
-    .hero-slide.is-active img, .hero-slide.is-leaving img { animation: kenburns 9s ease-out forwards; }
-    @keyframes kenburns { from { transform: scale(1.12) translate3d(1%, 1%, 0); } to { transform: scale(1.02) translate3d(0, 0, 0); } }
-    @media (max-width: 639px) {  /* phones: starts with the whole car, then a gentle zoom in */
-        .hero-slide img { transform: scale(1.015); }
-        .hero-slide.is-active img, .hero-slide.is-leaving img { animation: kenburns-phone 9s ease-out forwards; }
-    }
-    @keyframes kenburns-phone { from { transform: scale(1.015); } to { transform: scale(1.08); } }
+    .hero-slide.is-active img, .hero-slide.is-leaving img { animation: kenburns 9s cubic-bezier(.25, .1, .25, 1) forwards; }
+    @keyframes kenburns { from { transform: scale(1.015); } to { transform: scale(1.08); } }
     .hero-dot { height: 2px; width: 2rem; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
     .hero-dot span { display: block; height: 100%; width: 0; background: #fff; }
     .hero-dot.is-active span { animation: dot 6s linear forwards; }
     @keyframes dot { to { width: 100%; } }
-    @media (prefers-reduced-motion: reduce) { .hero-slide.is-active img, .hero-slide.is-leaving img, .hero-dot.is-active span, .hero-slide.is-entering { animation: none; } }
+    @media (prefers-reduced-motion: reduce) {
+        .hero-slide.is-active img, .hero-slide.is-leaving img, .hero-dot.is-active span, .hero-slide.is-entering { animation: none; }
+        .hero-slide.is-leaving { transition: none; }
+    }
 
 /* ---- from cars/templates/cars/list.html ---- */
     .picker { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; height: 3.6rem;
