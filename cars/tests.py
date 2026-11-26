@@ -1413,3 +1413,34 @@ class TelegramModerationTests(TestCase):
     def test_start_shows_chat_id(self):
         self.webhook({'message': {'chat': {'id': 4242}, 'from': {'id': 4242}, 'text': '/start'}})
         self.assertIn('4242', self.sent_texts()[-1])
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media', LISTING_PAYMENT_REQUIRED=True,
+                   PAYMENT_PROVIDER='stripe', STRIPE_SECRET_KEY='sk_test_x', LISTING_MODERATION=True)
+class StaffListingTests(TestCase):
+    def setUp(self):
+        from django.utils import translation
+        translation.activate('en')  # reverse() below must not pick up another test's language
+        self.addCleanup(translation.deactivate)
+
+    def test_staff_post_for_free_but_go_through_moderation(self):
+        self.client.cookies.load(LANG)
+        admin = CustomUser.objects.create_user('staff@example.com', 'S', 'T', 'Sup3r-secret-pw', is_staff=True)
+        self.client.force_login(admin)
+        page = self.client.get(reverse('cars:add'))
+        self.assertNotContains(page, 'Continue to payment')
+        response = self.client.post(reverse('cars:add'), {
+            'photos': png(), 'make': Make.get_by_name('Audi').pk, 'model': 'Test', 'price': '1000',
+            'currency': 'EUR', 'fuel': 'petrol', 'accident': 'False', 'contact_name': 'S',
+            'contact_phone': '+49 151 0000001', 'country': 'DE'})
+        car = Car.objects.get(model='Test')
+        self.assertRedirects(response, car.get_absolute_url())  # no payment page
+        self.assertTrue(car.is_pending)            # moderation as usual
+        services.approve(car)
+        car.refresh_from_db()
+        self.assertTrue(car.is_listing_active)     # the month starts without a payment
+
+    def test_regular_users_still_pay(self):
+        self.client.cookies.load(LANG)
+        self.client.force_login(make_user())
+        self.assertContains(self.client.get(reverse('cars:add')), 'Continue to payment')

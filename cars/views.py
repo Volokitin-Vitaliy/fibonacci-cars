@@ -323,7 +323,7 @@ def my_cars(request):
     cars = with_cover(request.user.cars.all()).order_by('-created_at')
     return render(request, 'cars/cabinet/my_cars.html', {
         'cars': cars, 'section': 'cars',
-        'payment_required': settings.LISTING_PAYMENT_REQUIRED,
+        'payment_required': payments.required_for(request.user),
         'listing_price': payments.price(),
         'duration': settings.LISTING_DURATION_DAYS,
         'moderation': settings.LISTING_MODERATION,
@@ -340,7 +340,7 @@ def car_create(request):
         form.instance.owner = request.user
         form.instance.source = Car.Source.USER
         form.instance.status = Car.Status.INACTIVE
-        if settings.LISTING_PAYMENT_REQUIRED:
+        if payments.required_for(request.user):
             form.instance.moderation = Car.Moderation.AWAITING_PAYMENT
             car = form.save()
             return _start_payment(request, car)
@@ -355,7 +355,7 @@ def car_create(request):
     return render(request, 'cars/cabinet/car_form.html', {
         'form': form, 'section': 'add', 'duration': settings.LISTING_DURATION_DAYS,
         'moderation': settings.LISTING_MODERATION,
-        'payment_required': settings.LISTING_PAYMENT_REQUIRED, 'listing_price': payments.price()})
+        'payment_required': payments.required_for(request.user), 'listing_price': payments.price()})
 
 
 def _own_car(request, pk):
@@ -401,7 +401,7 @@ def car_activate(request, pk):
         return _start_payment(request, car)
     elif not car.is_approved:
         messages.error(request, _('The listing can be activated after it has been approved.'))
-    elif settings.LISTING_PAYMENT_REQUIRED:
+    elif payments.required_for(request.user):
         return _start_payment(request, car)
     else:
         car.activate()

@@ -40,6 +40,12 @@ def is_configured():
     return bool(settings.STRIPE_SECRET_KEY)
 
 
+def required_for(user):
+    """Whether this user pays for listings. Site staff (admins) post for free, so they
+    can test the whole flow, moderation included."""
+    return settings.LISTING_PAYMENT_REQUIRED and not getattr(user, 'is_staff', False)
+
+
 def price():
     return Decimal(settings.LISTING_PRICE_EUR).quantize(Decimal('0.01'))
 
