@@ -101,7 +101,6 @@ def home(request):
         'structured_data': seo.site_data(request),
         'new_offers': new_offers, 'latest': latest, 'hero_cars': hero_cars,
         'top_makes': top_makes,
-        'stats': {'vehicles': visible.count(), 'makes': Make.objects.filter(cars__in=visible).distinct().count()},
         'social': [l for l in partnership.LINKS if not l[3]], 'followers': partnership.FOLLOWERS,
     })
 
