@@ -23,6 +23,7 @@ def admin_login(request):
 urlpatterns = [
     path(f'{settings.ADMIN_URL}login/', admin_login),
     path(settings.ADMIN_URL, admin.site.urls),
+    path('i18n/setlang/', car_views.set_language, name='set_language'),
     path('i18n/', include('django.conf.urls.i18n')),
     path('choose-language/', car_views.choose_language, name='choose_language'),
     path('payments/stripe/webhook/', car_views.stripe_webhook, name='stripe_webhook'),

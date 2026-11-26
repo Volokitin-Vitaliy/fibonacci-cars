@@ -374,6 +374,15 @@ class LanguageTests(TestCase):
         again = self.client.get('/en/vehicles/', HTTP_ACCEPT_LANGUAGE='ru,en;q=0.5')
         self.assertNotContains(again, 'data-lang-offer')
 
+    def test_switching_from_an_english_page_when_russian_was_saved(self):
+        # The cookie says Russian, the open page is English: RU must lead to /ru/, EN to /en/.
+        self.client.cookies.load({settings.LANGUAGE_COOKIE_NAME: 'ru'})
+        response = self.client.post('/i18n/setlang/', {'language': 'ru', 'next': '/en/vehicles/?q=bmw'})
+        self.assertEqual(response['Location'], '/ru/vehicles/?q=bmw')
+        self.client.cookies.load({settings.LANGUAGE_COOKIE_NAME: 'en'})
+        response = self.client.post('/i18n/setlang/', {'language': 'en', 'next': '/ru/'})
+        self.assertEqual(response['Location'], '/en/')
+
     def test_choosing_russian_translates_the_site(self):
         response = self.client.post('/i18n/setlang/', {'language': 'ru', 'next': '/en/vehicles/'})
         self.assertEqual(response['Location'], '/ru/vehicles/')
