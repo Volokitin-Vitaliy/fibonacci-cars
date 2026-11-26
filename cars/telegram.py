@@ -27,7 +27,13 @@ REASON_PROMPT = 'Напишите причину отказа для объяв�
 REASON_RE = re.compile(r'причину отказа для объявления #(\d+)')
 
 
+def bot_configured():
+    """A token is set: the bot answers (e.g. /start shows the chat id needed for setup)."""
+    return bool(settings.TELEGRAM_BOT_TOKEN)
+
+
 def enabled():
+    """Token and moderators are set: listings are sent for review in Telegram."""
     return bool(settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_MODERATOR_CHAT_IDS)
 
 

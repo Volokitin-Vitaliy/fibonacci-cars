@@ -1404,6 +1404,12 @@ class TelegramModerationTests(TestCase):
         self.assertIn('Отклонено', self.sent_texts()[-1])
         self.assertIn('Неверная цена', self.sent_texts()[-1])
 
+    @override_settings(TELEGRAM_MODERATOR_CHAT_IDS=[])
+    def test_start_answers_before_moderators_are_set(self):
+        # Setup order: token first, then /start to learn the chat id, then add it.
+        self.webhook({'message': {'chat': {'id': 4242}, 'from': {'id': 4242}, 'text': '/start'}})
+        self.assertIn('4242', self.sent_texts()[-1])
+
     def test_start_shows_chat_id(self):
         self.webhook({'message': {'chat': {'id': 4242}, 'from': {'id': 4242}, 'text': '/start'}})
         self.assertIn('4242', self.sent_texts()[-1])

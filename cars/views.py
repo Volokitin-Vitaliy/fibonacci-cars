@@ -46,7 +46,7 @@ def telegram_webhook(request):
     from hmac import compare_digest
 
     from . import telegram
-    if not telegram.enabled() or not compare_digest(
+    if not telegram.bot_configured() or not compare_digest(
             request.headers.get('X-Telegram-Bot-Api-Secret-Token', ''), telegram.webhook_secret()):
         return HttpResponse(status=403)
     try:
