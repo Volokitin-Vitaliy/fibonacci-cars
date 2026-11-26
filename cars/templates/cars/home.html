@@ -164,14 +164,22 @@
         current = next;
         load(current); load(current + 1);  // this slide now, the next one in the background
         clearTimeout(wipeTimer);
-        slides.forEach(function (s) { s.classList.remove('is-leaving', 'is-entering'); });
-        slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
-        if (previous && previous !== slides[current]) {
-            var stage = document.querySelector('[data-hero]');
-            stage.classList.remove('is-changing'); void stage.offsetWidth;  // restart the light
-            stage.classList.add('is-changing');                    // studio light glides across
-            previous.classList.add('is-leaving');                  // dissolves out, zoom continues
-            slides[current].classList.add('is-entering');          // dissolves in over it
+        var changing = previous && previous !== slides[current];
+        var stage = document.querySelector('[data-hero]');
+        if (changing) {  // restart the studio light first: the reflow must not fall between
+            stage.classList.remove('is-changing'); void stage.offsetWidth;  // the slide class changes
+            stage.classList.add('is-changing');
+        }
+        // All slide classes change in one go, with no reflow in between: the old car goes from
+        // is-active straight to is-leaving, so its zoom keeps running instead of jumping back.
+        slides.forEach(function (s, k) {
+            var isCurrent = k === current, isPrevious = changing && s === previous;
+            s.classList.toggle('is-active', isCurrent);
+            s.classList.toggle('is-entering', isCurrent && changing);   // dissolves in over it
+            s.classList.toggle('is-leaving', isPrevious);              // stays under, zoom continues
+            s.setAttribute('aria-hidden', !isCurrent);
+        });
+        if (changing) {
             wipeTimer = setTimeout(function () {
                 previous.classList.remove('is-leaving');
                 slides[current].classList.remove('is-entering');
