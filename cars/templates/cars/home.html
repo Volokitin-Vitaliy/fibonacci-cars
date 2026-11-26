@@ -172,7 +172,7 @@
             wipeTimer = setTimeout(function () {
                 previous.classList.remove('is-leaving');
                 slides[current].classList.remove('is-entering');
-            }, 1950);
+            }, 3000);
         }
         dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
         captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });
