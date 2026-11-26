@@ -37,6 +37,22 @@ def with_cover(queryset):
             .prefetch_related(Prefetch('photos', queryset=CarPhoto.objects.order_by('position', 'id'))))
 
 
+def set_language(request):
+    """Django's language switch, made to work when the page's language differs from the
+    saved one: '/en/...' is read as an English address even if the cookie says Russian,
+    so it is translated to '/ru/...' instead of being sent back unchanged."""
+    from urllib.parse import urlsplit
+
+    from django.utils import translation
+    from django.views.i18n import set_language as django_set_language
+
+    page_language = translation.get_language_from_path(urlsplit(request.POST.get('next') or '').path)
+    if not page_language:
+        return django_set_language(request)
+    with translation.override(page_language):  # only for this request, never leaks to the next
+        return django_set_language(request)
+
+
 def choose_language(request):
     next_url = request.GET.get('next') or '/'
     if not url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
