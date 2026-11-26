@@ -38,18 +38,22 @@ class ModerationFilter(admin.SimpleListFilter):
         return queryset
 
 
+HOME_HELP = _('Cars shown in the slideshow at the top of the home page (lower number first). Without any, the most expensive cars are shown.')  # noqa: E501
+
+
 @admin.register(Car)
 class CarAdmin(ModelAdmin):
     list_display = ('title_with_make', 'source_badge', 'moderation_badge', 'price_display',
-                    'status_badge', 'active_until', 'owner', 'created_at')
+                    'status_badge', 'show_on_home', 'home_order', 'active_until', 'owner', 'created_at')
     list_display_links = ('title_with_make',)
-    list_filter = (ModerationFilter, 'source', 'status', 'is_published', 'is_new',
+    list_editable = ('show_on_home', 'home_order')
+    list_filter = (ModerationFilter, 'show_on_home', 'source', 'status', 'is_published', 'is_new',
                    'fuel', 'accident', 'make')
     search_fields = ('model', 'make__name', 'external_id', 'owner__email', 'contact_phone')
     autocomplete_fields = ('make',)
     raw_id_fields = ('owner',)
     inlines = (CarPhotoInline, ListingPeriodInline)
-    actions = ('approve_selected', 'reject_selected')
+    actions = ('approve_selected', 'reject_selected', 'add_to_home', 'remove_from_home')
     list_per_page = 50
     date_hierarchy = 'created_at'
     readonly_fields = ('price_eur', 'external_id', 'source_url', 'last_synced_at',
@@ -64,6 +68,8 @@ class CarAdmin(ModelAdmin):
                                     'contact_whatsapp', 'contact_telegram')}),
         (_('Publication'), {'fields': ('source', 'status', ('activated_at', 'active_until'),
                                        'is_published', 'is_new')}),
+        (_('Home page'), {'fields': (('show_on_home', 'home_order'),),
+                          'description': HOME_HELP}),
         (_('Import'), {'classes': ('collapse',),
                        'fields': ('external_id', 'source_url', 'last_synced_at',
                                   'created_at', 'updated_at')}),
@@ -119,6 +125,16 @@ class CarAdmin(ModelAdmin):
             services.approve(car)
             count += 1
         self.message_user(request, _('Approved: %(n)s') % {'n': count}, messages.SUCCESS)
+
+    @admin.action(description=_('Show on the home page'))
+    def add_to_home(self, request, queryset):
+        count = queryset.update(show_on_home=True)
+        self.message_user(request, _('On the home page: %(n)s') % {'n': count}, messages.SUCCESS)
+
+    @admin.action(description=_('Remove from the home page'))
+    def remove_from_home(self, request, queryset):
+        count = queryset.update(show_on_home=False)
+        self.message_user(request, _('Removed from the home page: %(n)s') % {'n': count}, messages.SUCCESS)
 
     @admin.action(description=_('Reject selected listings'))
     def reject_selected(self, request, queryset):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-26 10:56+0000\n"
+"POT-Creation-Date: 2026-11-26 12:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -797,6 +797,13 @@ msgstr ""
 msgid "moderation"
 msgstr "модерация"
 
+msgid ""
+"Cars shown in the slideshow at the top of the home page (lower number first). Without any, the "
+"most expensive cars are shown."
+msgstr ""
+"Машины для слайдера вверху главной (меньшее число — раньше). Если ничего не отмечено, "
+"показываются самые дорогие."
+
 msgid "Moderation"
 msgstr "Модерация"
 
@@ -805,6 +812,9 @@ msgstr "Контакты"
 
 msgid "Publication"
 msgstr "Публикация"
+
+msgid "Home page"
+msgstr "Главная страница"
 
 msgid "Import"
 msgstr "Импорт"
@@ -827,6 +837,20 @@ msgstr "Одобрить выбранные объявления"
 #, python-format
 msgid "Approved: %(n)s"
 msgstr "Одобрено: %(n)s"
+
+msgid "Show on the home page"
+msgstr "Показывать на главной"
+
+#, python-format
+msgid "On the home page: %(n)s"
+msgstr "На главной: %(n)s"
+
+msgid "Remove from the home page"
+msgstr "Убрать с главной"
+
+#, python-format
+msgid "Removed from the home page: %(n)s"
+msgstr "Убрано с главной: %(n)s"
 
 msgid "Reject selected listings"
 msgstr "Отклонить выбранные объявления"
@@ -1073,6 +1097,12 @@ msgstr "опубликовано"
 
 msgid "new offer"
 msgstr "новое предложение"
+
+msgid "show on the home page"
+msgstr "показывать на главной"
+
+msgid "order on the home page"
+msgstr "порядок на главной"
 
 msgid "created"
 msgstr "создано"

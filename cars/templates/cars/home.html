@@ -6,7 +6,7 @@
 {# ---------- Hero ---------- #}
 {# Phones: the photo on top, uncovered, text below it. Larger screens: text over the photo. #}
 <section class="relative -mt-16 sm:min-h-[92svh] flex flex-col sm:flex-row sm:items-end overflow-hidden">
-    <div class="hero-media relative w-full aspect-[3/2] shrink-0 overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto">
+    <div class="hero-media relative isolate z-0 w-full aspect-[3/2] shrink-0 overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto">
     {% if hero_cars %}
     <div class="absolute inset-0" data-hero>
         {% for car in hero_cars %}
@@ -20,12 +20,12 @@
     <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 30%, rgba(37,99,235,.25), transparent 60%);"></div>
     {% endif %}
     {# phones: the photo melts into the page at the bottom #}
-    <div class="absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-[#08080a] from-[18%] via-[#08080a]/75 via-[45%] to-transparent pointer-events-none sm:hidden"></div>
-    <div class="absolute inset-0 hidden sm:block bg-gradient-to-t from-[#08080a] via-black/45 to-black/50 pointer-events-none"></div>
-    <div class="absolute inset-0 hidden sm:block bg-gradient-to-r from-black/70 via-black/10 to-transparent pointer-events-none"></div>
+    <div class="absolute z-[3] inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-[#08080a] from-[18%] via-[#08080a]/75 via-[45%] to-transparent pointer-events-none sm:hidden"></div>
+    <div class="absolute z-[3] inset-0 hidden sm:block bg-gradient-to-t from-[#08080a] via-black/45 to-black/50 pointer-events-none"></div>
+    <div class="absolute z-[3] inset-0 hidden sm:block bg-gradient-to-r from-black/70 via-black/10 to-transparent pointer-events-none"></div>
     </div>
 
-    <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-0 pb-10 sm:pb-20 sm:pt-32">
+    <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-0 pb-10 sm:pb-20 sm:pt-32">
         <div class="max-w-2xl" data-reveal>
             <h1 class="sr-only">FIBONACCI — {% trans 'Cars worldwide.' %}</h1>
             <div class="grid grid-cols-2 sm:flex gap-2.5 sm:gap-4">
@@ -155,11 +155,25 @@
         img.src = img.dataset.src;
         img.removeAttribute('data-src');
     }
+    var wipeTimer;
     function show(i) {
         if (!slides.length) return;
-        current = (i + slides.length) % slides.length;
+        var next = (i + slides.length) % slides.length;
+        if (next === current && slides[next].classList.contains('is-active')) return;
+        var previous = slides[current];
+        current = next;
         load(current); load(current + 1);  // this slide now, the next one in the background
+        clearTimeout(wipeTimer);
+        slides.forEach(function (s) { s.classList.remove('is-leaving', 'is-entering'); });
         slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
+        if (previous && previous !== slides[current]) {
+            previous.classList.add('is-leaving');                  // stays underneath
+            slides[current].classList.add('is-entering');          // wipes in over it
+            wipeTimer = setTimeout(function () {
+                previous.classList.remove('is-leaving');
+                slides[current].classList.remove('is-entering');
+            }, 1900);
+        }
         dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
         captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });
         clearTimeout(timer); timer = setTimeout(function () { show(current + 1); }, 6000);

@@ -15,7 +15,7 @@ from PIL import Image
 
 from cars.importers.hollmann import (HollmannImporter, detect_fuel, parse_detail, parse_offers,
                                      parse_price, specs_to_fields)
-from cars.models import Car, Favorite, ListingPeriod, Make, Payment
+from cars.models import Car, CarPhoto, Favorite, ListingPeriod, Make, Payment
 from cars import payments, services
 from cars.services import expire_listings, send_expiry_reminders
 from users.models import CustomUser
@@ -1444,3 +1444,37 @@ class StaffListingTests(TestCase):
         self.client.cookies.load(LANG)
         self.client.force_login(make_user())
         self.assertContains(self.client.get(reverse('cars:add')), 'Continue to payment')
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media')
+class HomeSlideshowTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+        owner = make_user()
+        self.cars = []
+        for price in (100000, 200000, 300000):
+            car = make_listing(owner)
+            car.price = Decimal(price)
+            car.save()
+            CarPhoto.objects.create(car=car, image=SimpleUploadedFile(f'p{price}.png', png().read()))
+            self.cars.append(car)
+
+    def hero(self):
+        return [c.pk for c in self.client.get(reverse('cars:home')).context['hero_cars']]
+
+    def test_without_a_pick_the_most_expensive_cars_are_shown(self):
+        self.assertEqual(self.hero(), [self.cars[2].pk, self.cars[1].pk, self.cars[0].pk])
+
+    def test_admin_picks_cars_and_their_order(self):
+        cheap, middle, _expensive = self.cars
+        Car.objects.filter(pk=cheap.pk).update(show_on_home=True, home_order=1)
+        Car.objects.filter(pk=middle.pk).update(show_on_home=True, home_order=2)
+        self.assertEqual(self.hero(), [cheap.pk, middle.pk])
+
+    def test_admin_actions(self):
+        admin = CustomUser.objects.create_superuser('home@example.com', 'H', 'A', 'Adm1n-pass-123')
+        self.client.force_login(admin)
+        self.client.post(reverse('admin:cars_car_changelist'),
+                         {'action': 'add_to_home', '_selected_action': [self.cars[0].pk]})
+        self.assertTrue(Car.objects.get(pk=self.cars[0].pk).show_on_home)
+        self.assertEqual(self.client.get(reverse('admin:cars_car_changelist')).status_code, 200)
