@@ -178,15 +178,26 @@ fieldset { min-width: 0; }
 .scroller > * { scroll-snap-align: start; }
 
 /* ---- from cars/templates/cars/home.html ---- */
-    /* Slides change through darkness, like a car brand film: the current car keeps its
-       slow camera push and fades to black, then the next one emerges from the dark.
-       The cars never overlap. Same slow zoom-in on every screen. */
+    /* Slides change with a dark sweep from left to right: the edge of a shadow travels
+       across, the current car sinks into it, and the next car comes out of it a moment
+       later. Between them there is only a soft dark band, never a black screen and never
+       two cars on top of each other. Same slow zoom-in on every screen. */
     [data-hero] { background: #08080a; }
     .hero-slide { position: absolute; inset: 0; opacity: 0; z-index: 0; }
     .hero-slide.is-active { opacity: 1; z-index: 2; }
-    .hero-slide.is-leaving { opacity: 0; z-index: 1; transition: opacity .8s cubic-bezier(.4, 0, .2, 1); }
-    .hero-slide.is-entering { animation: hero-emerge 1.7s cubic-bezier(.4, 0, .2, 1) forwards; }
-    @keyframes hero-emerge { 0%, 40% { opacity: 0; } 100% { opacity: 1; } }
+    .hero-slide.is-leaving, .hero-slide.is-entering {
+        -webkit-mask-size: 250% 100%; mask-size: 250% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    }
+    .hero-slide.is-leaving {
+        opacity: 1; z-index: 1;
+        -webkit-mask-image: linear-gradient(90deg, transparent 41%, #000 53%); mask-image: linear-gradient(90deg, transparent 41%, #000 53%);
+        animation: hero-sweep 1.7s cubic-bezier(.55, 0, .45, 1) forwards;
+    }
+    .hero-slide.is-entering {
+        -webkit-mask-image: linear-gradient(90deg, #000 41%, transparent 53%); mask-image: linear-gradient(90deg, #000 41%, transparent 53%);
+        animation: hero-sweep 1.7s cubic-bezier(.55, 0, .45, 1) .16s both;
+    }
+    @keyframes hero-sweep { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
     .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.015); }
     /* The leaving slide keeps its zoom running (same animation), so it does not jump back. */
     .hero-slide.is-active img, .hero-slide.is-leaving img { animation: kenburns 9s cubic-bezier(.25, .1, .25, 1) forwards; }
@@ -197,7 +208,7 @@ fieldset { min-width: 0; }
     @keyframes dot { to { width: 100%; } }
     @media (prefers-reduced-motion: reduce) {
         .hero-slide.is-active img, .hero-slide.is-leaving img, .hero-dot.is-active span, .hero-slide.is-entering { animation: none; }
-        .hero-slide.is-leaving { transition: none; }
+        .hero-slide.is-leaving { opacity: 0; }
     }
 
 /* ---- from cars/templates/cars/list.html ---- */
