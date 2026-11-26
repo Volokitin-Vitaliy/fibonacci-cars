@@ -167,12 +167,16 @@
         slides.forEach(function (s) { s.classList.remove('is-leaving', 'is-entering'); });
         slides.forEach(function (s, k) { s.classList.toggle('is-active', k === current); s.setAttribute('aria-hidden', k !== current); });
         if (previous && previous !== slides[current]) {
-            previous.classList.add('is-leaving');                  // sinks into the dark sweep, zoom continues
-            slides[current].classList.add('is-entering');          // comes out of it just behind
+            var stage = document.querySelector('[data-hero]');
+            stage.classList.remove('is-changing'); void stage.offsetWidth;  // restart the light
+            stage.classList.add('is-changing');                    // studio light glides across
+            previous.classList.add('is-leaving');                  // dissolves out, zoom continues
+            slides[current].classList.add('is-entering');          // dissolves in over it
             wipeTimer = setTimeout(function () {
                 previous.classList.remove('is-leaving');
                 slides[current].classList.remove('is-entering');
-            }, 1950);
+                stage.classList.remove('is-changing');
+            }, 3000);
         }
         dots.forEach(function (d, k) { d.classList.remove('is-active'); void d.offsetWidth; d.classList.toggle('is-active', k === current); });
         captions.forEach(function (c, k) { c.classList.toggle('opacity-0', k !== current); c.classList.toggle('pointer-events-none', k !== current); });
