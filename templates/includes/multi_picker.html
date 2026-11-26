@@ -15,7 +15,6 @@ selected, options [{value, label, checked, count}], hidden [(name, value)], rese
                         <input type="checkbox" name="{{ picker.name }}" value="{{ o.value }}" class="check" {% if o.checked %}checked{% endif %}>
                         <span class="truncate">{{ o.label }}</span>
                     </span>
-                    <span class="text-xs text-neutral-500 pl-3">{{ o.count }}</span>
                 </label>
                 {% endfor %}
             </div>

@@ -236,7 +236,7 @@ def search_suggest(request):
     """Instant search results for the search box (JSON)."""
     query = ' '.join(request.GET.get('q', '').split())[:100]
     if len(query) < 2:
-        return JsonResponse({'results': [], 'total': 0})
+        return JsonResponse({'results': []})
     found = search.search(Car.objects.visible(), query)
     cars = with_cover(found).order_by('-is_new', '-created_at', '-pk')[:6]
     results = []
@@ -249,7 +249,7 @@ def search_suggest(request):
             'image': cover.thumb_url if cover else '',
         })
     return JsonResponse({
-        'results': results, 'total': found.count(),
+        'results': results,
         'all_url': reverse('cars:list') + '?' + urlencode({'q': query}),
     })
 

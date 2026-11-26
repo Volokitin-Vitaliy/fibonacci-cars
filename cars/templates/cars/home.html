@@ -83,7 +83,7 @@
         {% for m in top_makes %}
         <a href="{{ m.get_absolute_url }}" class="panel group p-5 sm:p-6 flex flex-col justify-between min-h-[7.5rem] transition hover:border-white/25 hover:bg-white/[.04]" data-reveal>
             <span class="font-display text-[0.8rem] min-[360px]:text-sm sm:text-lg font-semibold tracking-wide uppercase break-words min-w-0">{{ m.name }}</span>
-            <span class="flex items-center justify-between text-sm text-neutral-500">{% blocktrans count n=m.n %}{{ n }} vehicle{% plural %}{{ n }} vehicles{% endblocktrans %}<span class="transition-transform group-hover:translate-x-1 text-white/60">→</span></span>
+            <span class="flex items-center justify-end text-sm text-neutral-500"><span class="transition-transform group-hover:translate-x-1 text-white/60">→</span></span>
         </a>
         {% endfor %}
     </div>
