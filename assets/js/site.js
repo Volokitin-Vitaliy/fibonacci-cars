@@ -26,7 +26,7 @@
             box.innerHTML = data.results.map(function (r) {
                 var img = r.image ? '<img src="' + esc(r.image) + '" alt="" loading="lazy">' : '<span class="search-thumb"></span>';
                 return '<a class="search-item" href="' + esc(r.url) + '">' + img + '<span class="min-w-0 flex-1"><span class="block text-[0.68rem] uppercase tracking-[0.2em] text-neutral-500">' + highlight(r.make, words) + '</span><span class="block truncate font-medium">' + highlight(r.title, words) + '</span><span class="block text-xs text-neutral-400 mt-0.5">' + [r.year, r.price].filter(Boolean).map(esc).join(' · ') + '</span></span></a>';
-            }).join('') + '<a class="search-all" href="' + esc(data.all_url) + '"><span>' + T.all + ' (' + data.total + ')</span><span aria-hidden="true">→</span></a>';
+            }).join('') + '<a class="search-all" href="' + esc(data.all_url) + '"><span>' + T.all + '</span><span aria-hidden="true">→</span></a>';
         }
         function run() {
             var q = input.value.trim(); active = -1;
