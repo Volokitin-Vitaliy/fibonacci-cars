@@ -68,7 +68,7 @@ def approve(car):
         paid = payments.unused_payment(car)
         if paid:
             payments.use_payment(car, paid)
-        elif car.activated_at is None and not settings.LISTING_PAYMENT_REQUIRED:
+        elif car.activated_at is None and not payments.required_for(car.owner):
             car.activate()
     notifications.notify_approved(car)
 
