@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-25 16:11+0000\n"
+"POT-Creation-Date: 2026-11-26 10:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -40,6 +40,15 @@ msgstr "Выйти"
 
 msgid "Edit listing"
 msgstr "Редактировать объявление"
+
+msgid "Comment from the moderator"
+msgstr "Комментарий модератора"
+
+msgid "The listing was not approved."
+msgstr "Объявление не прошло модерацию."
+
+msgid "Fix it and press Save: the listing goes back to review."
+msgstr "Исправьте и нажмите «Сохранить» — объявление снова уйдёт на проверку."
 
 msgid "After saving, the listing is sent for review again and is hidden until it is approved."
 msgstr "После сохранения объявление снова уйдёт на модерацию и будет скрыто до одобрения."
@@ -130,14 +139,8 @@ msgstr "Неактивно"
 msgid "The listing is being reviewed by a moderator. We will email you once it is approved."
 msgstr "Объявление проверяет модератор. Мы напишем вам на почту, когда оно будет одобрено."
 
-msgid "The listing was not approved."
-msgstr "Объявление не прошло модерацию."
-
-msgid "Reason:"
-msgstr "Причина:"
-
-msgid "Edit it to submit it again."
-msgstr "Измените его, чтобы отправить повторно."
+msgid "Fix and send for review"
+msgstr "Исправить и отправить на проверку"
 
 msgid "Deactivate"
 msgstr "Деактивировать"
@@ -219,6 +222,12 @@ msgstr "Автомобили"
 
 msgid "This listing is waiting for moderator approval and is only visible to you."
 msgstr "Объявление ждёт проверки модератором и видно только вам."
+
+msgid "Reason:"
+msgstr "Причина:"
+
+msgid "Edit it to submit it again."
+msgstr "Измените его, чтобы отправить повторно."
 
 msgid "This listing is inactive and only visible to you."
 msgstr "Объявление неактивно и видно только вам."
@@ -1055,6 +1064,9 @@ msgstr "активно до"
 
 msgid "rejection reason"
 msgstr "причина отклонения"
+
+msgid "previous rejection reason"
+msgstr "предыдущая причина отказа"
 
 msgid "published"
 msgstr "опубликовано"

@@ -41,7 +41,14 @@
             {% elif car.is_pending %}
             <div class="text-sm text-amber-300/90 mt-3">{% trans 'The listing is being reviewed by a moderator. We will email you once it is approved.' %}</div>
             {% elif car.is_rejected %}
-            <div class="text-sm text-red-300 mt-3">{% trans 'The listing was not approved.' %}{% if car.rejection_reason %} {% trans 'Reason:' %} {{ car.rejection_reason }}{% endif %} {% trans 'Edit it to submit it again.' %}</div>
+            <div class="moderator-note mt-4">
+                <div class="flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.2em] text-red-300/90">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {% trans 'Comment from the moderator' %}
+                </div>
+                <p class="mt-2 text-sm text-neutral-200 whitespace-pre-line">{% if car.rejection_reason %}{{ car.rejection_reason }}{% else %}{% trans 'The listing was not approved.' %}{% endif %}</p>
+                <a href="{% url 'cars:edit' car.pk %}" class="btn btn-primary !h-10 !px-5 !text-[0.7rem] mt-4">{% trans 'Fix and send for review' %} <span aria-hidden="true">→</span></a>
+            </div>
             {% endif %}
             <div class="text-sm text-neutral-400 mt-3">
                 {% if car.is_listing_active %}

@@ -57,6 +57,13 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 
 # Brute-force protection (django-axes): after 5 wrong passwords for one email from one
 # address, logging in is blocked for 15 minutes. Works for the site and the admin.
+# Moderation in Telegram (cars/telegram.py): bot token from @BotFather and the chat ids of
+# the moderators (send /start to the bot to see yours). Empty = off.
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_MODERATOR_CHAT_IDS = [int(x) for x in os.getenv('TELEGRAM_MODERATOR_CHAT_IDS', '').replace(' ', '').split(',')
+                               if x.lstrip('-').isdigit()]
+TELEGRAM_WEBHOOK_SECRET = os.getenv('TELEGRAM_WEBHOOK_SECRET', '')
+
 # Content-Security-Policy (enf/csp.py). CSP_REPORT_ONLY=True only reports violations.
 CSP_ENABLED = env_bool('CSP_ENABLED', True)
 CSP_REPORT_ONLY = env_bool('CSP_REPORT_ONLY', False)

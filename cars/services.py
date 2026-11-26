@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 
-from . import notifications
+from . import notifications, telegram
 from .models import Car
 
 
@@ -43,10 +43,14 @@ def submit_for_review(car):
         car.moderation = Car.Moderation.APPROVED
         car.save(update_fields=['moderation', 'updated_at'])
         return False
+    resubmitted = car.moderation == Car.Moderation.REJECTED
+    if resubmitted and car.rejection_reason:
+        car.previous_rejection_reason = car.rejection_reason
     car.moderation = Car.Moderation.PENDING
     car.rejection_reason = ''
-    car.save(update_fields=['moderation', 'rejection_reason', 'updated_at'])
+    car.save(update_fields=['moderation', 'rejection_reason', 'previous_rejection_reason', 'updated_at'])
     notifications.notify_moderators(car)
+    telegram.notify_new_listing(car, resubmitted=resubmitted)
     return True
 
 
@@ -57,7 +61,9 @@ def approve(car):
 
     car.moderation = Car.Moderation.APPROVED
     car.rejection_reason = ''
-    car.save(update_fields=['moderation', 'rejection_reason', 'updated_at'])
+    car.previous_rejection_reason = ''
+    car.save(update_fields=['moderation', 'rejection_reason', 'previous_rejection_reason', 'updated_at'])
+    telegram.listing_decided(car)
     if not car.is_listing_active:
         paid = payments.unused_payment(car)
         if paid:
@@ -69,6 +75,7 @@ def approve(car):
 
 def reject(car, reason=''):
     car.moderation = Car.Moderation.REJECTED
-    car.rejection_reason = reason
+    car.rejection_reason = (reason or '').strip()
     car.save(update_fields=['moderation', 'rejection_reason', 'updated_at'])
+    telegram.listing_decided(car)
     notifications.notify_rejected(car)

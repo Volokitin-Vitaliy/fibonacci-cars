@@ -26,6 +26,7 @@ urlpatterns = [
     path('i18n/setlang/', car_views.set_language, name='set_language'),
     path('i18n/', include('django.conf.urls.i18n')),
     path('choose-language/', car_views.choose_language, name='choose_language'),
+    path('telegram/webhook/', car_views.telegram_webhook, name='telegram_webhook'),
     path('payments/stripe/webhook/', car_views.stripe_webhook, name='stripe_webhook'),
     path('payments/wayforpay/callback/', car_views.wayforpay_callback, name='wayforpay_callback'),
     path('payments/wayforpay/return/', car_views.wayforpay_return, name='wayforpay_return'),

@@ -5,6 +5,11 @@
 <h2 class="text-xl font-semibold mb-2">{% if car %}{% trans 'Edit listing' %}{% else %}{% trans 'Add a vehicle' %}{% endif %}</h2>
 {% if not car and payment_required %}<p class="text-sm text-neutral-400 mb-8">{% blocktrans with price=listing_price days=duration %}Publishing a listing costs €{{ price }} for {{ days }} days. After saving you will be taken to the payment page; after payment the listing goes to review.{% endblocktrans %}</p>
 {% elif not car %}<p class="text-sm text-neutral-400 mb-8">{% if moderation %}{% blocktrans with days=duration %}After a moderator approves your listing, it will be published for {{ days }} days.{% endblocktrans %}{% else %}{% blocktrans with days=duration %}Your listing will be published right away for {{ days }} days.{% endblocktrans %}{% endif %}</p>
+{% elif car.is_rejected %}<div class="moderator-note mb-8 max-w-3xl">
+    <div class="text-[0.7rem] uppercase tracking-[0.2em] text-red-300/90">{% trans 'Comment from the moderator' %}</div>
+    <p class="mt-2 text-sm text-neutral-200 whitespace-pre-line">{% if car.rejection_reason %}{{ car.rejection_reason }}{% else %}{% trans 'The listing was not approved.' %}{% endif %}</p>
+    <p class="mt-2 text-xs text-neutral-400">{% trans 'Fix it and press Save: the listing goes back to review.' %}</p>
+</div>
 {% elif car.is_approved %}<p class="text-sm text-neutral-400 mb-8">{% trans 'After saving, the listing is sent for review again and is hidden until it is approved.' %}</p>{% endif %}
 
 <form method="post" enctype="multipart/form-data" class="space-y-10 max-w-3xl">

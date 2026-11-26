@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import timedelta
 from decimal import Decimal
@@ -1310,3 +1311,99 @@ class ContentSecurityPolicyTests(TestCase):
         self.client.force_login(admin)
         page = self.client.get(reverse('admin:index'))
         self.assertNotIn('Content-Security-Policy', page)
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media', TELEGRAM_BOT_TOKEN='123:abc',
+                   TELEGRAM_MODERATOR_CHAT_IDS=[555], LISTING_MODERATION=True, SITE_URL='https://example.com')
+class TelegramModerationTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+        self.owner = make_user()
+        self.client.force_login(self.owner)
+        self.calls = []
+
+        def fake_api(method, **data):
+            self.calls.append((method, data))
+            return {'message_id': 77} if method == 'sendMessage' else True
+        patcher = mock.patch('cars.telegram.api', side_effect=fake_api)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def submit(self, **extra):
+        data = {'photos': png(), 'make': Make.get_by_name('Audi').pk, 'model': 'RS6', 'price': '100000',
+                'currency': 'EUR', 'fuel': 'petrol', 'accident': 'False', 'contact_name': 'Ivan',
+                'contact_phone': '+49 151 0000001', 'country': 'DE', **extra}
+        return self.client.post(reverse('cars:add'), data)
+
+    def webhook(self, update, secret=None):
+        from cars import telegram
+        return self.client.post(reverse('telegram_webhook'), data=json.dumps(update), content_type='application/json',
+                                HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN=secret or telegram.webhook_secret())
+
+    def sent_texts(self):
+        return [d.get('text', '') for m, d in self.calls if m == 'sendMessage']
+
+    def test_full_cycle_reject_with_reason_then_resubmit_and_approve(self):
+        from django.core import mail
+        self.submit()
+        car = Car.objects.get(model='RS6')
+        self.assertTrue(car.is_pending)
+        self.assertIn('Новое объявление', self.sent_texts()[-1])
+        self.assertIn('Audi RS6', self.sent_texts()[-1])
+        self.assertEqual(car.telegram_messages if car.refresh_from_db() is None else None, [[555, 77]])
+
+        # Reject: the bot asks for the reason, the moderator replies to it.
+        self.webhook({'callback_query': {'id': 'q1', 'from': {'id': 555}, 'data': f'reject:{car.pk}',
+                                         'message': {'chat': {'id': 555}, 'message_id': 77}}})
+        prompt = self.sent_texts()[-1]
+        self.assertIn(f'#{car.pk}', prompt)
+        self.webhook({'message': {'chat': {'id': 555}, 'from': {'id': 555}, 'text': 'Добавьте фото салона',
+                                  'reply_to_message': {'text': prompt}}})
+        car.refresh_from_db()
+        self.assertTrue(car.is_rejected)
+        self.assertEqual(car.rejection_reason, 'Добавьте фото салона')
+        self.assertIn('Добавьте фото салона', mail.outbox[-1].body)          # owner emailed
+        page = self.client.get(reverse('cars:my_cars'))
+        self.assertContains(page, 'Comment from the moderator')
+        self.assertContains(page, 'Добавьте фото салона')                    # seen in the cabinet
+
+        # The owner fixes it: the moderator sees the new version and what was asked.
+        self.client.post(reverse('cars:edit', args=[car.pk]), {
+            'make': car.make_id, 'model': 'RS6 Avant', 'price': '99000', 'currency': 'EUR', 'fuel': 'petrol',
+            'accident': 'False', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE'})
+        car.refresh_from_db()
+        self.assertTrue(car.is_pending)
+        text = self.sent_texts()[-1]
+        self.assertIn('Исправленное объявление', text)
+        self.assertIn('Вы просили исправить', text)
+        self.assertIn('Добавьте фото салона', text)
+        self.assertIn('RS6 Avant', text)
+
+        # Approve in Telegram: published on the site, buttons closed.
+        self.webhook({'callback_query': {'id': 'q2', 'from': {'id': 555}, 'data': f'approve:{car.pk}',
+                                         'message': {'chat': {'id': 555}, 'message_id': 77}}})
+        car.refresh_from_db()
+        self.assertTrue(car.is_approved and car.is_listing_active)
+        self.assertEqual((car.rejection_reason, car.previous_rejection_reason, car.telegram_messages), ('', '', []))
+        self.assertIn('editMessageReplyMarkup', [m for m, d in self.calls])
+        self.assertEqual(self.client.get(car.get_absolute_url()).status_code, 200)
+
+    def test_strangers_and_forged_requests_are_ignored(self):
+        self.submit()
+        car = Car.objects.get(model='RS6')
+        self.assertEqual(self.webhook({}, secret='wrong').status_code, 403)
+        self.webhook({'callback_query': {'id': 'q', 'from': {'id': 999}, 'data': f'approve:{car.pk}',
+                                         'message': {'chat': {'id': 999}, 'message_id': 1}}})
+        car.refresh_from_db()
+        self.assertTrue(car.is_pending)
+
+    def test_admin_decision_closes_the_telegram_buttons(self):
+        self.submit()
+        car = Car.objects.get(model='RS6')
+        services.reject(car, 'Неверная цена')
+        self.assertIn('Отклонено', self.sent_texts()[-1])
+        self.assertIn('Неверная цена', self.sent_texts()[-1])
+
+    def test_start_shows_chat_id(self):
+        self.webhook({'message': {'chat': {'id': 4242}, 'from': {'id': 4242}, 'text': '/start'}})
+        self.assertIn('4242', self.sent_texts()[-1])
