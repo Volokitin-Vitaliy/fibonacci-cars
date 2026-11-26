@@ -4,7 +4,7 @@ Edit this list to change the page."""
 from django.utils.translation import gettext_lazy as _
 
 EMAIL = 'fibonacci.iox@gmail.com'
-FOLLOWERS = '110K+'
+FOLLOWERS = '120K+'
 
 LINKS = [
     # (title, url, icon, primary)
