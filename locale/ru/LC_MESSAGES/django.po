@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-26 12:51+0000\n"
+"POT-Creation-Date: 2026-11-27 05:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -298,6 +298,12 @@ msgstr "Значения расхода и выбросов указаны пр�
 msgid "Description"
 msgstr "Описание"
 
+msgid "Translated automatically"
+msgstr "Переведено автоматически"
+
+msgid "Show original"
+msgstr "Показать оригинал"
+
 msgid "New"
 msgstr "Новое"
 
@@ -425,18 +431,6 @@ msgstr "Выбрать авто"
 msgid "Sell a car"
 msgstr "Продать авто"
 
-msgid "vehicles available"
-msgstr "автомобилей в наличии"
-
-msgid "makes"
-msgstr "марки"
-
-msgid "followers"
-msgstr "подписчиков"
-
-msgid "export worldwide"
-msgstr "экспорт по всему миру"
-
 msgid "Just arrived"
 msgstr "Только что поступили"
 
@@ -493,13 +487,6 @@ msgstr "Продайте автомобиль покупателям по все
 
 msgid "Add photos, a price and your contacts — the listing goes live after a quick review."
 msgstr "Добавьте фото, цену и контакты — объявление появится после быстрой проверки."
-
-#, python-format
-msgid "%(n)s vehicle"
-msgid_plural "%(n)s vehicles"
-msgstr[0] "%(n)s автомобиль"
-msgstr[1] "%(n)s автомобиля"
-msgstr[2] "%(n)s автомобилей"
 
 msgid "Search by make, model or year"
 msgstr "Поиск по марке, модели или году"
@@ -807,6 +794,9 @@ msgstr ""
 msgid "Moderation"
 msgstr "Модерация"
 
+msgid "Automatic translation"
+msgstr "Автоматический перевод"
+
 msgid "Contacts"
 msgstr "Контакты"
 
@@ -960,6 +950,9 @@ msgstr "название"
 msgid "make"
 msgstr "марка"
 
+msgid "makes"
+msgstr "марки"
+
 msgid "User listing"
 msgstr "Объявление пользователя"
 
@@ -1031,6 +1024,12 @@ msgstr "описание (HTML)"
 
 msgid "dealer contacts"
 msgstr "контакты дилера"
+
+msgid "description language"
+msgstr "язык описания"
+
+msgid "translated description"
+msgstr "перевод описания"
 
 msgid "year"
 msgstr "год"

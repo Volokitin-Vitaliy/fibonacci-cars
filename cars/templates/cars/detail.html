@@ -87,11 +87,19 @@
                 </div>
                 <div class="panel p-6" data-reveal>
                     <h2 class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-3">{% trans 'Description' %}</h2>
-                    {% if car.description %}
-                        <div class="text-neutral-300 leading-relaxed whitespace-pre-line">{{ car.description }}</div>
-                    {% elif car.description_html %}
-                        {# Sanitized by the importer: only simple formatting tags remain #}
-                        <div class="dealer-description text-neutral-300 leading-relaxed text-sm">{{ car.description_html|safe }}</div>
+                    {% if desc %}
+                        {% if desc_is_html %}
+                            {# Sanitized by the importer (and again after translation): only simple formatting tags remain #}
+                            <div class="dealer-description text-neutral-300 leading-relaxed text-sm">{{ desc|safe }}</div>
+                        {% else %}
+                            <div class="text-neutral-300 leading-relaxed whitespace-pre-line">{{ desc }}</div>
+                        {% endif %}
+                        {% if desc_original %}
+                            <details class="auto-translated mt-5">
+                                <summary>{% trans 'Translated automatically' %} · <span class="underline underline-offset-4">{% trans 'Show original' %}</span></summary>
+                                {% if desc_is_html %}<div class="dealer-description text-neutral-400 leading-relaxed text-sm mt-4">{{ desc_original|safe }}</div>{% else %}<div class="text-neutral-400 leading-relaxed whitespace-pre-line mt-4">{{ desc_original }}</div>{% endif %}
+                            </details>
+                        {% endif %}
                     {% else %}
                         <p class="text-neutral-500">—</p>
                     {% endif %}

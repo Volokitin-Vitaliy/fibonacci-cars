@@ -61,6 +61,8 @@ class CarAdmin(ModelAdmin):
     fieldsets = (
         (_('Moderation'), {'fields': ('moderation', 'rejection_reason')}),
         (_('Vehicle'), {'fields': (('make', 'fuel'), 'model', 'description')}),
+        (_('Automatic translation'), {'classes': ('collapse',),
+                                      'fields': ('description_lang', 'description_translated')}),
         (_('Characteristics'), {'fields': (('year', 'mileage_km'), ('transmission', 'accident'),
                                            ('power_hp', 'color'), 'specs')}),
         (_('Price'), {'fields': (('price', 'currency'), 'price_net', 'price_eur')}),

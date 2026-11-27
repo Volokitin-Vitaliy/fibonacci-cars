@@ -2,12 +2,13 @@ import json
 import re
 from datetime import timedelta
 from decimal import Decimal
-from io import BytesIO
+from io import BytesIO, StringIO
 from unittest import mock
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -16,7 +17,7 @@ from PIL import Image
 from cars.importers.hollmann import (HollmannImporter, detect_fuel, parse_detail, parse_offers,
                                      parse_price, specs_to_fields)
 from cars.models import Car, CarPhoto, Favorite, ListingPeriod, Make, Payment
-from cars import payments, services
+from cars import payments, services, translation
 from cars.services import expire_listings, send_expiry_reminders
 from users.models import CustomUser
 
@@ -1479,3 +1480,102 @@ class HomeSlideshowTests(TestCase):
                          {'action': 'add_to_home', '_selected_action': [self.cars[0].pk]})
         self.assertTrue(Car.objects.get(pk=self.cars[0].pk).show_on_home)
         self.assertEqual(self.client.get(reverse('admin:cars_car_changelist')).status_code, 200)
+
+
+class FakeDeepL:
+    """Stands in for the DeepL API: returns the text with a target-language marker."""
+
+    def __init__(self, status=200):
+        self.calls, self.status = [], status
+
+    def __call__(self, url, json=None, headers=None, timeout=None):
+        self.calls.append(json)
+        response = mock.Mock(status_code=self.status, text='error')
+        text = json['text'][0]
+        if json.get('tag_handling') == 'html':
+            text += '<script>x</script><a href="http://evil">link</a>'
+        response.json.return_value = {'translations': [{'text': f"[{json['target_lang']}] {text}"}]}
+        return response
+
+
+@override_settings(DEEPL_API_KEY='test-key:fx')
+class TranslationTests(TestCase):
+    def setUp(self):
+        self.owner = make_user()
+        self.api = FakeDeepL()
+        patcher = mock.patch('cars.translation.requests.post', self.api)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_detect_language(self):
+        self.assertEqual(translation.detect_language('Отличное состояние, один владелец'), 'ru')
+        self.assertEqual(translation.detect_language('Mint condition, one owner, BMW M5'), 'en')
+        self.assertEqual(translation.detect_language('BMW M5 Competition, отличное состояние'), 'ru')
+
+    def test_seller_description_is_translated_after_save(self):
+        class InlineThread:  # runs the background job right away, in the test's connection
+            def __init__(self, target, daemon):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        with mock.patch('cars.translation.threading.Thread', InlineThread), \
+                mock.patch('cars.translation.close_old_connections'), \
+                self.captureOnCommitCallbacks(execute=True):
+            car = make_listing(self.owner, description='Отличное состояние')
+        car.refresh_from_db()
+        self.assertEqual(car.description_lang, 'ru')
+        self.assertEqual(car.description_translated, '[EN-GB] Отличное состояние')
+        self.assertEqual(self.api.calls[-1]['source_lang'], 'RU')
+
+    def test_shown_in_the_other_language_with_original(self):
+        car = make_listing(self.owner, description='Отличное состояние')
+        translation.translate_car(car)
+        en = self.client.get(f'/en/vehicle/{car.pk}/')
+        self.assertContains(en, '[EN-GB] Отличное состояние')
+        self.assertContains(en, 'Show original')
+        ru = self.client.get(f'/ru/vehicle/{car.pk}/')
+        self.assertNotContains(ru, '[EN-GB]')
+        self.assertNotContains(ru, 'Показать оригинал')
+
+    def test_changed_description_hides_old_translation_and_is_redone(self):
+        car = make_listing(self.owner, description='Отличное состояние')
+        translation.translate_car(car)
+        car.description = 'Один владелец'
+        self.assertEqual(car.description_for('en'), ('Один владелец', False, None))
+        self.assertTrue(translation.translate_car(car))
+        self.assertEqual(car.description_for('en')[0], '[EN-GB] Один владелец')
+        calls = len(self.api.calls)
+        self.assertFalse(translation.translate_car(car))  # unchanged: no new API call
+        self.assertEqual(len(self.api.calls), calls)
+
+    def test_imported_html_is_translated_and_sanitized(self):
+        car = Car.objects.create(source=Car.Source.HOLLMANN, external_id='T1', make=Make.get_by_name('Ferrari'),
+                                 model='Roma', price=Decimal('1'), description_html='<b>NEW</b> car <code>ACC1</code>')
+        self.assertEqual(self.api.calls, [])  # imported cars wait for translate_listings
+        call_command('translate_listings', stdout=StringIO())
+        car.refresh_from_db()
+        self.assertEqual(self.api.calls[0]['target_lang'], 'RU')
+        self.assertEqual(self.api.calls[0]['ignore_tags'], ['code'])
+        self.assertNotIn('source_lang', self.api.calls[0])  # English mixed with German: auto-detect
+        self.assertIn('<b>NEW</b>', car.description_translated)
+        self.assertNotIn('<script', car.description_translated)
+        self.assertNotIn('href', car.description_translated)
+        page = self.client.get(f'/ru/vehicle/{car.pk}/')
+        self.assertContains(page, '[RU] <b>NEW</b>')
+
+    def test_api_failure_keeps_the_original(self):
+        car = make_listing(self.owner, description='Mint condition')
+        self.api.status = 456
+        out = StringIO()
+        call_command('translate_listings', stdout=out, stderr=StringIO())
+        car.refresh_from_db()
+        self.assertEqual(car.description_translated, '')
+        self.assertIn('Mint condition', self.client.get(f'/ru/vehicle/{car.pk}/').content.decode())
+
+    @override_settings(DEEPL_API_KEY='')
+    def test_without_a_key_nothing_is_sent(self):
+        car = make_listing(self.owner, description='Mint condition')
+        self.assertFalse(translation.translate_car(car))
+        self.assertEqual(self.api.calls, [])

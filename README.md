@@ -204,6 +204,25 @@ publishes it on the site. Decisions made in the admin also close the buttons in 
 
 Only these chat ids can approve or reject.
 
+## Automatic translation of descriptions
+
+A seller writes the description in Russian or English; the site shows it translated into the
+other language automatically (with “Show original” under it). Imported Hollmann descriptions
+are translated too. It uses the DeepL API: the free plan gives 500,000 characters a month,
+and each description is translated only once (again only when it changes).
+
+1. Create a free account at deepl.com → **DeepL API** → copy the key (it ends in `:fx`).
+2. On the server add to `.env` and restart (`docker compose up -d`):
+   ```ini
+   DEEPL_API_KEY=...:fx
+   ```
+3. Translate the current catalog once (later it runs daily after the import, and new
+   seller listings are translated right after saving):
+   `docker compose exec web python manage.py translate_listings`
+
+Without the key everything works as before: the original is shown in both languages.
+A translation can be corrected by hand in the admin (vehicle → Automatic translation).
+
 ## Email
 
 Without `EMAIL_HOST` emails are printed to the console. For real sending:
