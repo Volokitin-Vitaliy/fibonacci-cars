@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Case, Count, F, IntegerField, Prefetch, Q, Value, When
+from django.db.models import BooleanField, Case, Count, F, IntegerField, Prefetch, Q, Value, When
 from django.db.models.functions import Abs
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -107,7 +107,8 @@ def home(request):
 def car_list(request, make_slug=None, fuel=None, new=False):
     """Catalog. Fuel types and gearboxes are multi-choice (checkboxes), make is a single
     choice; all combine with each other and with the filters, e.g. diesel + PHEV + BMW."""
-    base = Car.objects.new_offers() if new else Car.objects.visible()
+    # 'New offers' is the whole catalog with the new ones first, so people keep scrolling on.
+    base = Car.objects.visible()
     base_url = reverse('cars:new') if new else reverse('cars:list')
 
     fuels = [f for f in request.GET.getlist('fuel') if f in Car.Fuel.values]
@@ -156,7 +157,13 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     sort = request.GET.get('sort', 'date-descending')
     if sort not in SORTS:
         sort = 'date-descending'
-    cars = with_cover(narrow(base).distinct()).order_by(*SORTS[sort], '-pk')
+    cars = with_cover(narrow(base).distinct())
+    if new and sort == 'date-descending':
+        fresh = Car.objects.new_offers().values('pk')
+        cars = cars.annotate(is_fresh=Case(When(pk__in=fresh, then=Value(True)), default=Value(False),
+                                           output_field=BooleanField())).order_by('-is_fresh', *SORTS[sort], '-pk')
+    else:
+        cars = cars.order_by(*SORTS[sort], '-pk')
     page = Paginator(cars, PER_PAGE).get_page(request.GET.get('page'))
 
     # Links and forms keep everything else that is selected.

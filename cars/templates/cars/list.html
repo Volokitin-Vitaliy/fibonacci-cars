@@ -102,7 +102,16 @@
     </div>
 
     <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {% for car in page %}{% include "includes/car_card.html" %}{% empty %}
+        {% for car in page %}
+            {# New offers come first; then the rest of the catalog, so people keep scrolling #}
+            {% ifchanged car.is_fresh %}{% if is_new and car.is_fresh == False and not forloop.first %}
+            <div class="col-span-full flex items-center gap-4 pt-4">
+                <span class="text-xs uppercase tracking-[0.3em] text-neutral-500 whitespace-nowrap">{% trans 'More vehicles' %}</span>
+                <span class="h-px flex-1 bg-white/10"></span>
+            </div>
+            {% endif %}{% endifchanged %}
+            {% include "includes/car_card.html" %}
+        {% empty %}
         <p class="text-neutral-500 col-span-full py-20 text-center">{% trans 'No vehicles found.' %}</p>
         {% endfor %}
     </div>

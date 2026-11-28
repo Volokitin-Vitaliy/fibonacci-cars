@@ -1654,3 +1654,18 @@ class ListingFormTests(TestCase):
         options = {o['code']: o for o in ru.context['form'].country_options()}
         self.assertIn('германия', options['DE']['search'])
         self.assertIn('germany', options['DE']['search'])
+
+
+class NewOffersPageTests(TestCase):
+    def test_new_offers_first_then_the_whole_catalog(self):
+        old = Car.objects.create(source=Car.Source.HOLLMANN, external_id='O1', make=Make.get_by_name('BMW'),
+                                 model='Old one', price=Decimal('1000'))
+        fresh = Car.objects.create(source=Car.Source.HOLLMANN, external_id='N1', make=Make.get_by_name('BMW'),
+                                   model='Fresh one', price=Decimal('1000'), is_new=True)
+        Car.objects.filter(pk=fresh.pk).update(created_at=timezone.now() - timedelta(days=30))  # older, still first
+        page = self.client.get('/en/new/')
+        self.assertEqual([c.pk for c in page.context['page']], [fresh.pk, old.pk])
+        self.assertContains(page, 'More vehicles')
+        by_price = self.client.get('/en/new/?sort=price-ascending')   # an explicit sort is kept as chosen
+        self.assertNotContains(by_price, 'More vehicles')
+        self.assertEqual(len(self.client.get('/en/vehicles/').context['page']), 2)

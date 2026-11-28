@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:59+0000\n"
+"POT-Creation-Date: 2026-11-28 11:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -535,6 +535,9 @@ msgstr "Применить"
 
 msgid "Reset filters"
 msgstr "Сбросить фильтры"
+
+msgid "More vehicles"
+msgstr "Другие автомобили"
 
 msgid "No vehicles found."
 msgstr "Ничего не найдено."
