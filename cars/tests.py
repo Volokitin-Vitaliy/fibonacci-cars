@@ -1685,3 +1685,117 @@ class HiddenFromCatalogTests(TestCase):
         self.assertContains(page, 'Secret Test')
         self.assertContains(page, '<meta name="robots" content="noindex">')
         self.assertNotContains(page, 'application/ld+json')
+
+
+@override_settings(TELEGRAM_BOT_TOKEN='t', TELEGRAM_CHANNEL='@fibonacci_io', TELEGRAM_MODERATOR_CHAT_IDS=[],
+                   MEDIA_ROOT='/tmp/fibonacci-test-media', ADMIN_TIME_ZONE='Europe/Berlin')
+class ChannelTests(TestCase):
+    def setUp(self):
+        from cars import channel
+        self.channel = channel
+        self.sent, self.edits, self.next_id = [], [], [100]
+
+        def fake_post(url, data=None, files=None, timeout=None, json=None):
+            method = url.rsplit('/', 1)[-1]
+            response = mock.Mock()
+            if method == 'sendMediaGroup':
+                media = __import__('json').loads(data['media'])
+                self.sent.append(('album', len(media), media[0]['caption']))
+                ids = list(range(self.next_id[0], self.next_id[0] + len(media)))
+                self.next_id[0] += len(media)
+                response.json.return_value = {'ok': True, 'result': [{'message_id': i} for i in ids]}
+            elif method in ('editMessageCaption', 'editMessageText'):
+                self.edits.append((json['message_id'], json.get('caption') or json.get('text')))
+                response.json.return_value = {'ok': True, 'result': True}
+            else:
+                self.sent.append((method, 0, (data or json or {}).get('caption') or (json or {}).get('text')))
+                self.next_id[0] += 1
+                response.json.return_value = {'ok': True, 'result': {'message_id': self.next_id[0]}}
+            return response
+        patcher = mock.patch('requests.post', side_effect=fake_post)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def car(self, n, photos=6, **kw):
+        car = Car.objects.create(source=Car.Source.HOLLMANN, external_id=f'X{n}', make=Make.get_by_name('Ferrari'),
+                                 model=f'Model {n}', price=Decimal('268940'), price_net=Decimal('226000'),
+                                 year=2024, mileage_km=50, power_hp=620, fuel='petrol', transmission='automatic',
+                                 color='Nero Daytona', accident=False, country='DE', **kw)
+        Car.objects.filter(pk=car.pk).update(created_at=timezone.now() - timedelta(days=100 - n))
+        for i in range(photos):
+            CarPhoto.objects.create(car=car, position=i, image=SimpleUploadedFile(f'c{n}{i}.jpg', png().read()))
+        return car
+
+    def at(self, hour):
+        import zoneinfo
+        return timezone.make_aware(timezone.datetime(2026, 12, 1, hour, 10), zoneinfo.ZoneInfo('Europe/Berlin'))
+
+    def test_caption_has_the_key_facts_only(self):
+        car = self.car(1)
+        text = self.channel.caption(car)
+        for part in ('Ferrari Model 1 · 2024', '€226 000', 'нетто, экспорт', 'Германия', 'Без ДТП', '50 км',
+                     '620 л.с.', 'Бензин', 'Nero Daytona', 'Смотреть подробнее', f'/vehicle/{car.pk}/'):
+            self.assertIn(part, text)
+        self.assertLess(len(text), 1024)
+        self.assertTrue(self.channel.caption(car, sold=True).startswith('❌'))
+
+    def test_quiet_night(self):
+        self.assertTrue(self.channel.quiet_now(self.at(23)))
+        self.assertTrue(self.channel.quiet_now(self.at(3)))
+        self.assertFalse(self.channel.quiet_now(self.at(8)))
+        self.assertFalse(self.channel.quiet_now(self.at(22)))
+
+    def test_first_run_posts_three_newest_then_one_an_hour(self):
+        from cars.models import ChannelPost
+        cars = [self.car(n) for n in range(1, 6)]
+        self.channel.run(self.at(12))
+        self.assertEqual(len(self.sent), 3)
+        self.assertEqual([s[1] for s in self.sent], [5, 5, 5])                     # 5 photos each
+        self.assertIn('Model 5', self.sent[-1][2])                                   # newest last = on top
+        self.assertEqual(ChannelPost.objects.filter(status='skipped').count(), 2)   # older ones not posted
+        # A new car arrives: queued, posted only when an hour has passed and it is not night.
+        new = self.car(9, photos=1)
+        ChannelPost.objects.filter(status='sent').update(sent_at=self.at(12))
+        self.channel.run(self.at(12) + timedelta(minutes=20))
+        self.assertEqual(len(self.sent), 3)
+        self.channel.run(self.at(23) + timedelta(minutes=5))
+        self.assertEqual(len(self.sent), 3)                                          # quiet night
+        self.channel.run(self.at(13) + timedelta(minutes=5))
+        self.assertEqual(len(self.sent), 4)
+        self.assertEqual(self.sent[-1][0], 'sendPhoto')                              # one photo: a single photo post
+        self.assertEqual(ChannelPost.objects.get(car=new).status, 'sent')
+        self.assertEqual(len(cars), 5)
+
+    def test_sold_mark_added_and_removed(self):
+        from cars.models import ChannelPost
+        car = self.car(1)
+        self.channel.run(self.at(12))
+        post = ChannelPost.objects.get(car=car)
+        self.assertEqual(post.link, f'https://t.me/fibonacci_io/{post.message_ids[0]}')
+        Car.objects.filter(pk=car.pk).update(is_published=False)                    # sold on Hollmann
+        self.channel.run(self.at(12) + timedelta(minutes=5))
+        self.assertEqual(self.edits[-1][0], post.message_ids[0])
+        self.assertTrue(self.edits[-1][1].startswith('❌'))
+        self.assertTrue(ChannelPost.objects.get(pk=post.pk).sold)
+        Car.objects.filter(pk=car.pk).update(is_published=True)                     # back on sale
+        self.channel.run(self.at(12) + timedelta(minutes=10))
+        self.assertFalse(self.edits[-1][1].startswith('❌'))
+
+    def test_hidden_test_cars_are_never_posted(self):
+        self.car(1, hidden_from_catalog=True)
+        self.channel.run(self.at(12))
+        self.assertEqual(self.sent, [])
+
+    @override_settings(TELEGRAM_CHANNEL='')
+    def test_off_without_a_channel(self):
+        self.car(1)
+        self.assertIn('not set', self.channel.run(self.at(12)))
+        self.assertEqual(self.sent, [])
+
+    def test_admin_action_posts_now(self):
+        car = self.car(1)
+        admin = CustomUser.objects.create_superuser('chan@example.com', 'C', 'H', 'Chan-pass-12345')
+        self.client.force_login(admin)
+        self.client.post(reverse('admin:cars_car_changelist'), {'action': 'post_to_channel', '_selected_action': [car.pk]})
+        self.assertEqual(len(self.sent), 1)
+        self.assertEqual(self.client.get(reverse('admin:cars_channelpost_changelist')).status_code, 200)

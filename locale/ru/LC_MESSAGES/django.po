@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 11:43+0000\n"
+"POT-Creation-Date: 2026-11-28 12:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -1086,6 +1086,16 @@ msgstr "Убрать с главной"
 msgid "Removed from the home page: %(n)s"
 msgstr "Убрано с главной: %(n)s"
 
+msgid "Post to the Telegram channel now"
+msgstr "Опубликовать в Telegram-канал сейчас"
+
+msgid "Set TELEGRAM_CHANNEL in .env first."
+msgstr "Сначала укажите TELEGRAM_CHANNEL в .env."
+
+#, python-format
+msgid "Posted to the channel: %(n)s"
+msgstr "Опубликовано в канале: %(n)s"
+
 msgid "Reject selected listings"
 msgstr "Отклонить выбранные объявления"
 
@@ -1094,6 +1104,9 @@ msgid "Rejected: %(n)s. To give a reason, open the listing and fill in \"rejecti
 msgstr ""
 "Отклонено: %(n)s. Чтобы указать причину, откройте объявление и заполните поле «причина "
 "отклонения»."
+
+msgid "Post"
+msgstr "Пост"
 
 msgid "Active private listings"
 msgstr "Активные частные объявления"
@@ -1384,6 +1397,30 @@ msgstr "Оплачено"
 msgid "Failed"
 msgstr "Ошибка"
 
+msgid "In the queue"
+msgstr "В очереди"
+
+msgid "Posted"
+msgstr "Опубликован"
+
+msgid "Not posted"
+msgstr "Не публикуется"
+
+msgid "queued"
+msgstr "в очереди с"
+
+msgid "posted"
+msgstr "опубликован"
+
+msgid "marked sold"
+msgstr "помечен «Продано»"
+
+msgid "Telegram channel post"
+msgstr "пост в Telegram-канале"
+
+msgid "Telegram channel posts"
+msgstr "посты в Telegram-канале"
+
 msgid "Upholstery"
 msgstr "Салон"
 
@@ -1621,6 +1658,9 @@ msgstr "Все автомобили"
 
 msgid "Makes"
 msgstr "Марки"
+
+msgid "Telegram channel"
+msgstr "Telegram-канал"
 
 msgid "People"
 msgstr "Люди"
