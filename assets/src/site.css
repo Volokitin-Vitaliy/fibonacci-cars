@@ -29,14 +29,14 @@
 }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
-/* Phones (Safari's floating bars): Safari fills the status bar area with the colour of a
-   *fixed* header at the top, and the area under its address bar with the colour of a fixed
-   bar at the bottom. A sticky header is placed below the status bar instead, letting the
-   page show above it, so on phones the header is fixed (the page starts below it). Both
-   bars are fully opaque; Safari only uses opaque colours. */
+/* iPhone Safari colours its status bar and the area under its address bar from the topmost
+   fixed element at that screen edge; a see-through one makes it show the page there. Two
+   invisible strips in the site's colours sit on top at both edges for Safari to sample
+   (visibility: hidden still counts, so nothing changes on screen). */
+.safari-tint { position: fixed; left: 0; right: 0; height: 11px; z-index: 100; visibility: hidden; pointer-events: none; }
+.safari-tint-top { top: 0; background-color: #08080a; }
+.safari-tint-bottom { bottom: 0; background-color: #000; }
 @media (max-width: 1023px) {
-    .site-header { position: fixed !important; top: 0; left: 0; right: 0; background-color: #08080a !important; }
-    body { padding-top: 4rem; }
     /* Same reason as the chips: no blur that Safari paints a moment late on page elements. */
     .glass, .contact-bar { -webkit-backdrop-filter: none; backdrop-filter: none; }
     .glass { background: rgba(20,20,23,.72); }
@@ -60,7 +60,8 @@ body::before { /* soft blue light at the top of every page */
     background: radial-gradient(60rem 30rem at 50% -10rem, rgba(37,99,235,.12), transparent 70%);
 }
 body::after { /* film grain */
-    content: ''; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .035; mix-blend-mode: overlay;
+    content: ''; position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: .035; mix-blend-mode: overlay;
+    /* under the header and the bottom menu (z 40): above them it took over Safari's bar colours */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 ::selection { background: var(--accent); color: #fff; }

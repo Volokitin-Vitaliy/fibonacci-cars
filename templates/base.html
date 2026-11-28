@@ -32,6 +32,7 @@
 </head>
 <body class="min-h-screen flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-24" data-a-ping="{% url 'analytics_ping' %}" data-a-event="{% url 'analytics_event' %}" data-a-car="{% block analytics_car %}{% endblock %}">
 <div id="page-progress" aria-hidden="true"></div>
+<div class="safari-tint safari-tint-top" aria-hidden="true"></div><div class="safari-tint safari-tint-bottom" aria-hidden="true"></div>
 <header class="site-header sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 min-[360px]:gap-3 sm:gap-6">
         <a href="{% url 'cars:home' %}" class="flex items-center gap-1.5 min-[360px]:gap-2 sm:gap-3 shrink-0" aria-label="FIBONACCI">
