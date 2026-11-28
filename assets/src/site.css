@@ -27,7 +27,8 @@
 }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
-html { scroll-behavior: smooth; }
+/* No global smooth scrolling: it made the browser glide the page into place on reload / Back
+   (it looked like a jump). In-page links scroll smoothly through site.js instead. */
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 body::before { /* soft blue light at the top of every page */
     content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
@@ -140,7 +141,7 @@ fieldset { min-width: 0; }
 .btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .8rem 1.6rem; border-radius: 999px;
        font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; transition: background .2s, color .2s, border-color .2s, box-shadow .25s, transform .2s; }
 .btn-primary { background: #f5f5f5; color: #0b0b0b; }
-.btn-primary:hover { background: #fff; box-shadow: 0 10px 30px -10px rgba(255,255,255,.45), 0 0 0 1px rgba(255,255,255,.5); transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) { .btn-primary:hover { background: #fff; box-shadow: 0 10px 30px -10px rgba(255,255,255,.45), 0 0 0 1px rgba(255,255,255,.5); transform: translateY(-1px); } }
 .btn-primary::after { /* light that follows the cursor */
     content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s; pointer-events: none;
     background: radial-gradient(10rem circle at var(--mx, 50%) var(--my, 50%), rgba(59,130,246,.28), transparent 60%); }
@@ -175,15 +176,16 @@ fieldset { min-width: 0; }
 #page-progress.is-active { opacity: 1; width: 75%; transition: width 6s cubic-bezier(.1,.7,.1,1), opacity .2s; }
 
 /* ---- Reveal on scroll ---- */
-.js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
-.js [data-reveal].is-visible { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+/* Hidden only while waiting below the screen (site.js); hiding is instant, appearing animates. */
+.js [data-reveal] { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+.js [data-reveal].reveal-pending { opacity: 0; transform: translateY(14px); transition: none; }
+@media (prefers-reduced-motion: reduce) { .js [data-reveal].reveal-pending { opacity: 1; transform: none; } .js [data-reveal] { transition: none; } }
 
 /* ---- Images fade in over a shimmer ---- */
 .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { to { background-position: -150% 0; } }
-.js img.fade-in { opacity: 0; transition: opacity .5s ease; }
-.js img.fade-in.is-loaded { opacity: 1; }
+img.fade-in { transition: opacity .5s ease; }
+img.fade-in.img-loading { opacity: 0; transition: none; }
 
 /* ---- Horizontal scrollers ---- */
 .scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; /* sideways only: a vertical swipe scrolls the page */

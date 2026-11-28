@@ -123,24 +123,35 @@ document.addEventListener('submit', function (e) {
             if (p < 1) requestAnimationFrame(step); };
         requestAnimationFrame(step);
     };
-    if ('IntersectionObserver' in window) {
+    // Blocks rise into place only when they scroll into view. What is on screen at once, and
+    // every page reached with Back / Forward or a reload, shows straight away in its place:
+    // replaying the motion there looked like the page jumping.
+    var nav = (window.performance && performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+    var returning = nav.type === 'back_forward' || nav.type === 'reload';
+    if ('IntersectionObserver' in window && !returning) {
         var io = new IntersectionObserver(function (entries) {
             entries.forEach(function (en) {
                 if (!en.isIntersecting) return;
-                en.target.classList.add('is-visible');
+                en.target.classList.remove('reveal-pending');
                 if (en.target.dataset.count) countUp(en.target);
                 io.unobserve(en.target);
             });
         }, {rootMargin: '0px 0px -8% 0px'});
-        document.querySelectorAll('[data-reveal], [data-count]').forEach(function (el) { io.observe(el); });
+        var fold = window.innerHeight;
+        document.querySelectorAll('[data-reveal], [data-count]').forEach(function (el) {
+            if (el.hasAttribute('data-reveal') && el.getBoundingClientRect().top > fold) el.classList.add('reveal-pending');
+            io.observe(el);
+        });
     } else {
-        document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('is-visible'); });
+        document.querySelectorAll('[data-count]').forEach(function (el) { el.textContent = el.dataset.count; });
     }
 
-    // Photos fade in when loaded.
+    // Photos still loading fade in when they arrive; ones already in the cache never blink.
     document.querySelectorAll('img.fade-in').forEach(function (img) {
-        var done = function () { img.classList.add('is-loaded'); };
-        if (img.complete) done(); else { img.addEventListener('load', done); img.addEventListener('error', done); }
+        if (img.complete) return;
+        img.classList.add('img-loading');
+        var done = function () { img.classList.remove('img-loading'); };
+        img.addEventListener('load', done); img.addEventListener('error', done);
     });
 
     // Light that follows the cursor on primary buttons.
@@ -277,3 +288,17 @@ document.querySelectorAll('[data-photos]').forEach(function (box) {
         if (kind && car) send(eventUrl, { kind: kind, car: car });  // contacting a seller
     }, true);
 })();
+
+/* In-page links (All contacts, Back to top) scroll smoothly; page loads never do. */
+document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || a.getAttribute('href').length < 2) return;
+    var id = a.getAttribute('href').slice(1);
+    var target = id === 'top' ? document.body : document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (id === 'top') window.scrollTo({top: 0, behavior: reduce ? 'auto' : 'smooth'});
+    else target.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+    if (history.replaceState) history.replaceState(null, '', '#' + id);
+});

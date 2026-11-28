@@ -2,6 +2,7 @@
 {% load i18n static cars_tags %}
 {% block title %}{% trans 'Exclusive vehicles' %}{% endblock %}
 
+{% block extra_head %}{% with first=hero_cars.0 %}{% if first and first.cover %}<link rel="preload" as="image" href="{{ first.cover.large_url }}"{% if first.cover.variants %} imagesrcset="{{ first.cover.srcset }}" imagesizes="100vw"{% endif %} fetchpriority="high">{% endif %}{% endwith %}{% endblock %}
 {% block content %}
 {# ---------- Hero ---------- #}
 {# Phones: the photo on top, uncovered, text below it. Larger screens: text over the photo. #}
@@ -11,7 +12,7 @@
     <div class="absolute inset-0" data-hero>
         {% for car in hero_cars %}
         <a href="{{ car.get_absolute_url }}" class="hero-slide {% if forloop.first %}is-active{% endif %}" data-slide tabindex="-1" aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
-            {% if forloop.first %}<img src="{{ car.cover.large_url }}"{% if car.cover.variants %} srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" fetchpriority="high" decoding="async">
+            {% if forloop.first %}<img src="{{ car.cover.large_url }}"{% if car.cover.variants %} srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" fetchpriority="high">{# no async decoding: the cached photo is painted with the page, no black flash #}
             {% else %}{# loaded just before it is shown, so the first screen downloads one photo #}<img data-src="{{ car.cover.large_url }}"{% if car.cover.variants %} data-srcset="{{ car.cover.srcset }}" sizes="100vw"{% endif %} alt="{{ car }}" decoding="async">{% endif %}
         </a>
         {% endfor %}

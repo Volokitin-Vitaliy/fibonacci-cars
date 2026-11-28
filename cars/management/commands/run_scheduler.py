@@ -1,14 +1,18 @@
 import time
 import traceback
+from datetime import timedelta
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from cars.models import ImportRun
+
 
 DAILY = ('expire_listings', 'send_expiry_reminders', 'import_hollmann', 'translate_listings',
          'update_geoip', 'analytics_cleanup', 'process_photos', 'clearsessions')
 FREQUENT_SECONDS = 300
+RETRY_AFTER = timedelta(hours=2)
 
 
 class Command(BaseCommand):
@@ -22,17 +26,32 @@ class Command(BaseCommand):
         parser.add_argument('--interval-hours', type=float, default=24)
 
     def handle(self, *args, **options):
-        interval = options['interval_hours'] * 3600
-        last_daily = None
+        interval = timedelta(hours=options['interval_hours'])
+        self.mark_interrupted()
         while True:
-            if last_daily is None or time.monotonic() - last_daily >= interval:
-                last_daily = time.monotonic()
+            # Every few minutes, first: the next post in the Telegram channel (one an hour, not at night).
+            self.run('telegram_channel')
+            if self.daily_due(interval):
                 self.stdout.write(f'[{timezone.now():%Y-%m-%d %H:%M}] running daily jobs')
                 for command in DAILY:
                     self.run(command)
-            # Every few minutes: the next post in the Telegram channel (one an hour, not at night).
-            self.run('telegram_channel')
             time.sleep(FREQUENT_SECONDS)
+
+    def mark_interrupted(self):
+        """An import still 'running' when the scheduler starts was cut off by a restart
+        (e.g. a site update): say so instead of leaving it as an unexplained error."""
+        ImportRun.objects.filter(finished_at__isnull=True).update(
+            finished_at=timezone.now(), ok=False, error=ImportRun.INTERRUPTED)
+
+    def daily_due(self, interval):
+        """Daily jobs run a day after the last import, not on every restart: updating the site
+        no longer starts (and then cuts off) a new import each time. A failed import is
+        retried after RETRY_AFTER; an interrupted one at once."""
+        last = ImportRun.objects.exclude(error=ImportRun.INTERRUPTED).first()
+        if last is None:
+            return True
+        wait = interval if last.ok else RETRY_AFTER
+        return timezone.now() - last.started_at >= wait
 
     def run(self, command):
         try:
