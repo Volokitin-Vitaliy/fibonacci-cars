@@ -146,13 +146,6 @@ document.addEventListener('submit', function (e) {
         document.querySelectorAll('[data-count]').forEach(function (el) { el.textContent = el.dataset.count; });
     }
 
-    // Photos still loading fade in when they arrive; ones already in the cache never blink.
-    document.querySelectorAll('img.fade-in').forEach(function (img) {
-        if (img.complete) return;
-        img.classList.add('img-loading');
-        var done = function () { img.classList.remove('img-loading'); };
-        img.addEventListener('load', done); img.addEventListener('error', done);
-    });
 
     // Light that follows the cursor on primary buttons.
     document.addEventListener('pointermove', function (e) {

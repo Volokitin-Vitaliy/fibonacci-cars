@@ -184,8 +184,8 @@ fieldset { min-width: 0; }
 /* ---- Images fade in over a shimmer ---- */
 .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { to { background-position: -150% 0; } }
-img.fade-in { transition: opacity .5s ease; }
-img.fade-in.img-loading { opacity: 0; transition: none; }
+/* Photos are shown as soon as they arrive, no fade from the dark card background
+   (that read as a black flash). */
 
 /* ---- Horizontal scrollers ---- */
 .scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; /* sideways only: a vertical swipe scrolls the page */
