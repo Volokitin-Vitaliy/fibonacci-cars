@@ -9,6 +9,8 @@ from django.views.generic import RedirectView
 
 from django.contrib.sitemaps.views import sitemap
 
+from analytics import views as analytics_views
+from analytics.admin_views import dashboard as analytics_dashboard
 from cars import views as car_views
 from cars.sitemaps import sitemaps
 
@@ -22,11 +24,14 @@ def admin_login(request):
 
 urlpatterns = [
     path(f'{settings.ADMIN_URL}login/', admin_login),
+    path(f'{settings.ADMIN_URL}analytics/', admin.site.admin_view(analytics_dashboard), name='admin_analytics'),
     path(settings.ADMIN_URL, admin.site.urls),
     path('i18n/setlang/', car_views.set_language, name='set_language'),
     path('i18n/', include('django.conf.urls.i18n')),
     path('choose-language/', car_views.choose_language, name='choose_language'),
     path('telegram/webhook/', car_views.telegram_webhook, name='telegram_webhook'),
+    path('a/p/', analytics_views.ping, name='analytics_ping'),
+    path('a/e/', analytics_views.event, name='analytics_event'),
     path('payments/stripe/webhook/', car_views.stripe_webhook, name='stripe_webhook'),
     path('payments/wayforpay/callback/', car_views.wayforpay_callback, name='wayforpay_callback'),
     path('payments/wayforpay/return/', car_views.wayforpay_return, name='wayforpay_return'),

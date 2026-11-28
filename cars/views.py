@@ -304,6 +304,9 @@ def toggle_favorite(request, pk):
     """Works for guests too (kept in the session for 30 days)."""
     car = get_object_or_404(Car, pk=pk)
     is_favorite = favorites.toggle(request, car)
+    if is_favorite:
+        from analytics.tracking import record_event
+        record_event(request, 'favorite', car.pk)
     if request.headers.get('X-Requested-With') == 'fetch':
         return JsonResponse({'favorite': is_favorite,
                              'count': len(favorites.favorite_ids(request))})

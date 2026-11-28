@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 10:34+0000\n"
+"POT-Creation-Date: 2026-11-28 10:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -580,6 +580,96 @@ msgstr "Все автомобили"
 msgid "Back to the home page"
 msgstr "На главную"
 
+msgid "Analytics"
+msgstr "Аналитика"
+
+msgid "on the site now"
+msgstr "на сайте сейчас"
+
+msgid "Show"
+msgstr "Показать"
+
+msgid "all"
+msgstr "все"
+
+msgid "before"
+msgstr "до этого"
+
+msgid "Visitors and page views"
+msgstr "Посетители и просмотры"
+
+msgid "Vehicles by views"
+msgstr "Автомобили по просмотрам"
+
+msgid "Views"
+msgstr "Просмотры"
+
+msgid "Visitors"
+msgstr "Посетители"
+
+msgid "Contacts"
+msgstr "Контакты"
+
+msgid "Contact rate"
+msgstr "Конверсия в контакт"
+
+msgid "Last viewed"
+msgstr "Последний просмотр"
+
+msgid "Open on the site"
+msgstr "Открыть на сайте"
+
+msgid "Private"
+msgstr "Частное"
+
+msgid "not on the site"
+msgstr "не на сайте"
+
+msgid "never"
+msgstr "никогда"
+
+msgid "No data for this period yet."
+msgstr "За этот период данных пока нет."
+
+msgid "Show fewer"
+msgstr "Показать меньше"
+
+msgid "No data"
+msgstr "Нет данных"
+
+msgid "Most visited pages"
+msgstr "Самые посещаемые страницы"
+
+msgid "Open right now"
+msgstr "Открыто прямо сейчас"
+
+msgid "Nobody on the site at the moment."
+msgstr "Сейчас на сайте никого нет."
+
+msgid "Month"
+msgstr "Месяц"
+
+msgid "Page views"
+msgstr "Просмотры страниц"
+
+msgid "Vehicle views"
+msgstr "Просмотры автомобилей"
+
+#, python-format
+msgid "Show all %(n)s"
+msgstr "Показать все %(n)s"
+
+#, python-format
+msgid "By month, %(y)s"
+msgstr "По месяцам, %(y)s"
+
+msgid ""
+"Visitors are counted without cookies: one person = one device and network. Your own visits as "
+"staff are not counted. Countries: IP database by DB-IP (db-ip.com)."
+msgstr ""
+"Посетители считаются без cookie: один человек = одно устройство и сеть. Ваши собственные визиты "
+"(сотрудники) не учитываются. Страны: база IP-адресов DB-IP (db-ip.com)."
+
 msgid "Dashboard"
 msgstr "Обзор"
 
@@ -793,6 +883,157 @@ msgstr ""
 "Мы отправили ссылку на <span class=\"text-white\">%(email)s</span>. Откройте её, чтобы "
 "активировать аккаунт."
 
+msgid "New visitors"
+msgstr "Новые посетители"
+
+msgid "Returning visitors"
+msgstr "Вернувшиеся посетители"
+
+msgid "Signed in"
+msgstr "Вошли в аккаунт"
+
+msgid "Guests"
+msgstr "Гости"
+
+msgid "Direct"
+msgstr "Прямые заходы"
+
+msgid "Device"
+msgstr "Устройство"
+
+msgid "Source"
+msgstr "Источник"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "Page"
+msgstr "Страница"
+
+msgid "Now"
+msgstr "Сейчас"
+
+msgid "Hour"
+msgstr "Час"
+
+msgid "Today"
+msgstr "Сегодня"
+
+msgid "Yesterday"
+msgstr "Вчера"
+
+msgid "7 days"
+msgstr "7 дней"
+
+msgid "30 days"
+msgstr "30 дней"
+
+msgid "Dates"
+msgstr "Даты"
+
+msgid "Different people (by device and network)"
+msgstr "Разные люди (по устройству и сети)"
+
+msgid "Opened the site for the first time"
+msgstr "Открыли сайт впервые"
+
+#, python-format
+msgid "%(n)s pages per visitor"
+msgstr "%(n)s стр. на посетителя"
+
+msgid "Contact clicks"
+msgstr "Клики по контактам"
+
+msgid "Call, WhatsApp, Telegram on vehicle pages"
+msgstr "Звонок, WhatsApp, Telegram на страницах авто"
+
+msgid "Of those who opened a vehicle, contacted the seller"
+msgstr "Из открывших авто связались с продавцом"
+
+msgid "Saved to favorites"
+msgstr "Добавлений в избранное"
+
+msgid "Sources"
+msgstr "Источники"
+
+msgid "Countries"
+msgstr "Страны"
+
+msgid "Devices"
+msgstr "Устройства"
+
+msgid "Pages"
+msgstr "Страницы"
+
+msgid "Browsers"
+msgstr "Браузеры"
+
+msgid "Systems"
+msgstr "Системы"
+
+msgid "Site language"
+msgstr "Язык сайта"
+
+msgid "Referring sites"
+msgstr "Сайты-источники"
+
+msgid "Most viewed"
+msgstr "Самые просматриваемые"
+
+msgid "Least viewed"
+msgstr "Наименее просматриваемые"
+
+msgid "Most visitors"
+msgstr "Больше всего посетителей"
+
+msgid "Most contacts"
+msgstr "Больше всего контактов"
+
+msgid "Most saved"
+msgstr "Чаще в избранном"
+
+msgid "Viewed recently"
+msgstr "Недавно смотрели"
+
+msgid "Home page"
+msgstr "Главная страница"
+
+msgid "Catalog"
+msgstr "Каталог"
+
+msgid "Vehicle page"
+msgstr "Страница авто"
+
+msgid "Selling and cabinet"
+msgstr "Продажа и кабинет"
+
+msgid "Sign-in and account"
+msgstr "Вход и аккаунт"
+
+msgid "Other pages"
+msgstr "Другие страницы"
+
+msgid "Computer"
+msgstr "Компьютер"
+
+msgid "Tablet"
+msgstr "Планшет"
+
+msgid "page view"
+msgstr "просмотр страницы"
+
+msgid "page views"
+msgstr "просмотры страниц"
+
+msgid "event"
+msgstr "событие"
+
+msgid "events"
+msgstr "события"
+
+msgid "Direct (typed address, bookmarks, apps)"
+msgstr "Прямые заходы (адрес, закладки, приложения)"
+
 msgid "moderation"
 msgstr "модерация"
 
@@ -809,23 +1050,11 @@ msgstr "Модерация"
 msgid "Automatic translation"
 msgstr "Автоматический перевод"
 
-msgid "Contacts"
-msgstr "Контакты"
-
 msgid "Publication"
 msgstr "Публикация"
 
-msgid "Home page"
-msgstr "Главная страница"
-
 msgid "Import"
 msgstr "Импорт"
-
-msgid "Source"
-msgstr "Источник"
-
-msgid "Private"
-msgstr "Частное"
 
 msgid "Status"
 msgstr "Статус"
@@ -876,9 +1105,6 @@ msgstr "Пользователи"
 msgid "+%(n)s this week"
 msgstr "+%(n)s за неделю"
 
-msgid "Saved to favorites"
-msgstr "Добавлений в избранное"
-
 msgid "Paid, €"
 msgstr "Оплачено, €"
 
@@ -888,10 +1114,6 @@ msgstr "Платежей: %(n)s"
 
 msgid "Enter a valid phone number, for example +49 151 1234567."
 msgstr "Введите корректный номер телефона, например +7 999 123-45-67."
-
-#, python-format
-msgid "Up to %(n)s images."
-msgstr "До %(n)s изображений."
 
 msgid "Was the car in an accident?"
 msgstr "Был ли автомобиль в ДТП?"
@@ -910,6 +1132,10 @@ msgstr "@username или номер телефона"
 
 msgid "Country where the car is"
 msgstr "Страна, где находится автомобиль"
+
+#, python-format
+msgid "Up to %(n)s images."
+msgstr "До %(n)s изображений."
 
 msgid "Model / title"
 msgstr "Модель / название"

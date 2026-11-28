@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n static cars_tags %}
+{% block analytics_car %}{{ car.pk }}{% endblock %}
 {% block title %}{{ car.make.name }} {{ car.model }}{% endblock %}
 {% block meta_description %}{{ car.make.name }} {{ car.model }} — {{ car.currency_symbol }}{{ car.main_price|money }}{% endblock %}
 {% block og_type %}product{% endblock %}

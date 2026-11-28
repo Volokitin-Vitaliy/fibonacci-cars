@@ -204,6 +204,27 @@ publishes it on the site. Decisions made in the admin also close the buttons in 
 
 Only these chat ids can approve or reject.
 
+## Site analytics
+
+Admin → **Analytics** shows who visits the site, kept in our own database (no Google
+Analytics, nothing for ad blockers to cut):
+
+- **live**: how many people have the site open right now and on which pages;
+- periods: now, last hour, today, yesterday, 7 / 30 days, any month, any year, any dates —
+  each number compared with the same length of time before;
+- visitors, new visitors, page views, vehicle views, contact clicks (call / WhatsApp /
+  Telegram on vehicle pages), contact rate, saves to favorites; a chart over time;
+- vehicles from the most viewed to the ones nobody opens (with contacts and favorites);
+- sources (Google, Instagram, Telegram, utm_source…), countries, devices, browsers,
+  systems, site language, pages; a table of every month of the year;
+- filters: device, country, source, language, page type, new / returning, signed in, make.
+
+Visitors are counted **without cookies**: a visitor is a hash of the IP address and the
+browser, the IP itself is not stored. Bots and your own visits as staff are not counted.
+Countries come from the free DB-IP Lite database, downloaded by the daily jobs
+(`python manage.py update_geoip`). Data older than `ANALYTICS_RETENTION_DAYS` (800 days)
+is deleted. Times are shown in `ADMIN_TIME_ZONE` (Europe/Berlin by default).
+
 ## Automatic translation of descriptions
 
 A seller writes the description in Russian or English; the site shows it translated into the

@@ -21,6 +21,7 @@ class Command(BaseCommand):
         while True:
             self.stdout.write(f'[{timezone.now():%Y-%m-%d %H:%M}] running daily jobs')
             for command in ('expire_listings', 'send_expiry_reminders', 'import_hollmann', 'translate_listings',
+                            'update_geoip', 'analytics_cleanup',
                             'process_photos',
                             'clearsessions'):
                 try:
