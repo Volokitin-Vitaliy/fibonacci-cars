@@ -38,8 +38,8 @@
                     <img id="main-img" src="{{ photos.0|photo_main_url }}" alt="{{ car }}" fetchpriority="high" class="w-full h-full object-cover">
                 </button>
                 {% if photos|length > 1 %}
-                <button type="button" data-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Previous' %}">←</button>
-                <button type="button" data-step="1" class="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Next' %}">→</button>
+                <button type="button" data-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-label="{% trans 'Previous' %}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+                <button type="button" data-step="1" class="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-label="{% trans 'Next' %}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
                 {% endif %}
                 <span class="absolute bottom-3 right-3 chip chip-glass pointer-events-none"><span id="photo-index">1</span> / {{ photos|length }}</span>
                 <span class="absolute top-3 right-3 w-10 h-10 rounded-full chip-glass hidden sm:flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span>
@@ -217,8 +217,8 @@
             </div>
             {% if similar|length > 4 %}
             <div class="hidden sm:flex gap-2">
-                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="-1" aria-label="{% trans 'Previous' %}">←</button>
-                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="1" aria-label="{% trans 'Next' %}">→</button>
+                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition-colors flex items-center justify-center" data-scroll="-1" aria-label="{% trans 'Previous' %}">{% include "includes/arrow.html" with dir="left" %}</button>
+                <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition-colors flex items-center justify-center" data-scroll="1" aria-label="{% trans 'Next' %}">{% include "includes/arrow.html" with dir="right" %}</button>
             </div>
             {% endif %}
         </div>

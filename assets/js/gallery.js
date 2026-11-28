@@ -56,8 +56,8 @@
         '<button type="button" class="lb-btn lb-close" aria-label="' + label('Close', 'Close') + '">' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
         '<div class="lb-stage"><div class="lb-track"></div>' +
-        '<button type="button" class="lb-btn lb-prev" aria-label="' + label('Previous', 'Previous') + '">←</button>' +
-        '<button type="button" class="lb-btn lb-next" aria-label="' + label('Next', 'Next') + '">→</button></div>' +
+        '<button type="button" class="lb-btn lb-prev" aria-label="' + label('Previous', 'Previous') + '"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>' +
+        '<button type="button" class="lb-btn lb-next" aria-label="' + label('Next', 'Next') + '"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>' +
         '<div class="lb-hint">' + label('Hint', '') + '</div>' +
         '<div class="lb-thumbs"></div>';
     document.body.appendChild(lb);
