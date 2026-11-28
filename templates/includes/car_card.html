@@ -31,7 +31,7 @@
                     <div class="text-xl font-semibold tracking-tight">{{ car.currency_symbol }}{{ car.main_price|money }}</div>
                     {% if car.price_net %}<div class="text-[11px] text-neutral-500 mt-0.5">{% trans 'Net (Export)' %} · {% trans 'Gross' %} {{ car.currency_symbol }}{{ car.price|money }}</div>{% endif %}
                 </div>
-                <span class="shrink-0 w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 transition-all group-hover:border-white/40 group-hover:text-white group-hover:translate-x-0.5" aria-hidden="true">→</span>
+                <span class="shrink-0 w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 transition-all group-hover:border-white/40 group-hover:text-white group-hover:translate-x-0.5" aria-hidden="true">{% include "includes/arrow.html" with dir="right" size=15 %}</span>
             </div>
         </div>
     </a>

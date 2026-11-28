@@ -61,8 +61,8 @@
             <h2 class="font-display text-2xl sm:text-4xl font-semibold">{% if new_offers %}{% trans 'New Offers' %}{% else %}{% trans 'Latest vehicles' %}{% endif %}</h2>
         </div>
         <div class="hidden sm:flex gap-2">
-            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="-1" aria-label="{% trans 'Previous' %}">←</button>
-            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition" data-scroll="1" aria-label="{% trans 'Next' %}">→</button>
+            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition-colors flex items-center justify-center" data-scroll="-1" aria-label="{% trans 'Previous' %}">{% include "includes/arrow.html" with dir="left" %}</button>
+            <button type="button" class="w-11 h-11 rounded-full border border-white/15 hover:border-white/50 hover:bg-white/5 transition-colors flex items-center justify-center" data-scroll="1" aria-label="{% trans 'Next' %}">{% include "includes/arrow.html" with dir="right" %}</button>
         </div>
     </div>
     <div class="scroller -mx-4 px-4 sm:mx-0 sm:px-0 [grid-auto-columns:82%] sm:[grid-auto-columns:calc((100%-1.25rem)/2)] lg:[grid-auto-columns:calc((100%-3.75rem)/4)]" data-scroller>

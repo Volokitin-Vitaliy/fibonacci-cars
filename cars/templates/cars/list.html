@@ -118,9 +118,9 @@
 
     {% if page.has_other_pages %}
     <nav class="flex items-center justify-center gap-2 mt-16 text-sm">
-        {% if page.has_previous %}<a href="{% url_with page=page.previous_page_number %}" class="btn btn-outline !py-2">←</a>{% endif %}
+        {% if page.has_previous %}<a href="{% url_with page=page.previous_page_number %}" class="btn btn-outline !py-2">{% include "includes/arrow.html" with dir="left" %}</a>{% endif %}
         <span class="px-4 text-neutral-400">{{ page.number }} / {{ page.paginator.num_pages }}</span>
-        {% if page.has_next %}<a href="{% url_with page=page.next_page_number %}" class="btn btn-outline !py-2">→</a>{% endif %}
+        {% if page.has_next %}<a href="{% url_with page=page.next_page_number %}" class="btn btn-outline !py-2">{% include "includes/arrow.html" with dir="right" %}</a>{% endif %}
     </nav>
     {% endif %}
 </section>
