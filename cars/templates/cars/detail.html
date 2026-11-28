@@ -35,7 +35,7 @@
                  data-label-close="{% trans 'Close' %}" data-label-previous="{% trans 'Previous' %}" data-label-next="{% trans 'Next' %}"
                  data-label-photo="{% trans 'Photo' %}" data-label-hint="{% trans 'Double-tap or pinch to zoom · swipe down to close' %}">
                 <button type="button" id="main-photo" class="absolute inset-0 w-full h-full cursor-zoom-in" aria-label="{% trans 'Open fullscreen' %}">
-                    <img id="main-img" src="{{ photos.0|photo_main_url }}" alt="{{ car }}" fetchpriority="high" decoding="async" class="fade-in w-full h-full object-cover">
+                    <img id="main-img" src="{{ photos.0|photo_main_url }}" alt="{{ car }}" fetchpriority="high" class="w-full h-full object-cover">
                 </button>
                 {% if photos|length > 1 %}
                 <button type="button" data-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full chip-glass flex items-center justify-center text-lg opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition" aria-label="{% trans 'Previous' %}">←</button>
