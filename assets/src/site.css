@@ -326,7 +326,9 @@ img.fade-in.img-loading { opacity: 0; transition: none; }
 .lang-offer-close:hover { color: #fff; background: rgba(255,255,255,.08); }
 
 /* ---- Vehicle page: contact bar on phones ---- */
-.contact-bar { position: fixed; z-index: 39; left: .75rem; right: .75rem; bottom: calc(4.9rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .6rem .6rem 1rem; border-radius: 1.1rem; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: translateY(140%); opacity: 0; transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .2s; pointer-events: none; }
+.contact-bar { position: fixed; z-index: 39; left: .75rem; right: .75rem; bottom: calc(4.9rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .6rem .6rem 1rem; border-radius: 1.1rem; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: translateY(10px); opacity: 0; transition: transform .25s ease, opacity .25s ease; pointer-events: none; }
+/* The first state is set without motion: the bar is simply there when the page opens. */
+.contact-bar.no-motion { transition: none; }
 .contact-bar.is-visible { transform: none; opacity: 1; pointer-events: auto; }
 
 /* ---- Checkbox (multi-choice filters, forms) ---- */
