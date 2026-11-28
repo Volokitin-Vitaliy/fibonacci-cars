@@ -64,6 +64,11 @@ TELEGRAM_MODERATOR_CHAT_IDS = [int(x) for x in os.getenv('TELEGRAM_MODERATOR_CHA
                                if x.lstrip('-').isdigit()]
 TELEGRAM_WEBHOOK_SECRET = os.getenv('TELEGRAM_WEBHOOK_SECRET', '')
 
+# Site analytics in the admin (see analytics/). Staff visits are not counted by default.
+ANALYTICS_DISABLED = env_bool('ANALYTICS_DISABLED', False)
+ANALYTICS_EXCLUDE_STAFF = env_bool('ANALYTICS_EXCLUDE_STAFF', True)
+ANALYTICS_RETENTION_DAYS = int(os.getenv('ANALYTICS_RETENTION_DAYS', 800))
+
 # Automatic translation of descriptions (DeepL API key; empty = off). A free key ends in ':fx'.
 DEEPL_API_KEY = os.getenv('DEEPL_API_KEY', '').strip()
 
@@ -107,6 +112,7 @@ INSTALLED_APPS = [
 
     'users',
     'cars',
+    'analytics',
     'axes',
 ]
 
@@ -122,6 +128,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'analytics.middleware.AnalyticsMiddleware',
     'axes.middleware.AxesMiddleware',  # must be last
 ]
 
@@ -200,6 +207,8 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
 
 TIME_ZONE = 'UTC'
+# Times in the admin analytics (hours of the day, days, months) are shown in this zone.
+ADMIN_TIME_ZONE = os.getenv('ADMIN_TIME_ZONE', 'Europe/Berlin')
 USE_I18N = True
 USE_TZ = True
 
@@ -348,6 +357,8 @@ UNFOLD = {
                 'items': [
                     {'title': _('Dashboard'), 'icon': 'space_dashboard',
                      'link': reverse_lazy('admin:index')},
+                    {'title': _('Analytics'), 'icon': 'monitoring',
+                     'link': reverse_lazy('admin_analytics')},
                     {'title': _('Open the site'), 'icon': 'open_in_new', 'link': '/'},
                 ],
             },

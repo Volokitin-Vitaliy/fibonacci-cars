@@ -251,3 +251,29 @@ document.querySelectorAll('[data-photos]').forEach(function (box) {
     box.querySelectorAll('[data-photo-saved] input').forEach(function (c) { c.addEventListener('change', sync); });
     sync();
 });
+
+/* Site analytics (our own, see analytics/): a 'still here' ping while the page is open,
+   for the live visitor count, and contact clicks on vehicle pages. No cookies. */
+(function () {
+    var body = document.body, pingUrl = body.dataset.aPing, eventUrl = body.dataset.aEvent, car = body.dataset.aCar || '';
+    if (!pingUrl || !navigator.sendBeacon) return;
+    function send(url, data) {
+        var form = new FormData();
+        Object.keys(data).forEach(function (k) { form.append(k, data[k]); });
+        try { navigator.sendBeacon(url, form); } catch (e) { /* never break the page */ }
+    }
+    function ping() { if (document.visibilityState === 'visible') send(pingUrl, { path: location.pathname, car: car }); }
+    ping();
+    setInterval(ping, 45000);
+    document.addEventListener('visibilitychange', ping);
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href'), kind = '';
+        if (/^tel:/i.test(href)) kind = 'phone';
+        else if (/^https:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href)) kind = 'whatsapp';
+        else if (/^https:\/\/(t\.me|telegram\.me)\//i.test(href)) kind = 'telegram';
+        else if (/^mailto:/i.test(href)) kind = 'email';
+        if (kind && car) send(eventUrl, { kind: kind, car: car });  // contacting a seller
+    }, true);
+})();

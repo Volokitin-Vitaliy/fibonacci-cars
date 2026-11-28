@@ -1,0 +1,233 @@
+{% extends "admin/base.html" %}
+{% load i18n unfold humanize %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block title %}{% trans 'Analytics' %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block branding %}{% include "unfold/helpers/site_branding.html" %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% if period.key == 'realtime' %}<meta http-equiv="refresh" content="30">{% endif %}
+<style>
+    .an-tabs { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .an-tab { padding: .45rem .9rem; border-radius: 999px; font-size: .85rem; border: 1px solid rgba(127,127,127,.25); white-space: nowrap; }
+    .an-tab:hover { border-color: rgb(var(--color-primary-500)); }
+    .an-tab.is-on { background: rgb(var(--color-primary-600)); border-color: rgb(var(--color-primary-600)); color: #fff; }
+    .an-select, .an-input { border: 1px solid rgba(127,127,127,.3); border-radius: .5rem; padding: .4rem .6rem; font-size: .85rem; background: transparent; max-width: 100%; }
+    .an-select option { color: #111; }
+    .an-kpi-value { font-size: 1.9rem; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; }
+    .an-muted { opacity: .6; font-size: .8rem; }
+    .an-up { color: rgb(16,185,129); font-size: .8rem; font-weight: 600; }
+    .an-down { color: rgb(239,68,68); font-size: .8rem; font-weight: 600; }
+    .an-live { display: inline-block; width: .6rem; height: .6rem; border-radius: 999px; background: rgb(16,185,129); box-shadow: 0 0 0 0 rgba(16,185,129,.6); animation: an-pulse 2s infinite; }
+    @keyframes an-pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); } 70% { box-shadow: 0 0 0 .6rem rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+    .an-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: .75rem; align-items: center; padding: .45rem 0; border-bottom: 1px solid rgba(127,127,127,.12); font-size: .85rem; position: relative; }
+    .an-row:last-child { border-bottom: 0; }
+    .an-bar { position: absolute; left: 0; top: 15%; bottom: 15%; background: rgba(59,130,246,.10); border-radius: .3rem; z-index: 0; }
+    .an-row > :not(.an-bar) { position: relative; z-index: 1; }
+    .an-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
+    .an-grid-2 { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); }
+    .an-grid-4 { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+    .an-chart { position: relative; height: 300px; }
+    .an-table { width: 100%; font-size: .85rem; border-collapse: collapse; }
+    .an-table th { text-align: left; font-weight: 600; opacity: .7; padding: .55rem .5rem; border-bottom: 1px solid rgba(127,127,127,.25); white-space: nowrap; }
+    .an-table td { padding: .55rem .5rem; border-bottom: 1px solid rgba(127,127,127,.12); vertical-align: middle; }
+    .an-table td.num, .an-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .an-pill { font-size: .7rem; padding: .1rem .45rem; border-radius: 999px; background: rgba(127,127,127,.15); white-space: nowrap; }
+    .an-pill-off { background: rgba(239,68,68,.15); color: rgb(248,113,113); }
+    .an-chip { display: inline-flex; gap: .35rem; align-items: center; padding: .25rem .65rem; border-radius: 999px; background: rgba(59,130,246,.12); font-size: .8rem; }
+    .an-zero { opacity: .4; }
+    .an-month-bar { height: .45rem; border-radius: 999px; background: rgb(var(--color-primary-500)); min-width: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div>
+        {% component "unfold/components/title.html" %}{% trans 'Analytics' %}{% endcomponent %}
+        <div class="an-muted mt-1">{{ period.date_from|date:"j E Y" }}{% if period.date_to != period.date_from %} — {{ period.date_to|date:"j E Y" }}{% endif %} · {{ time_zone }}</div>
+    </div>
+    {# Live: people with the site open right now #}
+    <div class="flex items-center gap-3 rounded-lg border border-base-200 dark:border-base-700 px-4 py-3">
+        <span class="an-live"></span>
+        <div>
+            <div class="text-2xl font-bold leading-none" data-online-count>{{ online.count }}</div>
+            <div class="an-muted">{% trans 'on the site now' %}</div>
+        </div>
+        {% if online.devices %}<div class="an-muted pl-3 border-l border-base-200 dark:border-base-700" data-online-devices>{% for d, n in online.devices.items %}{% if d == 'mobile' %}📱{% elif d == 'tablet' %}📟{% else %}💻{% endif %} {{ n }}&nbsp; {% endfor %}</div>{% endif %}
+    </div>
+</div>
+
+{# Period #}
+<div class="an-tabs mb-3">
+    {% for key, label, url in periods %}<a href="{{ url }}" class="an-tab {% if period.key == key %}is-on{% endif %}">{{ label }}</a>{% endfor %}
+</div>
+{% if period.key in 'month,year,custom' %}
+<form method="get" class="flex flex-wrap items-center gap-2 mb-3">
+    {% for k, v in keep_filters %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    {% if period.key == 'month' %}<input type="month" name="month" value="{{ period.month }}" class="an-input">{% endif %}
+    {% if period.key == 'year' %}<select name="year" class="an-select">{% for y in years %}<option value="{{ y }}" {% if y|stringformat:'s' == period.year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select>{% endif %}
+    {% if period.key == 'custom' %}<input type="date" name="from" value="{{ period.date_from|date:'Y-m-d' }}" class="an-input"> — <input type="date" name="to" value="{{ period.date_to|date:'Y-m-d' }}" class="an-input">{% endif %}
+    <button type="submit" class="an-tab is-on">{% trans 'Show' %}</button>
+</form>
+{% endif %}
+
+{# Filters #}
+<form method="get" class="flex flex-wrap items-center gap-2 mb-3">
+    {% for k, v in keep_period %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    {% for key, label, options in filter_fields %}
+    <select name="{{ key }}" class="an-select" aria-label="{{ label }}">
+        <option value="">{{ label }}: {% trans 'all' %}</option>
+        {% for value, text in options %}
+        <option value="{{ value }}" {% for fk, fv in filters.items %}{% if fk == key and fv == value %}selected{% endif %}{% endfor %}>{{ text }}</option>
+        {% endfor %}
+    </select>
+    {% endfor %}
+    <button type="submit" class="an-tab is-on">{% trans 'Apply' %}</button>
+</form>
+{% if active_filters %}
+<div class="flex flex-wrap items-center gap-2 mb-6">
+    {% for f in active_filters %}<a href="{{ f.remove }}" class="an-chip">{{ f.name }}: <b>{{ f.value }}</b> ✕</a>{% endfor %}
+    <a href="{{ clear_filters }}" class="an-muted underline">{% trans 'Reset filters' %}</a>
+</div>
+{% else %}<div class="mb-6"></div>{% endif %}
+
+{# Key numbers, compared with the same length of time before #}
+<div class="an-grid mb-6">
+    {% for k in kpis %}
+        {% component "unfold/components/card.html" %}
+            <div class="an-muted uppercase">{{ k.title }}</div>
+            <div class="an-kpi-value mt-1">{{ k.value|intcomma }}{{ k.suffix }}</div>
+            <div class="mt-1">
+                {% if k.change is not None %}<span class="{% if k.change >= 0 %}an-up{% else %}an-down{% endif %}">{% if k.change >= 0 %}▲{% else %}▼{% endif %} {{ k.change }}%</span>{% endif %}
+                <span class="an-muted">{% trans 'before' %}: {{ k.previous|intcomma }}{{ k.suffix }}</span>
+            </div>
+            {% if k.hint %}<div class="an-muted mt-1">{{ k.hint }}</div>{% endif %}
+        {% endcomponent %}
+    {% endfor %}
+</div>
+
+{% trans 'Visitors and page views' as t_chart %}
+{% component "unfold/components/card.html" with title=t_chart class="mb-6" %}
+    <div class="an-chart">{% component "unfold/components/chart/line.html" with data=chart_data options=chart_options class="h-full" %}{% endcomponent %}</div>
+{% endcomponent %}
+
+{# Vehicles: from the most viewed to the ones nobody opens #}
+{% trans 'Vehicles by views' as t_cars %}
+{% component "unfold/components/card.html" with title=t_cars class="mb-6" %}
+    <div class="an-tabs mb-4">
+        {% for key, label, url in car_sorts %}<a href="{{ url }}" class="an-tab {% if cars_sort == key %}is-on{% endif %}">{{ label }}</a>{% endfor %}
+    </div>
+    <div class="overflow-x-auto">
+    <table class="an-table">
+        <thead><tr>
+            <th>#</th><th>{% trans 'Vehicle' %}</th><th class="num">{% trans 'Views' %}</th><th class="num">{% trans 'Visitors' %}</th>
+            <th class="num">{% trans 'Contacts' %}</th><th class="num">{% trans 'Contact rate' %}</th><th class="num">{% trans 'Favorites' %}</th>
+            <th class="num">{% trans 'Price' %}</th><th>{% trans 'Last viewed' %}</th>
+        </tr></thead>
+        <tbody>
+        {% for car in cars %}
+            <tr class="{% if not car.views %}an-zero{% endif %}">
+                <td class="an-muted">{{ forloop.counter }}</td>
+                <td>
+                    <a href="{% url 'admin:cars_car_change' car.pk %}" class="font-semibold text-primary-600">{{ car.make.name }} {{ car.model|truncatechars:40 }}</a>
+                    <a href="{{ car.get_absolute_url }}" target="_blank" class="an-muted" title="{% trans 'Open on the site' %}">↗</a>
+                    <div class="flex gap-1 mt-0.5">
+                        <span class="an-pill">{% if car.is_imported %}Hollmann{% else %}{% trans 'Private' %}{% endif %}</span>
+                        {% if not car.on_site %}<span class="an-pill an-pill-off">{% trans 'not on the site' %}</span>{% endif %}
+                    </div>
+                </td>
+                <td class="num font-semibold">{{ car.views|intcomma }}</td>
+                <td class="num">{{ car.visitors|intcomma }}</td>
+                <td class="num">{{ car.contacts|intcomma }}</td>
+                <td class="num">{% if car.visitors %}{{ car.contact_rate }}%{% else %}—{% endif %}</td>
+                <td class="num">{{ car.favorites|intcomma }}</td>
+                <td class="num whitespace-nowrap">{{ car.currency_symbol }}{{ car.main_price|floatformat:"0g" }}</td>
+                <td class="an-muted whitespace-nowrap">{% if car.last_view %}{{ car.last_view|naturaltime }}{% else %}{% trans 'never' %}{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="9" class="an-muted">{% trans 'No data for this period yet.' %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% if cars_total > cars|length %}<a href="{{ cars_all_url }}" class="an-tab inline-block mt-4">{% blocktrans with n=cars_total %}Show all {{ n }}{% endblocktrans %}</a>
+    {% elif cars_all %}<a href="{{ cars_less_url }}" class="an-tab inline-block mt-4">{% trans 'Show fewer' %}</a>{% endif %}
+{% endcomponent %}
+
+{# Where visitors come from, who they are #}
+<div class="an-grid-4 mb-6">
+    {% for title, rows, key in tables %}
+        {% component "unfold/components/card.html" with title=title %}
+            {% for r in rows %}
+                <div class="an-row">
+                    <span class="an-bar" style="width: {{ r.share }}%"></span>
+                    <span class="truncate">{% if r.filter %}<a href="{{ r.filter }}" class="hover:underline">{{ r.label }}</a>{% else %}{{ r.label }}{% endif %}</span>
+                    <span class="font-semibold">{{ r.visitors|intcomma }}</span>
+                    <span class="an-muted w-10 text-right">{{ r.share }}%</span>
+                </div>
+            {% empty %}
+                <div class="an-muted">{% trans 'No data' %}</div>
+            {% endfor %}
+        {% endcomponent %}
+    {% endfor %}
+</div>
+
+<div class="an-grid-2 mb-6">
+    {% trans 'Most visited pages' as t_pages %}
+    {% component "unfold/components/card.html" with title=t_pages %}
+        {% for r in top_paths %}
+            <div class="an-row">
+                <span class="an-bar" style="width: {{ r.share }}%"></span>
+                <a href="{{ r.value }}" target="_blank" class="truncate hover:underline">{{ r.value }}</a>
+                <span class="font-semibold">{{ r.views|intcomma }}</span>
+                <span class="an-muted w-16 text-right">{{ r.visitors|intcomma }} 👤</span>
+            </div>
+        {% empty %}<div class="an-muted">{% trans 'No data' %}</div>{% endfor %}
+    {% endcomponent %}
+
+    {% trans 'Open right now' as t_now %}
+    {% component "unfold/components/card.html" with title=t_now %}
+        {% for p in online.pages %}
+            <div class="an-row"><a href="{{ p.path }}" target="_blank" class="truncate hover:underline">{{ p.path }}</a><span class="font-semibold">{{ p.n }}</span><span></span></div>
+        {% empty %}<div class="an-muted">{% trans 'Nobody on the site at the moment.' %}</div>{% endfor %}
+    {% endcomponent %}
+</div>
+
+{# Every month of the year #}
+{% blocktrans with y=months_year asvar t_months %}By month, {{ y }}{% endblocktrans %}
+{% component "unfold/components/card.html" with title=t_months class="mb-6" %}
+    <div class="overflow-x-auto">
+    <table class="an-table">
+        <thead><tr><th>{% trans 'Month' %}</th><th class="num">{% trans 'Visitors' %}</th><th></th><th class="num">{% trans 'New' %}</th>
+            <th class="num">{% trans 'Page views' %}</th><th class="num">{% trans 'Vehicle views' %}</th><th class="num">{% trans 'Contacts' %}</th></tr></thead>
+        <tbody>
+        {% for m in months %}
+            <tr class="{% if not m.visitors %}an-zero{% endif %}">
+                <td><a href="{{ m.url }}" class="hover:underline">{{ m.start|date:"F" }}</a></td>
+                <td class="num font-semibold">{{ m.visitors|intcomma }}</td>
+                <td class="w-1/4"><div class="an-month-bar" style="width: {{ m.bar }}%"></div></td>
+                <td class="num">{{ m.new|intcomma }}</td>
+                <td class="num">{{ m.pageviews|intcomma }}</td>
+                <td class="num">{{ m.car_views|intcomma }}</td>
+                <td class="num">{{ m.contacts|intcomma }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% endcomponent %}
+
+<p class="an-muted mb-10">{% blocktrans %}Visitors are counted without cookies: one person = one device and network. Your own visits as staff are not counted. Countries: IP database by DB-IP (db-ip.com).{% endblocktrans %}</p>
+
+{% if period.key != 'realtime' %}
+<script>
+    // The live counter refreshes every 20 seconds without reloading the page.
+    setInterval(function () {
+        fetch('?online=1', {credentials: 'same-origin'}).then(function (r) { return r.json(); }).then(function (d) {
+            var el = document.querySelector('[data-online-count]'); if (el) el.textContent = d.count;
+        }).catch(function () {});
+    }, 20000);
+</script>
+{% endif %}
+{% endblock %}
