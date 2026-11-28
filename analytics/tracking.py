@@ -20,7 +20,7 @@ BOTS = re.compile(
 # Referring sites grouped into named sources; anything else is shown by its domain.
 SOURCES = [
     ('Google', r'(^|\.)google\.'), ('Yandex', r'(^|\.)yandex\.|(^|\.)ya\.ru$'), ('Bing', r'(^|\.)bing\.com$'),
-    ('DuckDuckGo', r'duckduckgo\.com$'), ('Instagram', r'instagram\.com$'),
+    ('DuckDuckGo', r'duckduckgo\.com$'), ('Threads', r'(^|\.)threads\.(net|com)$'), ('Instagram', r'instagram\.com$'),
     ('Facebook', r'(^|\.)facebook\.com$|(^|\.)fb\.(com|me)$'), ('Telegram', r'(^|\.)t\.me$|telegram\.'),
     ('YouTube', r'youtube\.com$|youtu\.be$'), ('TikTok', r'tiktok\.com$'),
     ('WhatsApp', r'whatsapp\.com$|wa\.me$'), ('X / Twitter', r'(^|\.)(t\.co|twitter\.com|x\.com)$'),
@@ -77,22 +77,45 @@ def parse_agent(ua):
     return device, browser, os_name
 
 
+# In-app browsers sign their User-Agent: a visitor who opened a link inside the app,
+# where no referrer is sent, is still counted for that app.
+APP_BROWSERS = [
+    ('Threads', r'Barcelona'), ('Instagram', r'Instagram'), ('Facebook', r'FBAN|FBAV|FB_IAB|FBIOS|\[FB'), ('TikTok', r'musical_ly|BytedanceWebview|TikTok|trill_'),
+    ('YouTube', r'com\.google\.ios\.youtube|YouTube'), ('Telegram', r'Telegram'), ('LinkedIn', r'LinkedInApp'),
+    ('Snapchat', r'Snapchat'), ('X / Twitter', r'Twitter'), ('VK', r'VKAndroidApp|com\.vk\.'),
+]
+# utm_source spellings that mean the same source as the referrer names above.
+UTM_ALIASES = {
+    'threads': 'Threads', 'instagram': 'Instagram', 'insta': 'Instagram', 'ig': 'Instagram', 'facebook': 'Facebook', 'fb': 'Facebook',
+    'tiktok': 'TikTok', 'tt': 'TikTok', 'youtube': 'YouTube', 'yt': 'YouTube', 'telegram': 'Telegram',
+    'tg': 'Telegram', 'whatsapp': 'WhatsApp', 'wa': 'WhatsApp', 'google': 'Google', 'yandex': 'Yandex',
+    'twitter': 'X / Twitter', 'x': 'X / Twitter', 'linkedin': 'LinkedIn', 'vk': 'VK',
+}
+
+
 def source_of(request):
-    """(source, referrer domain): utm_source wins; links from inside the site are not a source."""
+    """(source, referrer domain): utm_source wins, then the referring site, then the app whose
+    in-app browser opened the link. Links from inside the site are not a source."""
     utm = request.GET.get('utm_source', '').strip()[:40]
     ref = request.META.get('HTTP_REFERER', '')
     host = (urlsplit(ref).hostname or '').lower().removeprefix('www.')[:100]
     own = (request.get_host().split(':')[0] or '').lower().removeprefix('www.')
-    if host == own or host in ('localhost', '127.0.0.1'):
+    internal = host == own or host in ('localhost', '127.0.0.1')
+    if internal:
         host = ''
     if utm:
-        return utm, host
-    if not host:
-        return '', ''
-    for name, pattern in SOURCES:
-        if re.search(pattern, host):
-            return name, host
-    return host[:40], host
+        return UTM_ALIASES.get(utm.lower(), utm), host
+    if host:
+        for name, pattern in SOURCES:
+            if re.search(pattern, host):
+                return name, host
+        return host[:40], host
+    if not internal and not ref:
+        ua = request.META.get('HTTP_USER_AGENT', '')
+        for name, pattern in APP_BROWSERS:
+            if re.search(pattern, ua):
+                return name, ''
+    return '', ''
 
 
 # --- Country from the IP (DB-IP Lite database, updated monthly by update_geoip) ---
