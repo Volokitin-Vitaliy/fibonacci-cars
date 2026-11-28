@@ -10,7 +10,7 @@ from .models import Car, Make
 def navigation(request):
     if request.path.startswith('/' + settings.ADMIN_URL):
         return {}
-    visible = Car.objects.visible()
+    visible = Car.objects.listed()
     makes = (Make.objects
              .annotate(n=Count('cars', filter=Q(cars__in=visible)))
              .filter(n__gt=0))

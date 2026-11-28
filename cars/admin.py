@@ -47,7 +47,7 @@ class CarAdmin(ModelAdmin):
                     'status_badge', 'show_on_home', 'home_order', 'active_until', 'owner', 'created_at')
     list_display_links = ('title_with_make',)
     list_editable = ('show_on_home', 'home_order')
-    list_filter = (ModerationFilter, 'show_on_home', 'source', 'status', 'is_published', 'is_new',
+    list_filter = (ModerationFilter, 'show_on_home', 'source', 'status', 'is_published', 'is_new', 'hidden_from_catalog',
                    'fuel', 'accident', 'make')
     search_fields = ('model', 'make__name', 'external_id', 'owner__email', 'contact_phone')
     autocomplete_fields = ('make',)
@@ -69,7 +69,7 @@ class CarAdmin(ModelAdmin):
         (_('Contacts'), {'fields': ('owner', 'contact_name', 'contact_phone',
                                     'contact_whatsapp', 'contact_telegram')}),
         (_('Publication'), {'fields': ('source', 'status', ('activated_at', 'active_until'),
-                                       'is_published', 'is_new')}),
+                                       'is_published', 'is_new', 'hidden_from_catalog')}),
         (_('Home page'), {'fields': (('show_on_home', 'home_order'),),
                           'description': HOME_HELP}),
         (_('Import'), {'classes': ('collapse',),

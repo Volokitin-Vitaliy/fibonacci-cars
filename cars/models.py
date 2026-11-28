@@ -81,9 +81,15 @@ class CarQuerySet(models.QuerySet):
                 moderation=Car.Moderation.APPROVED)
         )
 
+    def listed(self):
+        """Visible cars that are shown in the catalog, on the home page, in search and the
+        sitemap. A car hidden from the catalog (e.g. a test listing) still lives its normal
+        life (period, reminders, expiry) and opens by its direct link."""
+        return self.visible().filter(hidden_from_catalog=False)
+
     def new_offers(self):
         recent = timezone.now() - timedelta(days=14)
-        return self.visible().filter(
+        return self.listed().filter(
             Q(source=Car.Source.HOLLMANN, is_new=True)
             | Q(source=Car.Source.USER, activated_at__gte=recent)
         )
@@ -201,6 +207,9 @@ class Car(models.Model):
     source_url = models.URLField(blank=True)
     is_published = models.BooleanField(_('published'), default=True)
     is_new = models.BooleanField(_('new offer'), default=False)
+    hidden_from_catalog = models.BooleanField(
+        _('hidden from the catalog'), default=False,
+        help_text=_('Works as a normal listing and opens by its link, but is not shown in the catalog, on the home page, in search or to Google. For test listings.'))  # noqa: E501
     # Hero slideshow on the home page, chosen in the admin (lower number first).
     show_on_home = models.BooleanField(_('show on the home page'), default=False, db_index=True)
     home_order = models.PositiveSmallIntegerField(_('order on the home page'), default=0)

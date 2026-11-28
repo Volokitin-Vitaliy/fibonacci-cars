@@ -85,7 +85,7 @@ def choose_language(request):
 def home(request):
     from . import partnership
 
-    visible = Car.objects.visible()
+    visible = Car.objects.listed()
     new_offers = list(with_cover(Car.objects.new_offers()).order_by('-created_at')[:10])
     latest = [] if new_offers else list(with_cover(visible).order_by('-created_at')[:10])
     # Hero: the cars picked in the admin ("show on the home page"); without a pick,
@@ -108,7 +108,7 @@ def car_list(request, make_slug=None, fuel=None, new=False):
     """Catalog. Fuel types and gearboxes are multi-choice (checkboxes), make is a single
     choice; all combine with each other and with the filters, e.g. diesel + PHEV + BMW."""
     # 'New offers' is the whole catalog with the new ones first, so people keep scrolling on.
-    base = Car.objects.visible()
+    base = Car.objects.listed()
     base_url = reverse('cars:new') if new else reverse('cars:list')
 
     fuels = [f for f in request.GET.getlist('fuel') if f in Car.Fuel.values]
@@ -243,7 +243,7 @@ def search_suggest(request):
     query = ' '.join(request.GET.get('q', '').split())[:100]
     if len(query) < 2:
         return JsonResponse({'results': []})
-    found = search.search(Car.objects.visible(), query)
+    found = search.search(Car.objects.listed(), query)
     cars = with_cover(found).order_by('-is_new', '-created_at', '-pk')[:6]
     results = []
     for car in cars:
@@ -263,7 +263,7 @@ def search_suggest(request):
 def similar_cars(car, limit=8):
     """Cars a buyer of this one would also look at: close in price, preferring the same
     make, then the same category. Up to half the list comes from the same make."""
-    others = with_cover(Car.objects.visible().exclude(pk=car.pk))
+    others = with_cover(Car.objects.listed().exclude(pk=car.pk))
     if not car.price_eur:
         return list(others.filter(make=car.make).order_by('-created_at')[:limit])
     price = car.price_eur
@@ -296,7 +296,8 @@ def car_detail(request, pk):
     desc, desc_is_html, desc_original = car.description_for(get_language())
     return render(request, 'cars/detail.html', {
         'desc': desc, 'desc_is_html': desc_is_html, 'desc_original': desc_original,
-        'structured_data': seo.car_data(request, car, photos) if is_public else None,
+        'structured_data': seo.car_data(request, car, photos) if is_public and not car.hidden_from_catalog else None,
+        'noindex': car.hidden_from_catalog or not is_public,
         'wa_query': 'text=' + quote(message, safe=''),
         'car': car, 'photos': photos, 'similar': similar_cars(car),
         'photo_urls_json': json.dumps([p.large_url for p in photos]),
