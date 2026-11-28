@@ -27,7 +27,8 @@
 }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
-html { scroll-behavior: smooth; }
+/* No global smooth scrolling: it made the browser glide the page into place on reload / Back
+   (it looked like a jump). In-page links scroll smoothly through site.js instead. */
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 body::before { /* soft blue light at the top of every page */
     content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
@@ -178,7 +179,7 @@ fieldset { min-width: 0; }
 /* Hidden only while waiting below the screen (site.js); hiding is instant, appearing animates. */
 .js [data-reveal] { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
 .js [data-reveal].reveal-pending { opacity: 0; transform: translateY(14px); transition: none; }
-@media (prefers-reduced-motion: reduce) { .js [data-reveal].reveal-pending { opacity: 1; transform: none; } .js [data-reveal] { transition: none; } html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) { .js [data-reveal].reveal-pending { opacity: 1; transform: none; } .js [data-reveal] { transition: none; } }
 
 /* ---- Images fade in over a shimmer ---- */
 .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }

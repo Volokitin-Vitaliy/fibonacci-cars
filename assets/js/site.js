@@ -288,3 +288,17 @@ document.querySelectorAll('[data-photos]').forEach(function (box) {
         if (kind && car) send(eventUrl, { kind: kind, car: car });  // contacting a seller
     }, true);
 })();
+
+/* In-page links (All contacts, Back to top) scroll smoothly; page loads never do. */
+document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || a.getAttribute('href').length < 2) return;
+    var id = a.getAttribute('href').slice(1);
+    var target = id === 'top' ? document.body : document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (id === 'top') window.scrollTo({top: 0, behavior: reduce ? 'auto' : 'smooth'});
+    else target.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+    if (history.replaceState) history.replaceState(null, '', '#' + id);
+});
