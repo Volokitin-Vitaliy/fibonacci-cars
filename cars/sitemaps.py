@@ -35,7 +35,7 @@ class MakeSitemap(Sitemap):
     changefreq = 'daily'
 
     def items(self):
-        return Make.objects.filter(cars__in=Car.objects.visible()).distinct()
+        return Make.objects.filter(cars__in=Car.objects.listed()).distinct()
 
 
 class CarSitemap(Sitemap):
@@ -44,7 +44,7 @@ class CarSitemap(Sitemap):
     changefreq = 'weekly'
 
     def items(self):
-        return Car.objects.visible().order_by('pk')
+        return Car.objects.listed().order_by('pk')
 
     def lastmod(self, car):
         return car.updated_at

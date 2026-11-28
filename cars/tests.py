@@ -1669,3 +1669,19 @@ class NewOffersPageTests(TestCase):
         by_price = self.client.get('/en/new/?sort=price-ascending')   # an explicit sort is kept as chosen
         self.assertNotContains(by_price, 'More vehicles')
         self.assertEqual(len(self.client.get('/en/vehicles/').context['page']), 2)
+
+
+class HiddenFromCatalogTests(TestCase):
+    def test_hidden_listing_lives_normally_but_is_not_listed(self):
+        owner = make_user()
+        car = make_listing(owner)
+        Car.objects.filter(pk=car.pk).update(model='Secret Test', hidden_from_catalog=True, show_on_home=True)
+        self.assertTrue(Car.objects.visible().filter(pk=car.pk).exists())     # active as usual
+        self.assertFalse(Car.objects.listed().filter(pk=car.pk).exists())
+        for url in ('/en/', '/en/vehicles/', '/en/new/', '/sitemap.xml'):
+            self.assertNotContains(self.client.get(url), 'Secret Test', msg_prefix=url)
+        self.assertEqual(self.client.get('/en/search/suggest/', {'q': 'secret'}).json()['results'], [])
+        page = self.client.get(f'/en/vehicle/{car.pk}/')                       # opens by its link
+        self.assertContains(page, 'Secret Test')
+        self.assertContains(page, '<meta name="robots" content="noindex">')
+        self.assertNotContains(page, 'application/ld+json')
