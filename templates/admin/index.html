@@ -74,12 +74,16 @@
             {% if last_import %}
                 <div class="fb-row">
                     <span>{% trans 'Last run' %}</span>
-                    <span class="fb-pill {% if last_import.ok %}fb-pill-ok{% else %}fb-pill-bad{% endif %}">{% if last_import.ok %}OK{% else %}{% trans 'Error' %}{% endif %}</span>
+                    {% if last_import.ok %}<span class="fb-pill fb-pill-ok">OK</span>
+                    {% elif last_import.interrupted %}<span class="fb-pill">{% trans 'Interrupted' %}</span>
+                    {% elif not last_import.finished_at %}<span class="fb-pill">{% trans 'Running…' %}</span>
+                    {% else %}<span class="fb-pill fb-pill-bad">{% trans 'Error' %}</span>{% endif %}
                 </div>
                 <div class="fb-row"><span>{% trans 'Started' %}</span><span class="fb-muted">{{ last_import.started_at|date:"d.m.Y H:i" }}</span></div>
                 <div class="fb-row"><span>{% trans 'New / updated' %}</span><span>{{ last_import.created }} / {{ last_import.updated }}</span></div>
                 <div class="fb-row"><span>{% trans 'Removed from site' %}</span><span>{{ last_import.unpublished }}</span></div>
-                {% if last_import.error %}<div class="fb-muted mt-1 truncate">{{ last_import.error }}</div>{% endif %}
+                {% if last_import.interrupted %}<div class="fb-muted mt-1">{% trans 'Stopped by a site update; it runs again by itself.' %}</div>
+                {% elif last_import.error %}<div class="fb-muted mt-1 truncate">{{ last_import.error }}</div>{% endif %}
             {% else %}
                 <div class="fb-empty">{% trans 'The import has not run yet.' %}</div>
             {% endif %}

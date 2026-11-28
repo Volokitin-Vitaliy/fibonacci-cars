@@ -1799,3 +1799,44 @@ class ChannelTests(TestCase):
         self.client.post(reverse('admin:cars_car_changelist'), {'action': 'post_to_channel', '_selected_action': [car.pk]})
         self.assertEqual(len(self.sent), 1)
         self.assertEqual(self.client.get(reverse('admin:cars_channelpost_changelist')).status_code, 200)
+
+
+class SchedulerTests(TestCase):
+    def command(self):
+        from cars.management.commands.run_scheduler import Command
+        return Command(stdout=StringIO(), stderr=StringIO())
+
+    def test_cut_off_import_is_marked_interrupted_and_redone(self):
+        from cars.models import ImportRun
+        run = ImportRun.objects.create()                       # killed by a restart: never finished
+        cmd = self.command()
+        cmd.mark_interrupted()
+        run.refresh_from_db()
+        self.assertTrue(run.interrupted and run.finished_at)
+        self.assertTrue(cmd.daily_due(timedelta(hours=24)))     # nothing finished: run now
+
+    def test_restart_does_not_rerun_a_fresh_import(self):
+        from cars.models import ImportRun
+        ImportRun.objects.create(ok=True, finished_at=timezone.now())
+        cmd = self.command()
+        self.assertFalse(cmd.daily_due(timedelta(hours=24)))
+        ImportRun.objects.update(started_at=timezone.now() - timedelta(hours=25))
+        self.assertTrue(cmd.daily_due(timedelta(hours=24)))
+
+    def test_failed_import_is_retried_after_two_hours(self):
+        from cars.models import ImportRun
+        ImportRun.objects.create(ok=False, error='HTTPError 503', finished_at=timezone.now())
+        cmd = self.command()
+        self.assertFalse(cmd.daily_due(timedelta(hours=24)))
+        ImportRun.objects.update(started_at=timezone.now() - timedelta(hours=3))
+        self.assertTrue(cmd.daily_due(timedelta(hours=24)))
+
+    def test_dashboard_shows_interrupted(self):
+        from cars.models import ImportRun
+        ImportRun.objects.create(error=ImportRun.INTERRUPTED, finished_at=timezone.now())
+        admin = CustomUser.objects.create_superuser('sch@example.com', 'S', 'C', 'Sch-pass-12345')
+        self.client.force_login(admin)
+        self.client.cookies.load(LANG)
+        page = self.client.get(reverse('admin:index'))
+        self.assertContains(page, 'Interrupted')
+        self.assertContains(page, 'Stopped by a site update')
