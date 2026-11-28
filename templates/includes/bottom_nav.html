@@ -1,7 +1,7 @@
 {% load i18n %}{% with name=request.resolver_match.url_name app=request.resolver_match.app_name %}
 {# Floating bottom menu: a full-width bar on phones, a centred pill on desktop. #}
 <nav aria-label="{% trans 'Main menu' %}"
-     class="fixed z-40 inset-x-0 bottom-0 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:bottom-5
+     class="bottom-nav fixed z-40 inset-x-0 bottom-0 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:bottom-5
             bg-black/95 lg:bg-black/80 backdrop-blur-xl border-t border-neutral-800 lg:border lg:rounded-full lg:shadow-2xl lg:shadow-black/70"
      style="padding-bottom: env(safe-area-inset-bottom);">
     <ul class="grid grid-cols-5 lg:flex lg:items-center lg:gap-1 lg:px-2 lg:py-2">

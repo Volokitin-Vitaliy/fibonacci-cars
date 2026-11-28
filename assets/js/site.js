@@ -100,7 +100,10 @@ document.addEventListener('submit', function (e) {
     // Header gets more solid once the page is scrolled.
     var header = document.querySelector('.site-header');
     var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
-    onScroll(); window.addEventListener('scroll', onScroll, {passive: true});
+    // The first state (e.g. a page reloaded halfway down) is set without the fade.
+    header.classList.add('no-motion'); onScroll(); header.getBoundingClientRect();
+    requestAnimationFrame(function () { header.classList.remove('no-motion'); });
+    window.addEventListener('scroll', onScroll, {passive: true});
 
     // Thin loading bar while the next page loads.
     var bar = document.getElementById('page-progress');
@@ -146,13 +149,6 @@ document.addEventListener('submit', function (e) {
         document.querySelectorAll('[data-count]').forEach(function (el) { el.textContent = el.dataset.count; });
     }
 
-    // Photos still loading fade in when they arrive; ones already in the cache never blink.
-    document.querySelectorAll('img.fade-in').forEach(function (img) {
-        if (img.complete) return;
-        img.classList.add('img-loading');
-        var done = function () { img.classList.remove('img-loading'); };
-        img.addEventListener('load', done); img.addEventListener('error', done);
-    });
 
     // Light that follows the cursor on primary buttons.
     document.addEventListener('pointermove', function (e) {

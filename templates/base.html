@@ -24,6 +24,7 @@
     <script nonce="{{ CSP_NONCE }}">document.documentElement.classList.add('js');</script>
     {# Fonts come from our own server; the main text font starts loading at once #}
     <link rel="preload" href="{% static 'fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'fonts/unbounded-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
     {% if LANG == 'ru' %}<link rel="preload" href="{% static 'fonts/inter-cyrillic-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>{% endif %}
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     {% if noindex %}<meta name="robots" content="noindex">{% endif %}

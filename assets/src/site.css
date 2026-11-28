@@ -1,19 +1,21 @@
 /* Source of assets/css/site.css — build with: npm run build:css */
 
+/* font-display: optional: a font that is not ready in time is used from the next page on,
+   instead of swapping on screen (letters visibly changing shape and width). */
 /* Fonts served from our own server (no Google Fonts: faster, and visitors' IPs stay with us).
    Inter and Manrope are variable fonts (all weights in one file); files: @fontsource, OFL licence. */
-@font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../fonts/inter-cyrillic-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
-@font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../fonts/inter-cyrillic-wght-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
-@font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../fonts/inter-latin-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../fonts/inter-latin-wght-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Manrope'; font-style: normal; font-display: swap; font-weight: 200 800; src: url(../fonts/manrope-cyrillic-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
-@font-face { font-family: 'Manrope'; font-style: normal; font-display: swap; font-weight: 200 800; src: url(../fonts/manrope-cyrillic-wght-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
-@font-face { font-family: 'Manrope'; font-style: normal; font-display: swap; font-weight: 200 800; src: url(../fonts/manrope-latin-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Manrope'; font-style: normal; font-display: swap; font-weight: 200 800; src: url(../fonts/manrope-latin-wght-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 600; src: url(../fonts/unbounded-cyrillic-ext-600-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
-@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 600; src: url(../fonts/unbounded-cyrillic-600-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
-@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 600; src: url(../fonts/unbounded-latin-ext-600-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 600; src: url(../fonts/unbounded-latin-600-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-display: optional; font-weight: 100 900; src: url(../fonts/inter-cyrillic-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
+@font-face { font-family: 'Inter'; font-style: normal; font-display: optional; font-weight: 100 900; src: url(../fonts/inter-cyrillic-wght-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+@font-face { font-family: 'Inter'; font-style: normal; font-display: optional; font-weight: 100 900; src: url(../fonts/inter-latin-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-display: optional; font-weight: 100 900; src: url(../fonts/inter-latin-wght-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Manrope'; font-style: normal; font-display: optional; font-weight: 200 800; src: url(../fonts/manrope-cyrillic-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
+@font-face { font-family: 'Manrope'; font-style: normal; font-display: optional; font-weight: 200 800; src: url(../fonts/manrope-cyrillic-wght-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+@font-face { font-family: 'Manrope'; font-style: normal; font-display: optional; font-weight: 200 800; src: url(../fonts/manrope-latin-ext-wght-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Manrope'; font-style: normal; font-display: optional; font-weight: 200 800; src: url(../fonts/manrope-latin-wght-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: optional; font-weight: 600; src: url(../fonts/unbounded-cyrillic-ext-600-normal.woff2) format('woff2'); unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: optional; font-weight: 600; src: url(../fonts/unbounded-cyrillic-600-normal.woff2) format('woff2'); unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: optional; font-weight: 600; src: url(../fonts/unbounded-latin-ext-600-normal.woff2) format('woff2'); unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: optional; font-weight: 600; src: url(../fonts/unbounded-latin-600-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 
 /* Our own styles come first, as they did before Tailwind's utilities (same cascade). */
 /* ---- Design tokens: black & white with the logo's blue as the accent ---- */
@@ -27,6 +29,22 @@
 }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
+/* Phones (Safari's floating bars): the header is solid and continues up under the status
+   bar, the bottom menu continues down under Safari's address bar, so the page never shows
+   through those gaps. Safari also tints its bars with these solid colours. */
+@media (max-width: 1023px) {
+    .site-header { background-color: #08080a; box-shadow: 0 -300px 0 0 #08080a; }
+    .bottom-nav { background-color: #000; box-shadow: 0 300px 0 0 #000; }
+}
+/* No grey flash when tapping links and buttons on phones; the page does not shift sideways
+   when an overlay hides the scrollbar (Windows). */
+html { -webkit-tap-highlight-color: transparent; scrollbar-gutter: stable; }
+/* iPhone zooms the page into any field with text smaller than 16px: keep fields at 16px on
+   touch screens, so tapping a field never zooms or shifts the page. */
+@media (pointer: coarse), (max-width: 1023px) {
+    input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), select, textarea { font-size: max(16px, 1em) !important; }
+}
+.site-header.no-motion::before, .site-header.no-motion::after { transition: none; }
 /* No global smooth scrolling: it made the browser glide the page into place on reload / Back
    (it looked like a jump). In-page links scroll smoothly through site.js instead. */
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
@@ -184,8 +202,8 @@ fieldset { min-width: 0; }
 /* ---- Images fade in over a shimmer ---- */
 .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { to { background-position: -150% 0; } }
-img.fade-in { transition: opacity .5s ease; }
-img.fade-in.img-loading { opacity: 0; transition: none; }
+/* Photos are shown as soon as they arrive, no fade from the dark card background
+   (that read as a black flash). */
 
 /* ---- Horizontal scrollers ---- */
 .scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; /* sideways only: a vertical swipe scrolls the page */
@@ -326,7 +344,9 @@ img.fade-in.img-loading { opacity: 0; transition: none; }
 .lang-offer-close:hover { color: #fff; background: rgba(255,255,255,.08); }
 
 /* ---- Vehicle page: contact bar on phones ---- */
-.contact-bar { position: fixed; z-index: 39; left: .75rem; right: .75rem; bottom: calc(4.9rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .6rem .6rem 1rem; border-radius: 1.1rem; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: translateY(140%); opacity: 0; transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .2s; pointer-events: none; }
+.contact-bar { position: fixed; z-index: 39; left: .75rem; right: .75rem; bottom: calc(4.9rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .6rem .6rem 1rem; border-radius: 1.1rem; background: rgba(14,14,16,.96); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: translateY(10px); opacity: 0; transition: transform .25s ease, opacity .25s ease; pointer-events: none; }
+/* The first state is set without motion: the bar is simply there when the page opens. */
+.contact-bar.no-motion { transition: none; }
 .contact-bar.is-visible { transform: none; opacity: 1; pointer-events: auto; }
 
 /* ---- Checkbox (multi-choice filters, forms) ---- */
