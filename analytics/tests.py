@@ -45,7 +45,7 @@ class TrackingTests(TestCase):
         first, second = PageView.objects.order_by('pk')
         self.assertEqual(first.visitor, second.visitor)
         self.assertEqual((first.is_new, second.is_new), (True, False))
-        self.assertEqual((first.kind, second.kind, second.source), ('home', 'catalog', 'instagram'))
+        self.assertEqual((first.kind, second.kind, second.source), ('home', 'catalog', 'Instagram'))
         self.client.get('/ru/', HTTP_USER_AGENT=DESKTOP, HTTP_X_REAL_IP='9.9.9.9')
         self.assertEqual(PageView.objects.values('visitor').distinct().count(), 2)
 
@@ -107,6 +107,23 @@ class TrackingTests(TestCase):
         self.client.get('/ru/', HTTP_USER_AGENT=DESKTOP, HTTP_CF_IPCOUNTRY='AE')
         self.client.get('/ru/', HTTP_USER_AGENT=DESKTOP, HTTP_CF_IPCOUNTRY='XX', HTTP_X_REAL_IP='10.0.0.1')
         self.assertEqual(list(PageView.objects.order_by('pk').values_list('country', flat=True))[0], 'AE')
+
+    def test_apps_are_recognised_without_a_referrer(self):
+        cases = [
+            ('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Instagram 312.0.0', 'Instagram'),
+            ('Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/450.0]', 'Facebook'),
+            ('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148 musical_ly_33.1.0 BytedanceWebview/d8a21c6', 'TikTok'),
+            ('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148 com.google.ios.youtube/19.0', 'YouTube'),
+            ('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148 Barcelona 289.0.0.77.109', 'Threads'),
+        ]
+        for ua, name in cases:
+            self.assertEqual(tracking.source_of(RequestFactory().get('/', HTTP_USER_AGENT=ua))[0], name, name)
+        inside = RequestFactory().get('/', HTTP_USER_AGENT=cases[0][0], HTTP_REFERER='http://testserver/ru/')
+        self.assertEqual(tracking.source_of(inside)[0], '')          # moving inside the site is not a new visit
+        tagged = RequestFactory().get('/?utm_source=insta', HTTP_USER_AGENT=DESKTOP)
+        self.assertEqual(tracking.source_of(tagged)[0], 'Instagram')  # utm spellings merge with the app name
+        self.assertEqual(tracking.source_of(RequestFactory().get('/?utm_source=tiktok'))[0], 'TikTok')
+        self.assertEqual(tracking.source_of(RequestFactory().get('/', HTTP_REFERER='https://l.threads.net/?u=x'))[0], 'Threads')
 
     def test_country_is_empty_without_the_database(self):
         with override_settings(MEDIA_ROOT='/tmp/fibonacci-no-geoip'):

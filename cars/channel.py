@@ -69,7 +69,7 @@ def caption(car, sold=False):
             lines.append(' · '.join(tech))
         if car.color:
             lines.append(f'🎨 {e(car.color)}')
-        url = settings.SITE_URL + car.get_absolute_url()
+        url = settings.SITE_URL + car.get_absolute_url() + '?utm_source=telegram'  # counted in analytics
         lines += ['', f'👉 <a href="{e(url)}">Смотреть подробнее</a>']
     text = '\n'.join(lines)
     return (SOLD + '\n\n' + text) if sold else text
