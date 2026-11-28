@@ -234,7 +234,7 @@ WAYFORPAY_MERCHANT_ACCOUNT = os.getenv('WAYFORPAY_MERCHANT_ACCOUNT', '')
 WAYFORPAY_SECRET_KEY = os.getenv('WAYFORPAY_SECRET_KEY', '')
 WAYFORPAY_DOMAIN = os.getenv('WAYFORPAY_DOMAIN', '')  # defaults to the SITE_URL host
 WAYFORPAY_CURRENCY = os.getenv('WAYFORPAY_CURRENCY', 'EUR')
-LISTING_MAX_PHOTOS = 10
+LISTING_MAX_PHOTOS = 15
 # New and edited user listings wait for an admin to approve them.
 LISTING_MODERATION = env_bool('LISTING_MODERATION', True)
 # Owners get an email this many days before their listing expires.

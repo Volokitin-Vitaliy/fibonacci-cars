@@ -37,20 +37,30 @@ def send_expiry_reminders():
     return sent
 
 
-def submit_for_review(car):
-    """Put a new or edited user listing into moderation (if enabled)."""
+def submit_for_review(car, changes=None, edited=False):
+    """Put a new or edited user listing into moderation (if enabled). For an edit the
+    moderator is told what kind it is (an approved listing changed, a fix after rejection,
+    a change while waiting) and what was changed."""
     if not settings.LISTING_MODERATION:
         car.moderation = Car.Moderation.APPROVED
         car.save(update_fields=['moderation', 'updated_at'])
         return False
     resubmitted = car.moderation == Car.Moderation.REJECTED
+    if resubmitted:
+        kind = 'resubmitted'
+    elif edited and car.moderation == Car.Moderation.APPROVED:
+        kind = 'edited'
+    elif edited:
+        kind = 'updated'
+    else:
+        kind = 'new'
     if resubmitted and car.rejection_reason:
         car.previous_rejection_reason = car.rejection_reason
     car.moderation = Car.Moderation.PENDING
     car.rejection_reason = ''
     car.save(update_fields=['moderation', 'rejection_reason', 'previous_rejection_reason', 'updated_at'])
     notifications.notify_moderators(car)
-    telegram.notify_new_listing(car, resubmitted=resubmitted)
+    telegram.notify_new_listing(car, kind, changes)
     return True
 
 

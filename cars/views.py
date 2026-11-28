@@ -19,7 +19,7 @@ from django_countries.fields import Country
 
 from users import captcha
 
-from . import favorites, payments, search, seo, services
+from . import favorites, payments, search, seo, services, telegram
 from .forms import CarFilterForm, CarForm
 from .models import Car, CarPhoto, Make, Payment
 
@@ -45,7 +45,6 @@ def telegram_webhook(request):
     """Updates from the Telegram moderation bot (see cars/telegram.py)."""
     from hmac import compare_digest
 
-    from . import telegram
     if not telegram.bot_configured() or not compare_digest(
             request.headers.get('X-Telegram-Bot-Api-Secret-Token', ''), telegram.webhook_secret()):
         return HttpResponse(status=403)
@@ -359,7 +358,8 @@ def car_create(request):
     return render(request, 'cars/cabinet/car_form.html', {
         'form': form, 'section': 'add', 'duration': settings.LISTING_DURATION_DAYS,
         'moderation': settings.LISTING_MODERATION,
-        'payment_required': payments.required_for(request.user), 'listing_price': payments.price()})
+        'payment_required': payments.required_for(request.user), 'listing_price': payments.price(),
+        'max_photos': settings.LISTING_MAX_PHOTOS})
 
 
 def _own_car(request, pk):
@@ -369,21 +369,24 @@ def _own_car(request, pk):
 @login_required
 def car_edit(request, pk):
     car = _own_car(request, pk)
+    before = Car.objects.get(pk=car.pk)  # the form changes `car` while validating
     form = CarForm(request.POST or None, request.FILES or None, instance=car)
     if request.method == 'POST' and form.is_valid():
+        photos_removed = form.photos_to_remove().count()
         form.save()
-        remove = request.POST.getlist('remove_photo')
-        if remove:
-            car.photos.filter(pk__in=remove).delete()
+        changed = [name for name in CarForm.Meta.fields if getattr(before, name) != getattr(car, name)]
+        changes = telegram.describe_changes(before, car, changed, len(form.cleaned_data.get('photos') or []),
+                                            photos_removed)
         if car.moderation == Car.Moderation.AWAITING_PAYMENT:
             messages.success(request, _('Listing updated.'))
-        elif services.submit_for_review(car):
+        elif services.submit_for_review(car, changes=changes, edited=True):
             messages.success(request, _('Listing updated and sent for review.'))
         else:
             messages.success(request, _('Listing updated.'))
         return redirect('cars:my_cars')
     return render(request, 'cars/cabinet/car_form.html', {
         'form': form, 'car': car, 'photos': car.photos.all(), 'section': 'cars',
+        'max_photos': settings.LISTING_MAX_PHOTOS, 'removed_photos': request.POST.getlist('remove_photo'),
     })
 
 

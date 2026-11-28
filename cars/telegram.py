@@ -66,12 +66,65 @@ def _admin_url(car):
     return _absolute(reverse('admin:cars_car_change', args=[car.pk]))
 
 
-def listing_text(car, resubmitted=False):
+HEADS = {
+    'new': '🆕 <b>Новое объявление</b>',
+    'resubmitted': '🔁 <b>Исправленное объявление</b> (после отклонения)',
+    'edited': '✏️ <b>Изменение опубликованного объявления</b>',
+    'updated': '✏️ <b>Объявление изменено, пока ждало проверки</b>',
+}
+# Fields shown as 'old → new' in the list of changes; the rest by name only.
+SHORT_FIELDS = ('make', 'model', 'fuel', 'country', 'year', 'mileage_km', 'transmission', 'power_hp',
+                'color', 'accident', 'price', 'currency', 'contact_name', 'contact_phone',
+                'contact_whatsapp', 'contact_telegram')
+
+
+def _field_value(car, name):
+    value = getattr(car, name)
+    if value in (None, ''):
+        return '—'
+    if name == 'accident':
+        return 'было' if value else 'не было'
+    if name == 'make':
+        return value.name
+    if name == 'country':
+        return value.name
+    if name == 'price':
+        return f'{car.currency_symbol}{value:,.0f}'.replace(',', ' ')
+    display = getattr(car, f'get_{name}_display', None)
+    return display() if display else value
+
+
+def describe_changes(old, new, fields, photos_added=0, photos_removed=0):
+    """What the owner changed, as lines for the moderator (in Russian)."""
+    lines = []
+    with translation.override('ru'):
+        for name in fields:
+            if name == 'photos':
+                continue
+            label = str(new._meta.get_field(name).verbose_name).capitalize()
+            if name in SHORT_FIELDS:
+                lines.append(f'{label}: {_field_value(old, name)} → {_field_value(new, name)}')
+            else:
+                lines.append(label)
+    if photos_added:
+        lines.append(f'Фото добавлено: {photos_added}')
+    if photos_removed:
+        lines.append(f'Фото удалено: {photos_removed}')
+    return lines
+
+
+def listing_text(car, kind='new', changes=None):
     """Details of a listing for the moderator, in Russian (Telegram HTML)."""
     e = lambda value: html.escape(str(value))  # noqa: E731
     with translation.override('ru'):
-        head = '🔁 <b>Исправленное объявление</b>' if resubmitted else '🆕 <b>Новое объявление</b>'
-        lines = [f'{head} #{car.pk}', '', f'<b>{e(car.make.name)} {e(car.model)}</b>']
+        lines = [f'{HEADS.get(kind, HEADS["new"])} #{car.pk}']
+        if kind == 'edited':
+            lines.append('Пользователь внёс изменения в уже опубликованное объявление.')
+        if changes:
+            lines += ['', '<b>Что изменено:</b>'] + [f'• {e(line)}' for line in changes]
+        elif kind in ('edited', 'updated'):
+            lines += ['', 'Изменений в полях нет (сохранено без правок).']
+        lines += ['', f'<b>{e(car.make.name)} {e(car.model)}</b>']
         price = f'{car.currency_symbol}{car.price:,.0f}'.replace(',', ' ') if car.price else '—'
         facts = [
             ('Цена', price),
@@ -95,7 +148,7 @@ def listing_text(car, resubmitted=False):
         if car.description:
             text = car.description.strip()
             lines += ['', e(text[:700] + ('…' if len(text) > 700 else ''))]
-        if resubmitted and car.previous_rejection_reason:
+        if kind == 'resubmitted' and car.previous_rejection_reason:
             lines += ['', f'⚠️ <b>Вы просили исправить:</b>\n{e(car.previous_rejection_reason)}']
         lines += ['', f'Фото: {car.photos.count()}']
     return '\n'.join(lines)[:4000]
@@ -109,12 +162,12 @@ def _keyboard(car):
     ]}
 
 
-def notify_new_listing(car, resubmitted=False):
+def notify_new_listing(car, kind='new', changes=None):
     """Send the listing to every moderator chat. Never raises."""
     if not enabled():
         return
     photos = [_absolute(p.image.url) for p in car.photos.all()[:6]]
-    text = listing_text(car, resubmitted)
+    text = listing_text(car, kind, changes)
     sent = []
     for chat_id in settings.TELEGRAM_MODERATOR_CHAT_IDS:
         if len(photos) > 1:

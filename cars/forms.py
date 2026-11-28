@@ -4,8 +4,9 @@ from decimal import Decimal
 
 from django import forms
 from django.conf import settings
+from django.db import models
 from django.core.validators import RegexValidator
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, override
 
 from django_countries import countries
 
@@ -18,6 +19,11 @@ EXCLUDED_COUNTRIES = {'RU'}
 def country_choices():
     """All countries in the visitor's language, without excluded ones (Russia)."""
     return [('', '—')] + [(c.code, c.name) for c in countries if c.code not in EXCLUDED_COUNTRIES]
+
+def flag_emoji(code):
+    """'DE' -> the German flag emoji."""
+    return ''.join(chr(0x1F1E6 + ord(ch) - ord('A')) for ch in code.upper() if 'A' <= ch <= 'Z')
+
 
 phone_validator = RegexValidator(
     r'^\+?[\d\s()\-]{6,25}$',
@@ -42,9 +48,7 @@ class MultipleImageField(forms.ImageField):
 
 
 class CarForm(forms.ModelForm):
-    photos = MultipleImageField(
-        label=_('Photos'), required=False,
-        help_text=_('Up to %(n)s images.') % {'n': settings.LISTING_MAX_PHOTOS})
+    photos = MultipleImageField(label=_('Photos'), required=False)
     accident = forms.TypedChoiceField(
         label=_('Was the car in an accident?'), widget=forms.RadioSelect,
         choices=[('False', _('No')), ('True', _('Yes'))],
@@ -71,6 +75,8 @@ class CarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['make'].queryset = Make.objects.all()
+        # Formatted here, in the visitor's language (not once at import).
+        self.fields['photos'].help_text = _('Up to %(n)s images.') % {'n': settings.LISTING_MAX_PHOTOS}
         self.fields['make'].empty_label = _('Choose a make')
         self.fields['make'].label = _('Make')
         self.fields['model'].label = _('Model / title')
@@ -83,6 +89,16 @@ class CarForm(forms.ModelForm):
         self.fields['price'].widget.attrs.update(min=1, step='1')
         if self.instance.pk and self.instance.accident is not None:
             self.initial['accident'] = str(self.instance.accident)
+
+    def country_options(self):
+        """Countries for the searchable dropdown: name in the visitor's language, flag, and
+        the English name and code too, so 'germ', 'герм' and 'de' all find Germany."""
+        with override('en'):
+            english = dict(country_choices())
+        current = str(self['country'].value() or '')
+        return [{'code': code, 'name': name, 'flag': flag_emoji(code), 'selected': code == current,
+                 'search': f'{name} {english.get(code, "")} {code}'.lower()}
+                for code, name in country_choices() if code]
 
     def clean_year(self):
         year = self.cleaned_data.get('year')
@@ -108,12 +124,21 @@ class CarForm(forms.ModelForm):
             raise forms.ValidationError(_('The price must be greater than zero.'))
         return price
 
+    def photos_to_remove(self):
+        """Saved photos the owner marked with ✕ (only this car's own)."""
+        if not self.instance.pk or not self.data:
+            return CarPhoto.objects.none()
+        ids = [i for i in self.data.getlist('remove_photo') if str(i).isdigit()]
+        return self.instance.photos.filter(pk__in=ids)
+
     def clean_photos(self):
         photos = self.cleaned_data.get('photos') or []
         existing = self.instance.photos.count() if self.instance.pk else 0
-        if not photos and not existing and not self.instance.pk:
+        kept = existing - self.photos_to_remove().count()
+        # A new listing needs a photo, and an edit may not remove the last one.
+        if not photos and not kept and (existing or not self.instance.pk):
             raise forms.ValidationError(_('Add at least one photo of the car.'))
-        if existing + len(photos) > settings.LISTING_MAX_PHOTOS:
+        if kept + len(photos) > settings.LISTING_MAX_PHOTOS:
             raise forms.ValidationError(
                 _('A listing can have at most %(n)s photos.') % {'n': settings.LISTING_MAX_PHOTOS})
         return photos
@@ -121,7 +146,9 @@ class CarForm(forms.ModelForm):
     def save(self, commit=True):
         car = super().save(commit=commit)
         if commit:
-            start = car.photos.count()
+            for photo in self.photos_to_remove():
+                photo.delete()  # one by one, so the files are removed too
+            start = (car.photos.aggregate(m=models.Max('position'))['m'] or -1) + 1
             for i, image in enumerate(self.cleaned_data.get('photos') or []):
                 photo = CarPhoto(car=car, position=start + i)
                 cleaned = images.clean_upload(image)

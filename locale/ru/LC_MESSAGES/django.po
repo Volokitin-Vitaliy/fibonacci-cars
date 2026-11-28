@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-27 05:55+0000\n"
+"POT-Creation-Date: 2026-11-28 10:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -65,17 +65,29 @@ msgstr "Найти марку"
 msgid "Nothing found"
 msgstr "Ничего не найдено"
 
+msgid "Choose a country"
+msgstr "Выберите страну"
+
+msgid "Find a country"
+msgstr "Найти страну"
+
 msgid "Characteristics"
 msgstr "Характеристики"
 
 msgid "Price"
 msgstr "Цена"
 
+msgid "Remove"
+msgstr "Удалить"
+
 msgid "Photos"
 msgstr "Фотографии"
 
-msgid "Remove"
-msgstr "Удалить"
+msgid "Will be removed"
+msgstr "Будет удалено"
+
+msgid "Add photos"
+msgstr "Добавить фото"
 
 msgid "Contact"
 msgstr "Контакты"

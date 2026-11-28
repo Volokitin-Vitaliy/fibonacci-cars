@@ -53,7 +53,35 @@
         </div>
         <div class="grid sm:grid-cols-2 gap-5">
             {% include "includes/field.html" with field=form.model %}
-            {% include "includes/field.html" with field=form.country %}
+            {# Country: a searchable list (in both languages) instead of a long select #}
+            <div>
+                <div class="form-field"><label for="country-button">{{ form.country.label }} *</label></div>
+                <div class="relative" data-dropdown>
+                    <button type="button" id="country-button" data-dropdown-button aria-haspopup="listbox" aria-expanded="false" class="make-select {% if form.country.errors %}!border-red-500{% endif %}">
+                        <span class="flex items-center gap-3 min-w-0" data-dropdown-value>
+                            {% for c in form.country_options %}{% if c.selected %}<span class="text-lg leading-none shrink-0" aria-hidden="true">{{ c.flag }}</span><span class="truncate">{{ c.name }}</span>{% endif %}{% endfor %}
+                            {% if not form.country.value %}<span class="text-neutral-500">{% trans 'Choose a country' %}</span>{% endif %}
+                        </span>
+                        <svg class="picker-arrow" data-dropdown-arrow viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.2a1 1 0 0 1 1.4 0L10 10.6l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.6a1 1 0 0 1 0-1.4z"/></svg>
+                    </button>
+                    <div data-dropdown-panel class="picker-panel hidden w-full">
+                        <div class="p-2 border-b border-white/10">
+                            <input type="search" data-dropdown-search placeholder="{% trans 'Find a country' %}" autocomplete="off"
+                                   class="w-full bg-white/[.04] border border-white/10 focus:border-blue-500 rounded-xl outline-none px-3 py-2.5 text-sm">
+                        </div>
+                        <div class="max-h-[50vh] overflow-y-auto py-2" role="listbox">
+                            {% for c in form.country_options %}
+                            <label data-dropdown-item="{{ c.search }}" class="picker-option cursor-pointer {% if c.selected %}is-active{% endif %}">
+                                <input type="radio" name="country" value="{{ c.code }}" class="sr-only" {% if c.selected %}checked{% endif %}>
+                                <span class="flex items-center gap-3 min-w-0" data-option-face><span class="text-lg leading-none shrink-0" aria-hidden="true">{{ c.flag }}</span><span class="truncate">{{ c.name }}</span></span>
+                            </label>
+                            {% endfor %}
+                            <div data-dropdown-empty class="hidden px-4 py-3 text-sm text-neutral-500">{% trans 'Nothing found' %}</div>
+                        </div>
+                    </div>
+                </div>
+                {% for e in form.country.errors %}<p class="text-sm text-red-400 mt-1.5">{{ e }}</p>{% endfor %}
+            </div>
         </div>
         {% include "includes/field.html" with field=form.description %}
     </fieldset>
@@ -78,19 +106,28 @@
         </div>
     </fieldset>
 
-    <fieldset class="space-y-5">
-        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Photos' %}</legend>
-        {% if photos %}
-        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+    <fieldset class="space-y-4" data-photos data-max="{{ max_photos }}" data-t-remove="{% trans 'Remove' %}">
+        <legend class="text-xs uppercase tracking-[0.3em] text-neutral-500 mb-4">{% trans 'Photos' %} <span class="normal-case tracking-normal text-neutral-600" data-photo-count></span></legend>
+        <div class="photo-grid" data-photo-grid>
+            {# Saved photos: ✕ marks one for removal (undone with ↺), removed on save #}
             {% for p in photos %}
-            <label class="relative block cursor-pointer">
-                <img src="{{ p.thumb_url }}" alt="" loading="lazy" class="aspect-[4/3] w-full object-cover">
-                <span class="absolute inset-x-0 bottom-0 bg-black/70 text-xs px-2 py-1 flex items-center gap-1"><input type="checkbox" name="remove_photo" value="{{ p.pk }}"> {% trans 'Remove' %}</span>
+            <label class="photo-tile" data-photo-saved>
+                <img src="{{ p.thumb_url }}" alt="" loading="lazy">
+                <input type="checkbox" name="remove_photo" value="{{ p.pk }}" class="sr-only" {% if p.pk|stringformat:'s' in removed_photos %}checked{% endif %}>
+                <span class="photo-remove" aria-hidden="true"><span class="photo-remove-x">✕</span><span class="photo-remove-undo">↺</span></span>
+                <span class="photo-removed-note">{% trans 'Will be removed' %}</span>
+                <span class="sr-only">{% trans 'Remove' %}</span>
             </label>
             {% endfor %}
+            {# Photos just picked (shown by site.js, each with ✕), then the add button #}
+            <label class="photo-tile photo-add" data-photo-add>
+                <span class="text-3xl leading-none font-light">+</span>
+                <span class="text-xs mt-2">{% trans 'Add photos' %}</span>
+                <input type="file" name="photos" accept="image/*" multiple class="sr-only" data-photo-input id="{{ form.photos.id_for_label }}">
+            </label>
         </div>
-        {% endif %}
-        {% include "includes/field.html" with field=form.photos %}
+        <div class="help">{{ form.photos.help_text }}</div>
+        {{ form.photos.errors }}
     </fieldset>
 
     <fieldset class="space-y-5">
