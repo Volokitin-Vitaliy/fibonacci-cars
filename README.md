@@ -204,6 +204,27 @@ publishes it on the site. Decisions made in the admin also close the buttons in 
 
 Only these chat ids can approve or reject.
 
+## Cloudflare (protection)
+
+The site is ready to run behind Cloudflare (DDoS protection, bot filtering, CDN):
+nginx takes the visitor's real address from `CF-Connecting-IP` (trusted only from
+Cloudflare's ranges), so the login rate limit, the admin lockout and analytics keep working;
+analytics takes the country from `CF-IPCountry`.
+
+1. Add the domain in Cloudflare (free plan), check that **all** DNS records were copied
+   (mail records: MX, SPF, DKIM, DMARC, Brevo — keep them **DNS only**, grey cloud), and set the
+   `@` and `www` A records to the server IP with the **orange cloud** (proxied).
+2. Change the nameservers at the domain registrar to the two Cloudflare gives.
+3. SSL/TLS → **Full (strict)** (the server keeps its Let's Encrypt certificate);
+   Always Use HTTPS on. Security → Bots → Bot Fight Mode on. Keep **Rocket Loader off**
+   and Cloudflare Web Analytics off (they conflict with the site's Content-Security-Policy).
+4. When the site opens through Cloudflare, close the server's IP to everyone else:
+   add `CLOUDFLARE_ONLY=yes` to `.env` and run `docker compose up -d nginx`. Direct requests to
+   the IP then get no answer. To undo, set it to `no`.
+
+Cloudflare's address ranges are in `deploy/nginx.conf.template` (from
+https://www.cloudflare.com/ips; they change rarely).
+
 ## Site analytics
 
 Admin → **Analytics** shows who visits the site, kept in our own database (no Google

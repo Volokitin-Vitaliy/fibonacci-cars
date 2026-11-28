@@ -103,6 +103,11 @@ class TrackingTests(TestCase):
         request = RequestFactory().get('/', HTTP_REFERER='https://t.me/fibonaccicars')
         self.assertEqual(tracking.source_of(request)[0], 'Telegram')
 
+    def test_country_from_cloudflare(self):
+        self.client.get('/ru/', HTTP_USER_AGENT=DESKTOP, HTTP_CF_IPCOUNTRY='AE')
+        self.client.get('/ru/', HTTP_USER_AGENT=DESKTOP, HTTP_CF_IPCOUNTRY='XX', HTTP_X_REAL_IP='10.0.0.1')
+        self.assertEqual(list(PageView.objects.order_by('pk').values_list('country', flat=True))[0], 'AE')
+
     def test_country_is_empty_without_the_database(self):
         with override_settings(MEDIA_ROOT='/tmp/fibonacci-no-geoip'):
             self.assertEqual(tracking.country_of('8.8.8.8'), '')
