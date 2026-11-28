@@ -175,15 +175,16 @@ fieldset { min-width: 0; }
 #page-progress.is-active { opacity: 1; width: 75%; transition: width 6s cubic-bezier(.1,.7,.1,1), opacity .2s; }
 
 /* ---- Reveal on scroll ---- */
-.js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
-.js [data-reveal].is-visible { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+/* Hidden only while waiting below the screen (site.js); hiding is instant, appearing animates. */
+.js [data-reveal] { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+.js [data-reveal].reveal-pending { opacity: 0; transform: translateY(14px); transition: none; }
+@media (prefers-reduced-motion: reduce) { .js [data-reveal].reveal-pending { opacity: 1; transform: none; } .js [data-reveal] { transition: none; } html { scroll-behavior: auto; } }
 
 /* ---- Images fade in over a shimmer ---- */
 .media-shimmer { background: linear-gradient(110deg, #121214 30%, #1b1b1f 45%, #121214 60%) 0 0 / 300% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { to { background-position: -150% 0; } }
-.js img.fade-in { opacity: 0; transition: opacity .5s ease; }
-.js img.fade-in.is-loaded { opacity: 1; }
+img.fade-in { transition: opacity .5s ease; }
+img.fade-in.img-loading { opacity: 0; transition: none; }
 
 /* ---- Horizontal scrollers ---- */
 .scroller { display: grid; grid-auto-flow: column; gap: 1.25rem; overflow-x: auto; overflow-y: hidden; /* sideways only: a vertical swipe scrolls the page */
