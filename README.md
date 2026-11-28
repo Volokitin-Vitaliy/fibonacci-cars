@@ -246,6 +246,27 @@ Countries come from the free DB-IP Lite database, downloaded by the daily jobs
 (`python manage.py update_geoip`). Data older than `ANALYTICS_RETENTION_DAYS` (800 days)
 is deleted. Times are shown in `ADMIN_TIME_ZONE` (Europe/Berlin by default).
 
+## Posts in the Telegram channel
+
+Every new car on the site (an approved private listing or a new Hollmann car) is posted in
+the channel: an album of 5 photos with a short caption (make, model, year, price, country,
+accidents, mileage, power, fuel, gearbox, colour) and a "Смотреть подробнее" link.
+Posts go out one an hour from a queue and not at night (23:00–8:00, `ADMIN_TIME_ZONE`).
+When a car leaves the site its post gets "❌ Продано" (removed again if it comes back).
+Test cars hidden from the catalog are never posted.
+
+1. Add the bot to the channel as an admin with "Post messages".
+2. Add to `.env` and restart (`docker compose up -d`):
+   ```ini
+   TELEGRAM_CHANNEL=@fibonacci_io
+   ```
+3. Check: `docker compose exec scheduler python manage.py telegram_channel --check`.
+   On its first run (within 5 minutes) the 3 newest cars are posted at once; cars already
+   on the site before that are not posted. Admin → Telegram channel lists every post;
+   "Post to the Telegram channel now" (vehicles list → action) posts any car by hand.
+
+Optional: `TELEGRAM_CHANNEL_INTERVAL_MINUTES=60`, `TELEGRAM_CHANNEL_QUIET_HOURS=23-8`.
+
 ## Automatic translation of descriptions
 
 A seller writes the description in Russian or English; the site shows it translated into the

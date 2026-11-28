@@ -63,6 +63,10 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_MODERATOR_CHAT_IDS = [int(x) for x in os.getenv('TELEGRAM_MODERATOR_CHAT_IDS', '').replace(' ', '').split(',')
                                if x.lstrip('-').isdigit()]
 TELEGRAM_WEBHOOK_SECRET = os.getenv('TELEGRAM_WEBHOOK_SECRET', '')
+# Posts about new cars in the Telegram channel (see cars/channel.py): @name or -100… id.
+TELEGRAM_CHANNEL = os.getenv('TELEGRAM_CHANNEL', '').strip()
+TELEGRAM_CHANNEL_INTERVAL_MINUTES = int(os.getenv('TELEGRAM_CHANNEL_INTERVAL_MINUTES', 60))
+TELEGRAM_CHANNEL_QUIET_HOURS = os.getenv('TELEGRAM_CHANNEL_QUIET_HOURS', '23-8')
 
 # Site analytics in the admin (see analytics/). Staff visits are not counted by default.
 ANALYTICS_DISABLED = env_bool('ANALYTICS_DISABLED', False)
@@ -372,6 +376,8 @@ UNFOLD = {
                      'link': reverse_lazy('admin:cars_car_changelist')},
                     {'title': _('Makes'), 'icon': 'sell',
                      'link': reverse_lazy('admin:cars_make_changelist')},
+                    {'title': _('Telegram channel'), 'icon': 'send',
+                     'link': reverse_lazy('admin:cars_channelpost_changelist')},
                 ],
             },
             {

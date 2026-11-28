@@ -495,3 +495,40 @@ class Payment(models.Model):
 
     class Meta:
         ordering = ('-created_at',)
+
+
+class ChannelPost(models.Model):
+    """A car's post in the Telegram channel (see channel.py)."""
+
+    class Status(models.TextChoices):
+        QUEUED = 'queued', _('In the queue')
+        SENT = 'sent', _('Posted')
+        SKIPPED = 'skipped', _('Not posted')
+        FAILED = 'failed', _('Failed')
+
+    car = models.OneToOneField(Car, on_delete=models.CASCADE, related_name='channel_post', verbose_name=_('vehicle'))
+    status = models.CharField(_('status'), max_length=10, choices=Status.choices, default=Status.QUEUED,
+                              db_index=True)
+    queued_at = models.DateTimeField(_('queued'), auto_now_add=True)
+    sent_at = models.DateTimeField(_('posted'), null=True, blank=True)
+    chat = models.CharField(max_length=64, blank=True)
+    message_ids = models.JSONField(default=list, blank=True)
+    kind = models.CharField(max_length=10, blank=True)  # 'media' (album / photo) or 'text'
+    sold = models.BooleanField(_('marked sold'), default=False)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('-queued_at',)
+        verbose_name = _('Telegram channel post')
+        verbose_name_plural = _('Telegram channel posts')
+
+    def __str__(self):
+        return str(self.car)
+
+    @property
+    def link(self):
+        channel = (self.chat or '').lstrip('@')
+        if self.status == self.Status.SENT and self.message_ids and channel and not channel.lstrip('-').isdigit():
+            return f'https://t.me/{channel}/{self.message_ids[0]}'
+        return ''

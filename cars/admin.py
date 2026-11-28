@@ -4,7 +4,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
 from . import services
-from .models import Car, CarPhoto, Favorite, ImportRun, ListingPeriod, Make, Payment
+from .models import Car, CarPhoto, ChannelPost, Favorite, ImportRun, ListingPeriod, Make, Payment
 
 
 @admin.register(Make)
@@ -53,7 +53,7 @@ class CarAdmin(ModelAdmin):
     autocomplete_fields = ('make',)
     raw_id_fields = ('owner',)
     inlines = (CarPhotoInline, ListingPeriodInline)
-    actions = ('approve_selected', 'reject_selected', 'add_to_home', 'remove_from_home')
+    actions = ('approve_selected', 'reject_selected', 'add_to_home', 'remove_from_home', 'post_to_channel')
     list_per_page = 50
     date_hierarchy = 'created_at'
     readonly_fields = ('price_eur', 'external_id', 'source_url', 'last_synced_at',
@@ -138,6 +138,26 @@ class CarAdmin(ModelAdmin):
         count = queryset.update(show_on_home=False)
         self.message_user(request, _('Removed from the home page: %(n)s') % {'n': count}, messages.SUCCESS)
 
+    @admin.action(description=_('Post to the Telegram channel now'))
+    def post_to_channel(self, request, queryset):
+        from . import channel
+        if not channel.enabled():
+            self.message_user(request, _('Set TELEGRAM_CHANNEL in .env first.'), messages.ERROR)
+            return
+        posted, failed = 0, []
+        for car in queryset.select_related('make')[:10]:
+            post, _created = ChannelPost.objects.get_or_create(car=car)
+            if post.status == ChannelPost.Status.SENT:
+                continue
+            post.status, post.attempts = ChannelPost.Status.QUEUED, 0
+            if channel.send_one(post):
+                posted += 1
+            else:
+                failed.append(f'{car}: {post.error or _("not on the site")}')
+        self.message_user(request, _('Posted to the channel: %(n)s') % {'n': posted}, messages.SUCCESS)
+        if failed:
+            self.message_user(request, '; '.join(failed), messages.ERROR)
+
     @admin.action(description=_('Reject selected listings'))
     def reject_selected(self, request, queryset):
         count = 0
@@ -169,3 +189,18 @@ class PaymentAdmin(ModelAdmin):
 class ImportRunAdmin(ModelAdmin):
     list_display = ('started_at', 'finished_at', 'ok', 'created', 'updated', 'unpublished')
     readonly_fields = [f.name for f in ImportRun._meta.fields]
+
+
+@admin.register(ChannelPost)
+class ChannelPostAdmin(ModelAdmin):
+    list_display = ('car', 'status', 'queued_at', 'sent_at', 'sold', 'open_post', 'error')
+    list_filter = ('status', 'sold')
+    search_fields = ('car__model', 'car__make__name')
+    list_select_related = ('car', 'car__make')
+    readonly_fields = ('car', 'queued_at', 'sent_at', 'chat', 'message_ids', 'kind', 'sold', 'attempts', 'error')
+    fields = ('car', 'status', 'queued_at', 'sent_at', 'sold', 'attempts', 'error', 'chat', 'message_ids', 'kind')
+
+    @display(description=_('Post'))
+    def open_post(self, obj):
+        from django.utils.html import format_html
+        return format_html('<a href="{}" target="_blank">t.me ↗</a>', obj.link) if obj.link else '—'
