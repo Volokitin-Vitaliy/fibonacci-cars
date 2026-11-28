@@ -22,9 +22,9 @@
     <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
     {% if structured_data %}{% json_ld structured_data %}{% endif %}
     <script nonce="{{ CSP_NONCE }}">document.documentElement.classList.add('js');</script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+    {# Fonts come from our own server; the main text font starts loading at once #}
+    <link rel="preload" href="{% static 'fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+    {% if LANG == 'ru' %}<link rel="preload" href="{% static 'fonts/inter-cyrillic-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>{% endif %}
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     {% if noindex %}<meta name="robots" content="noindex">{% endif %}
     {% block extra_head %}{% endblock %}

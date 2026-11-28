@@ -11,8 +11,8 @@ from django.conf import settings
 
 THIRD_PARTY = {
     'script': ['https://challenges.cloudflare.com'],               # Turnstile bot check
-    'style': ['https://fonts.googleapis.com'],
-    'font': ['https://fonts.gstatic.com'],
+    'style': [],
+    'font': [],
     'frame': ['https://challenges.cloudflare.com'],
     'connect': ['https://challenges.cloudflare.com'],
     # Forms that leave the site: payments and Google / Apple sign-in.
