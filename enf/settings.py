@@ -64,6 +64,9 @@ TELEGRAM_MODERATOR_CHAT_IDS = [int(x) for x in os.getenv('TELEGRAM_MODERATOR_CHA
                                if x.lstrip('-').isdigit()]
 TELEGRAM_WEBHOOK_SECRET = os.getenv('TELEGRAM_WEBHOOK_SECRET', '')
 
+# Automatic translation of descriptions (DeepL API key; empty = off). A free key ends in ':fx'.
+DEEPL_API_KEY = os.getenv('DEEPL_API_KEY', '').strip()
+
 # Content-Security-Policy (enf/csp.py). CSP_REPORT_ONLY=True only reports violations.
 CSP_ENABLED = env_bool('CSP_ENABLED', True)
 CSP_REPORT_ONLY = env_bool('CSP_REPORT_ONLY', False)

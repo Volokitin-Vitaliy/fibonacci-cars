@@ -12,7 +12,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonRespo
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
-from django.utils.translation import gettext as _
+from django.utils.translation import get_language, gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django_countries.fields import Country
@@ -287,7 +287,9 @@ def car_detail(request, pk):
     message = _('Hello! I am interested in %(car)s%(year)s%(price)s on FIBONACCI: %(url)s') % {
         'car': f'{car.make.name} {car.model}', 'year': f', {car.year}' if car.year else '',
         'price': f', {price}' if price else '', 'url': request.build_absolute_uri(car.get_absolute_url())}
+    desc, desc_is_html, desc_original = car.description_for(get_language())
     return render(request, 'cars/detail.html', {
+        'desc': desc, 'desc_is_html': desc_is_html, 'desc_original': desc_original,
         'structured_data': seo.car_data(request, car, photos) if is_public else None,
         'wa_query': 'text=' + quote(message, safe=''),
         'car': car, 'photos': photos, 'similar': similar_cars(car),

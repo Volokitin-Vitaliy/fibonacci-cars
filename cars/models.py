@@ -141,6 +141,12 @@ class Car(models.Model):
     # a list of {name, languages, phone, mobile, whatsapp, photo}.
     description_html = models.TextField(_('description (HTML)'), blank=True)
     dealer_contacts = models.JSONField(_('dealer contacts'), default=list, blank=True)
+    # Automatic translation of the description into the other site language (see translation.py):
+    # the language the seller wrote in, the translated text (HTML for imported cars) and
+    # a hash of the text it was made from, so it is redone only when the description changes.
+    description_lang = models.CharField(_('description language'), max_length=2, blank=True)
+    description_translated = models.TextField(_('translated description'), blank=True)
+    translation_source_hash = models.CharField(max_length=64, blank=True, editable=False)
 
     # Short characteristics (user listings fill these in).
     year = models.PositiveIntegerField(_('year'), null=True, blank=True)
@@ -244,6 +250,18 @@ class Car(models.Model):
     @property
     def is_approved(self):
         return self.moderation == self.Moderation.APPROVED
+
+    def description_for(self, lang):
+        """The description to show in a site language: (text, is_html, original or None).
+        The original is returned too when a translation is shown, for 'Show original'."""
+        from .translation import source_of, text_hash
+        text, is_html = source_of(self)
+        # Only a translation of the current text (not of an earlier version) is shown.
+        if (text and self.description_translated and self.description_lang
+                and self.description_lang != (lang or '')[:2]
+                and self.translation_source_hash == text_hash(text, is_html)):
+            return self.description_translated, is_html, text
+        return text, is_html, None
 
     @property
     def is_imported(self):
