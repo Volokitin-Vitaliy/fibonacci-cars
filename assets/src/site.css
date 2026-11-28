@@ -342,3 +342,23 @@ fieldset { min-width: 0; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Listing form photos */
+@layer components {
+    .photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    @media (min-width: 640px) { .photo-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    .photo-tile { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+    .photo-tile img { width: 100%; height: 100%; object-fit: cover; transition: opacity .2s, filter .2s; }
+    .photo-remove { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+        background: rgba(0,0,0,.72); border: 1px solid rgba(255,255,255,.18); color: #fff; font-size: .8rem; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .photo-remove:hover { background: rgba(220,38,38,.85); }
+    .photo-remove-undo, .photo-removed-note { display: none; }
+    .photo-removed-note { position: absolute; inset-inline: 0; bottom: 0; padding: .3rem .5rem; font-size: .7rem; text-align: center; background: rgba(127,29,29,.85); color: #fecaca; }
+    .photo-tile:has(input:checked) img { opacity: .3; filter: grayscale(1); }
+    .photo-tile:has(input:checked) .photo-remove-x { display: none; }
+    .photo-tile:has(input:checked) .photo-remove-undo, .photo-tile:has(input:checked) .photo-removed-note { display: block; }
+    .photo-tile:has(input:checked) .photo-remove:hover { background: rgba(0,0,0,.85); }
+    .photo-tile:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .photo-add { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #a3a3a3; border-style: dashed; border-color: rgba(255,255,255,.2); transition: border-color .2s, color .2s; }
+    .photo-add:hover { border-color: rgba(255,255,255,.45); color: #fff; }
+}

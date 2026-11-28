@@ -204,3 +204,50 @@ document.querySelectorAll('[data-dropdown]').forEach(function (root) {
         });
     });
 });
+
+/* Listing form photos: picked files show as tiles with ✕ before saving (picking again adds
+   more), saved photos are marked for removal with ✕, and a counter keeps within the limit. */
+document.querySelectorAll('[data-photos]').forEach(function (box) {
+    var input = box.querySelector('[data-photo-input]'), add = box.querySelector('[data-photo-add]');
+    var grid = box.querySelector('[data-photo-grid]'), counter = box.querySelector('[data-photo-count]');
+    var max = parseInt(box.dataset.max, 10) || 15, picked = [];
+    var canEdit = true;
+    try { new DataTransfer(); } catch (e) { canEdit = false; }  // very old browsers: plain input
+    function saved() { return box.querySelectorAll('[data-photo-saved] input:not(:checked)').length; }
+    function sync() {
+        var total = saved() + (canEdit ? picked.length : input.files.length);
+        counter.textContent = '· ' + total + ' / ' + max;
+        counter.classList.toggle('text-red-400', total > max);
+        add.classList.toggle('hidden', canEdit && total >= max);
+    }
+    function render() {
+        grid.querySelectorAll('[data-photo-new]').forEach(function (t) { URL.revokeObjectURL(t.dataset.url); t.remove(); });
+        picked.forEach(function (file, i) {
+            var url = URL.createObjectURL(file), tile = document.createElement('div');
+            tile.className = 'photo-tile'; tile.dataset.photoNew = ''; tile.dataset.url = url;
+            var img = document.createElement('img'); img.src = url; img.alt = '';
+            var x = document.createElement('button');
+            x.type = 'button'; x.className = 'photo-remove'; x.setAttribute('aria-label', box.dataset.tRemove || 'Remove');
+            x.innerHTML = '<span class="photo-remove-x">✕</span>';
+            x.addEventListener('click', function () { picked.splice(i, 1); update(); });
+            tile.appendChild(img); tile.appendChild(x);
+            grid.insertBefore(tile, add);
+        });
+    }
+    function update() {
+        var dt = new DataTransfer();
+        picked.forEach(function (f) { dt.items.add(f); });
+        input.files = dt.files;
+        render(); sync();
+    }
+    input.addEventListener('change', function () {
+        if (!canEdit) { sync(); return; }
+        var room = max - saved() - picked.length;
+        Array.prototype.slice.call(input.files).forEach(function (f) {
+            if (room > 0 && /^image\//.test(f.type || 'image/')) { picked.push(f); room--; }
+        });
+        update();
+    });
+    box.querySelectorAll('[data-photo-saved] input').forEach(function (c) { c.addEventListener('change', sync); });
+    sync();
+});

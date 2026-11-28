@@ -133,6 +133,7 @@ class ImporterTests(TestCase):
         self.assertEqual(t1.fuel, 'petrol')
         self.assertTrue(Car.objects.get(external_id='T2').is_new)
         self.assertEqual(t1.country.code, 'DE')
+        self.assertIs(t1.accident, False)  # Hollmann cars are accident-free
         self.assertTrue(Make.objects.filter(name='Brand New Make').exists())
 
         # Next day T2 is gone from the source site and T1's price changed.
@@ -1390,6 +1391,26 @@ class TelegramModerationTests(TestCase):
         self.assertIn('editMessageReplyMarkup', [m for m, d in self.calls])
         self.assertEqual(self.client.get(car.get_absolute_url()).status_code, 200)
 
+    def test_edit_of_published_listing_is_marked_with_changes(self):
+        self.submit()
+        car = Car.objects.get(model='RS6')
+        services.approve(car)
+        old_photo = car.photos.get()
+        self.client.post(reverse('cars:edit', args=[car.pk]), {
+            'make': car.make_id, 'model': 'RS6', 'price': '95000', 'currency': 'EUR', 'fuel': 'petrol',
+            'accident': 'False', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE',
+            'photos': png(), 'remove_photo': [old_photo.pk]})
+        car.refresh_from_db()
+        self.assertTrue(car.is_pending)
+        text = self.sent_texts()[-1]
+        self.assertIn('Изменение опубликованного объявления', text)
+        self.assertIn('уже опубликованное', text)
+        self.assertIn('Цена: €100 000 → €95 000', text)
+        self.assertIn('Фото добавлено: 1', text)
+        self.assertIn('Фото удалено: 1', text)
+        self.assertNotIn('Модель', text)  # unchanged fields are not listed
+        self.assertFalse(car.photos.filter(pk=old_photo.pk).exists())
+
     def test_strangers_and_forged_requests_are_ignored(self):
         self.submit()
         car = Car.objects.get(model='RS6')
@@ -1579,3 +1600,57 @@ class TranslationTests(TestCase):
         car = make_listing(self.owner, description='Mint condition')
         self.assertFalse(translation.translate_car(car))
         self.assertEqual(self.api.calls, [])
+
+
+@override_settings(MEDIA_ROOT='/tmp/fibonacci-test-media')
+class ListingFormTests(TestCase):
+    def setUp(self):
+        self.client.cookies.load(LANG)
+        self.owner = make_user()
+        self.client.force_login(self.owner)
+        self.car = make_listing(self.owner)
+        for i in range(3):
+            CarPhoto.objects.create(car=self.car, position=i, image=SimpleUploadedFile(f'p{i}.png', png().read()))
+
+    def edit(self, **extra):
+        data = {'make': self.car.make_id, 'model': 'M5', 'price': '90000', 'currency': 'EUR', 'fuel': 'petrol',
+                'accident': 'False', 'contact_name': 'Ivan', 'contact_phone': '+49 151 0000001', 'country': 'DE',
+                **extra}
+        return self.client.post(reverse('cars:edit', args=[self.car.pk]), data)
+
+    def test_remove_photos_when_editing(self):
+        first, second, third = self.car.photos.order_by('position')
+        self.edit(remove_photo=[first.pk, third.pk])
+        self.assertEqual(list(self.car.photos.values_list('pk', flat=True)), [second.pk])
+
+    def test_cannot_remove_the_last_photo_or_others_photos(self):
+        other = make_listing(make_user('other@example.com', '+49 151 0000002'))
+        foreign = CarPhoto.objects.create(car=other, image=SimpleUploadedFile('f.png', png().read()))
+        response = self.edit(remove_photo=list(self.car.photos.values_list('pk', flat=True)) + [foreign.pk])
+        self.assertIn('photos', response.context['form'].errors)
+        self.assertEqual(self.car.photos.count(), 3)
+        self.assertTrue(CarPhoto.objects.filter(pk=foreign.pk).exists())
+
+    def test_up_to_15_photos_counting_removed_ones(self):
+        self.assertEqual(settings.LISTING_MAX_PHOTOS, 15)
+        response = self.edit(photos=[png() for _ in range(13)])
+        self.assertIn('photos', response.context['form'].errors)  # 3 + 13 > 15
+        self.assertEqual(self.car.photos.count(), 3)
+        first = self.car.photos.first()
+        self.edit(photos=[png() for _ in range(13)], remove_photo=[first.pk])
+        self.assertEqual(self.car.photos.count(), 15)
+        positions = list(self.car.photos.values_list('position', flat=True))
+        self.assertEqual(len(set(positions)), 15)
+
+    def test_country_list_is_searchable_in_both_languages(self):
+        Car.objects.filter(pk=self.car.pk).update(country='DE')
+        page = self.client.get(reverse('cars:edit', args=[self.car.pk]))
+        self.assertContains(page, 'Find a country')
+        options = {o['code']: o for o in page.context['form'].country_options()}
+        self.assertTrue(options['DE']['selected'])
+        self.assertIn('germany', options['DE']['search'])
+        self.assertNotIn('RU', options)
+        ru = self.client.get(reverse('cars:edit', args=[self.car.pk]).replace('/en/', '/ru/', 1))
+        options = {o['code']: o for o in ru.context['form'].country_options()}
+        self.assertIn('германия', options['DE']['search'])
+        self.assertIn('germany', options['DE']['search'])
