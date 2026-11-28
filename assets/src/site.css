@@ -36,6 +36,9 @@
     .site-header { background-color: #08080a !important; box-shadow: 0 -300px 0 0 #08080a; }
     /* !important: the bar's own bg-black/95 utility comes later and is not opaque; Safari only
        tints its address bar under a fully opaque bar. No blur needed on a solid colour. */
+    /* Same reason as the chips: no blur that Safari paints a moment late on page elements. */
+    .glass, .contact-bar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .glass { background: rgba(20,20,23,.72); }
     .bottom-nav { background-color: #000 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
                   box-shadow: 0 300px 0 0 #000; }
 }
@@ -106,7 +109,9 @@ fieldset { min-width: 0; }
 .cur-option input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chip-new { background: #fff; color: #0a0a0a; border: 1px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,.45); letter-spacing: .14em; }
 .chip-accent { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
-.chip-glass { background: rgba(0,0,0,.55); color: #e5e5e5; border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* No backdrop blur: Safari first paints these chips without it (darker), then with it (lighter),
+   which flickered on every page; a slightly denser solid tint looks the same and never changes. */
+.chip-glass { background: rgba(10,10,12,.62); color: #e5e5e5; border: 1px solid rgba(255,255,255,.14); }
 .chip-ok { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
 .chip-warn { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
 
