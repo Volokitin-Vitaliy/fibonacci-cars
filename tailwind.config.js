@@ -8,6 +8,9 @@ module.exports = {
     './cars/**/*.py',
     './users/**/*.py',
   ],
+  // hover: effects only on devices with a real mouse; on phones a finger resting on a card
+  // while scrolling counted as hover and zoomed its photo (looked like a glitch).
+  future: { hoverOnlyWhenSupported: true },
   theme: { extend: {} },
   plugins: [],
 };
