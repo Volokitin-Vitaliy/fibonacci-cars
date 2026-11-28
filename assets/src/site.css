@@ -33,8 +33,11 @@
    bar, the bottom menu continues down under Safari's address bar, so the page never shows
    through those gaps. Safari also tints its bars with these solid colours. */
 @media (max-width: 1023px) {
-    .site-header { background-color: #08080a; box-shadow: 0 -300px 0 0 #08080a; }
-    .bottom-nav { background-color: #000; box-shadow: 0 300px 0 0 #000; }
+    .site-header { background-color: #08080a !important; box-shadow: 0 -300px 0 0 #08080a; }
+    /* !important: the bar's own bg-black/95 utility comes later and is not opaque; Safari only
+       tints its address bar under a fully opaque bar. No blur needed on a solid colour. */
+    .bottom-nav { background-color: #000 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+                  box-shadow: 0 300px 0 0 #000; }
 }
 /* No grey flash when tapping links and buttons on phones; the page does not shift sideways
    when an overlay hides the scrollbar (Windows). */
