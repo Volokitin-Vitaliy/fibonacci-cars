@@ -463,8 +463,14 @@ class ImportRun(models.Model):
     ok = models.BooleanField(default=False)
     error = models.TextField(blank=True)
 
+    INTERRUPTED = 'interrupted'  # cut off by a restart of the scheduler (site update)
+
     class Meta:
         ordering = ('-started_at',)
+
+    @property
+    def interrupted(self):
+        return self.error == self.INTERRUPTED
 
 
 class Payment(models.Model):

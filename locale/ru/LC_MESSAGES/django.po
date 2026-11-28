@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FIBONACCI VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-28 12:14+0000\n"
+"POT-Creation-Date: 2026-11-28 12:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -697,6 +697,12 @@ msgstr "Импорт Hollmann"
 msgid "Last run"
 msgstr "Последний запуск"
 
+msgid "Interrupted"
+msgstr "Прерван"
+
+msgid "Running…"
+msgstr "Идёт…"
+
 msgid "Error"
 msgstr "Ошибка"
 
@@ -708,6 +714,9 @@ msgstr "Новых / обновлено"
 
 msgid "Removed from site"
 msgstr "Снято с сайта"
+
+msgid "Stopped by a site update; it runs again by itself."
+msgstr "Остановлен обновлением сайта, запустится заново сам."
 
 msgid "The import has not run yet."
 msgstr "Импорт ещё не запускался."
