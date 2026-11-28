@@ -47,6 +47,7 @@ services:
       - "443:443"
     environment:
       DOMAIN: ${DOMAIN}
+      CLOUDFLARE_ONLY: ${CLOUDFLARE_ONLY:-no}
     volumes:
       - ./deploy/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro

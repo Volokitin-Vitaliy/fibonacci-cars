@@ -36,7 +36,7 @@ def ping(request):
                 'last_seen': timezone.now(), 'path': request.POST.get('path', '')[:300],
                 'car_id': _car_id(request.POST.get('car', '')),
                 'device': tracking.parse_agent(request.META.get('HTTP_USER_AGENT', ''))[0],
-                'country': tracking.country_of(tracking.client_ip(request)),
+                'country': tracking.country_for(request),
             })
         except Exception:
             logger.exception('Analytics: ping not recorded')

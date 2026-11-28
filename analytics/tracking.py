@@ -121,6 +121,14 @@ def country_of(ip):
     return ((found or {}).get('country') or {}).get('iso_code', '')[:2]
 
 
+def country_for(request):
+    """Behind Cloudflare its CF-IPCountry header tells the country; otherwise the IP database."""
+    code = request.META.get('HTTP_CF_IPCOUNTRY', '').upper()
+    if len(code) == 2 and code.isalpha() and code not in ('XX', 'T1'):
+        return code
+    return country_of(client_ip(request))
+
+
 def should_track(request, response):
     if request.method != 'GET' or response.status_code != 200 or settings.ANALYTICS_DISABLED:
         return False
@@ -156,7 +164,7 @@ def record_pageview(request):
         is_new=not PageView.objects.filter(visitor=visitor).exists(),
         is_member=bool(user and user.is_authenticated), path=request.path[:300], kind=kind,
         car_id=car_id, lang=(getattr(request, 'LANGUAGE_CODE', '') or '')[:2], device=device,
-        browser=browser, os=os_name, country=country_of(client_ip(request)), source=source, referrer=referrer)
+        browser=browser, os=os_name, country=country_for(request), source=source, referrer=referrer)
 
 
 def record_event(request, kind, car_id=None):
@@ -166,6 +174,6 @@ def record_event(request, kind, car_id=None):
     try:
         Event.objects.create(created_at=timezone.now(), visitor=visitor_id(request), kind=kind, car_id=car_id,
                              device=parse_agent(request.META.get('HTTP_USER_AGENT', ''))[0],
-                             country=country_of(client_ip(request)))
+                             country=country_for(request))
     except Exception:
         logger.exception('Analytics: event not recorded')
