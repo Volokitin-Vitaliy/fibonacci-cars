@@ -2,7 +2,7 @@
 <html lang="{{ LANG }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">{# no viewport-fit=cover: Safari then fills the status bar and address bar areas itself instead of showing the page there #}
     <title>{% block title %}FIBONACCI{% endblock %} · FIBONACCI</title>
     <meta name="description" content="{% block meta_description %}{% trans 'Exclusive cars for sale: customized, armoured, oldtimer and electric vehicles.' %}{% endblock %}">
     {% hreflang %}
